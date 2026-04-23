@@ -1836,6 +1836,112 @@ async function importar_tanita_nou(input) {
 // Mantenir compatibilitat amb el botó vell del topbar
 async function importar_tanita(input) { await importar_tanita_nou(input); }
 
+function extreure_tanita_text(text) {
+  // El PDF Tanita té els valors en ordre fix — els extraiem per patrons específics
+  const n = (re) => { const m = text.match(re); return m ? parseFloat(m[1].replace(',','.').replace('-','')) : null; };
+
+  // Data: primer patró DD/M/YYYY o DD.MM.YYYY
+  let data = '';
+  const mD = text.match(/(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})/);
+  if (mD) data = mD[1].padStart(2,'0')+'/'+mD[2].padStart(2,'0')+'/'+mD[3];
+  else data = new Date().toLocaleDateString('es-ES');
+
+  // Tokenitzar: extreure tots els números en ordre d'aparició
+  // Format del text: ID altura edat | MassaGrassa MassaOssia Proteina | Pes rangoSa | %Grasa rangoSa | MassaGrassa | MassaLliure | MassaMuscular | IMC rangoSa | EdatMetab | ... Agua | kJ kcal | GrassaVisceral | Agua% | SegTronc SegGrassaTronc | scores... | BracosI D GrassaI D | Cames...
+  
+  // Estratègia: regex específics per cada camp
+  const t = { data };
+
+  // Pes: primer número gran (50-200) seguit de kg i rang "XX-XX kg"
+  const mPes = text.match(/(\d+\.?\d*)\s*kg\s+\d+-\d+\s*kg/);
+  if (mPes) t.pes = parseFloat(mPes[1]);
+
+  // % Grasa: número XX.XX seguit de % i rang "XX-XX%"
+  const mGpct = text.match(/(\d+\.\d+)\s*%\s+\d+-\d+%/);
+  if (mGpct) t.grassa_pct = parseFloat(mGpct[1]);
+
+  // Massa grasa: primer "19.22-" o similar (número seguit de guió)
+  const mMG = text.match(/(\d+\.\d+)-\s*kg/);
+  if (mMG) t.massa_grassa = parseFloat(mMG[1]);
+
+  // Massa óssia i Proteïna: al principi del text (caps de columna del diagrama)
+  // Apareixen com: "19.22- kg  2.60 kg  11.8 kg"
+  const mCaps = text.match(/(\d+\.\d+)-\s*kg\s+(\d+\.\d+)\s*kg\s+(\d+\.?\d*)\s*kg/);
+  if (mCaps) {
+    t.massa_grassa = parseFloat(mCaps[1]);
+    t.massa_ossia  = parseFloat(mCaps[2]);
+    t.proteina     = parseFloat(mCaps[3]);
+  }
+
+  // Massa lliure de grasa: 50.68 kg (apareix dues vegades, primera és la bona)
+  const mML = text.match(/kg\s+\d+-\d+\s*kg[^\d]+(\d+\.\d+)\s*kg/);
+  if (mML) t.massa_lliure = parseFloat(mML[1]);
+
+  // Massa muscular: 48.15 kg (apareix dues vegades)
+  const mMM = text.match(/(\d+\.\d+)\s*kg\s+[\d.,]+\s*kg\s+[\d.,]+\s*kg\s+[\d.,]+\s*kg\s+-/);
+  if (mMM) t.massa_muscular = parseFloat(mMM[1]);
+  // Fallback: buscar patró específic "48.15 kg" a la zona de detalls
+  if (!t.massa_muscular) {
+    const mMM2 = text.match(/(?:kg\s+-\s+){1,3}(\d+\.\d+)\s*kg/);
+    if (mMM2) t.massa_muscular = parseFloat(mMM2[1]);
+  }
+
+  // IMC: número XX.XX seguit de rang "18.5-25"
+  const mIMC = text.match(/(\d+\.\d+)\s+18\.5-25/);
+  if (mIMC) t.imc = parseFloat(mIMC[1]);
+
+  // Edad metabólica: número just abans del segon bloc de valors
+  const mEM = text.match(/18\.5-25[^\d]+(\d+\.?\d*)/);
+  if (mEM) t.edat_metabolica = parseFloat(mEM[1]);
+
+  // Agua kg: 36.35 kg (quart valor de la fila resum)
+  const mAigua = text.match(/kg\s+[\d.,]+\s*kg\s+[\d.,]+\s*kg\s+[\d.,]+\s*kg\s+([\d.,]+)\s*kg\s+-/);
+  if (mAigua) t.agua_kg = parseFloat(mAigua[1].replace(',','.'));
+
+  // TMB: kJ i kcal
+  const mKJ = text.match(/(\d{4,5})\s*kJ/i);
+  if (mKJ) t.tmb_kj = parseFloat(mKJ[1]);
+  const mKcal = text.match(/(\d{3,4})\s*kcal/i);
+  if (mKcal) t.tmb_kcal = parseFloat(mKcal[1]);
+
+  // Grassa visceral: número petit (1-30) just after kJ/kcal bloc
+  const mGV = text.match(/kcal\s+(\d+\.?\d*)/i);
+  if (mGV) t.grassa_visceral = parseFloat(mGV[1]);
+
+  // Agua %: "52.00%"
+  const mApc = text.match(/(\d+\.\d+)%/);
+  if (mApc) t.agua_pct = parseFloat(mApc[1]);
+
+  // Anàlisi segmentari — apareix després del bloc de grassa visceral/aigua
+  // Ordre: [score tronc musc] [score tronc grassa] [val tronc musc] [val tronc grassa] [scores braços] [vals braços] [scores cames] [vals cames]
+  // Patró observat: "-2 -3 28.4 kg 22.5 % -2 -2 -2 -2 2.3 kg 2.3 kg 30.3 % 30.2 % 7.6 kg -2 -2 7.6 kg 33.9 % -2 -2 35 %"
+  const mSeg = text.match(/(-?\d+)\s+(-?\d+)\s+(\d+\.?\d*)\s*kg\s+(\d+\.?\d*)\s*%\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)\s+(\d+\.?\d*)\s*kg\s+(\d+\.?\d*)\s*kg\s+(\d+\.?\d*)\s*%\s+(\d+\.?\d*)\s*%\s+(\d+\.?\d*)\s*kg[^\d]+(\d+\.?\d*)\s*kg\s+(\d+\.?\d*)\s*%[^\d]+(\d+\.?\d*)\s*%/);
+  if (mSeg) {
+    t.seg_tronc_musc      = parseFloat(mSeg[3]);
+    t.seg_tronc_grassa    = parseFloat(mSeg[4]);
+    t.seg_brac_esq_musc   = parseFloat(mSeg[9]);
+    t.seg_brac_dret_musc  = parseFloat(mSeg[10]);
+    t.seg_brac_esq_grassa = parseFloat(mSeg[11]);
+    t.seg_brac_dret_grassa= parseFloat(mSeg[12]);
+    t.seg_cama_esq_musc   = parseFloat(mSeg[13]);
+    t.seg_cama_dret_musc  = parseFloat(mSeg[14]);
+    t.seg_cama_esq_grassa = parseFloat(mSeg[15]);
+    t.seg_cama_dret_grassa= parseFloat(mSeg[16]);
+  }
+
+  // Historial: línies DD.MM.YYYY pes muscul grassa (o "Initial")
+  const rHist = /(\d{2}\.\d{2}\.\d{4}|Initial)\s+(\d+\.?\d*)\s+(\d+\.?\d*)\s+(\d+\.?\d*)/g;
+  const historial = [];
+  let mH;
+  while ((mH = rHist.exec(text)) !== null) {
+    const d = mH[1] === 'Initial' ? 'Initial' : mH[1].replace(/\./g,'/');
+    historial.push({ data: d, pes: parseFloat(mH[2]), massa_muscular: parseFloat(mH[3]), grassa_pct: parseFloat(mH[4]) });
+  }
+  if (historial.length) t.historial_pdf = historial;
+
+  return t;
+}
+
 function extreure_tanita_per_posicio(words) {
   // Cerca el valor numèric més proper a una posició (x,y) amb tolerància
   const atXY = (tx, ty, tol=8) => {
