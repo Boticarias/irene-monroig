@@ -1,0 +1,2876 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Irene Monroig — Farmàcia i Nutrició</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --verde: #2D6A4F;
+  --verde-mig: #40916C;
+  --verde-clar: #74C69D;
+  --verde-suau: #D8F3DC;
+  --rosa: #E07070;
+  --rosa-clar: #F9E0E0;
+  --crema: #FAFAF7;
+  --text: #1C2B22;
+  --text-suau: #5A6B60;
+  --blanc: #FFFFFF;
+  --vora: #E2EBE4;
+  --ombra: 0 2px 20px rgba(45,106,79,0.08);
+  --ombra-hover: 0 8px 32px rgba(45,106,79,0.15);
+  --radi: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "Jost", sans-serif; background: var(--crema); color: var(--text); min-height: 100vh; }
+
+/* ── PORTADA ── */
+#portada-screen {
+  min-height: 100vh; position: relative;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.portada-bg {
+  position: absolute; inset: 0;
+  background-image: url("https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1600&q=80");
+  background-size: cover; background-position: center;
+  transform: scale(1.05); transition: transform 8s ease;
+}
+#portada-screen:hover .portada-bg { transform: scale(1.0); }
+.portada-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(160deg, rgba(45,106,79,0.82) 0%, rgba(28,60,40,0.75) 40%, rgba(180,60,60,0.45) 100%);
+}
+.portada-content {
+  position: relative; z-index: 2; text-align: center;
+  padding: 40px 24px; max-width: 700px; width: 100%;
+  animation: fadeUp 0.8s ease forwards;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+.portada-logo-circle {
+  width: 120px; height: 120px; border-radius: 50%; background: white;
+  margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;
+  overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.3), 0 0 0 5px rgba(255,255,255,0.5);
+  transition: transform 0.3s;
+}
+.portada-logo-circle img { width: 105px; height: 105px; object-fit: contain; }
+.portada-logo-circle:hover { transform: scale(1.05); }
+.portada-titulo { font-family: "Cormorant Garamond", serif; font-size: 2.8rem; color: white; letter-spacing: 1px; line-height: 1; text-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+.portada-subtitol { font-size: 0.82rem; color: rgba(255,255,255,0.75); letter-spacing: 3px; text-transform: uppercase; margin-top: 6px; margin-bottom: 28px; }
+.portada-eslogans { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 48px; flex-wrap: wrap; }
+.eslogan-va, .eslogan-es { font-family: "Cormorant Garamond", serif; font-size: 1.15rem; font-style: italic; color: rgba(255,255,255,0.92); text-shadow: 0 1px 8px rgba(0,0,0,0.2); }
+.eslogan-sep { color: rgba(255,255,255,0.4); font-size: 1.2rem; }
+.portada-moduls { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.modul-card {
+  background: rgba(255,255,255,0.38); backdrop-filter: blur(16px);
+  border: 2px solid rgba(255,255,255,0.5); border-radius: 16px;
+  padding: 18px 24px; display: flex; align-items: center; gap: 14px;
+  cursor: pointer; transition: all 0.2s; min-width: 180px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+.modul-card:not(.modul-disabled):hover {
+  background: rgba(255,255,255,0.55); border-color: rgba(255,255,255,0.9);
+  transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+}
+.modul-disabled { opacity: 0.45; cursor: default; }
+.modul-icon { font-size: 1.6rem; flex-shrink: 0; }
+.modul-text strong { display: block; color: white; font-size: 1.1rem; font-weight: 700; text-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+.modul-text span { font-size: 0.82rem; color: rgba(255,255,255,0.95); letter-spacing: 0.5px; }
+.modul-arrow { color: rgba(255,255,255,0.9); font-size: 1.1rem; margin-left: auto; transition: transform 0.15s; }
+.modul-card:hover .modul-arrow { transform: translateX(4px); }
+
+/* ── LOGIN ── */
+#login-screen {
+  min-height: 100vh; display: none; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #f0f7f2 0%, #fafaf7 50%, #fdf0f0 100%);
+}
+.login-card { background: white; border-radius: 24px; padding: 48px 40px; width: 420px; box-shadow: 0 20px 60px rgba(45,106,79,0.12); animation: fadeUp 0.5s ease; }
+.login-logo { text-align: center; margin-bottom: 28px; }
+.login-logo img { width: 80px; height: 80px; object-fit: contain; margin-bottom: 12px; }
+.login-logo h1 { font-family: "Cormorant Garamond", serif; font-size: 1.6rem; color: var(--verde); }
+.login-logo p { font-size: 0.75rem; color: var(--text-suau); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 4px; }
+.login-divider { height: 1px; background: var(--vora); margin: 20px 0; }
+.login-label { font-size: 0.75rem; font-weight: 600; color: var(--text-suau); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; display: block; }
+.login-input { width: 100%; padding: 12px 16px; border: 1.5px solid var(--vora); border-radius: 10px; font-family: "Jost", sans-serif; font-size: 0.95rem; color: var(--text); background: var(--crema); outline: none; transition: border-color 0.2s; margin-bottom: 14px; }
+.login-input:focus { border-color: var(--verde-clar); background: white; }
+.login-btn { width: 100%; padding: 13px; background: var(--verde); color: white; border: none; border-radius: 10px; font-family: "Jost", sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 4px; }
+.login-btn:hover { background: var(--verde-mig); }
+.login-error { background: var(--rosa-clar); color: var(--rosa); border-radius: 8px; padding: 10px 14px; font-size: 0.82rem; margin-top: 10px; display: none; text-align: center; }
+
+/* ── APP ── */
+#app { display: none; min-height: 100vh; }
+.header { background: white; border-bottom: 1px solid var(--vora); padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 12px rgba(45,106,79,0.06); }
+.header-logo { display: flex; align-items: center; gap: 12px; }
+.header-logo-img { width: 40px; height: 40px; object-fit: contain; background: white; border-radius: 8px; border: 1.5px solid var(--vora); padding: 2px; }
+.header-logo-text h1 { font-family: "Cormorant Garamond", serif; font-size: 1.15rem; color: var(--verde); line-height: 1.1; }
+.header-logo-text p { font-size: 0.68rem; color: var(--text-suau); letter-spacing: 1.2px; text-transform: uppercase; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.header-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--verde-suau); color: var(--verde); font-weight: 600; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; }
+.btn-logout { padding: 7px 14px; border-radius: 8px; border: 1.5px solid var(--vora); background: transparent; color: var(--text-suau); font-family: "Jost", sans-serif; font-size: 0.78rem; cursor: pointer; transition: all 0.15s; }
+.btn-logout:hover { border-color: var(--rosa); color: var(--rosa); }
+
+/* ── PANTALLA PACIENTS ── */
+#pantalla-pacients { max-width: 1100px; margin: 0 auto; padding: 36px 24px; }
+.pacients-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 28px; gap: 16px; flex-wrap: wrap; }
+.pacients-titol h2 { font-family: "Cormorant Garamond", serif; font-size: 2rem; color: var(--text); }
+.pacients-titol p { font-size: 0.85rem; color: var(--text-suau); margin-top: 4px; }
+.pacients-accions { display: flex; gap: 10px; align-items: center; }
+.cerca-wrap { position: relative; }
+.cerca-input { padding: 10px 16px 10px 38px; border: 1.5px solid var(--vora); border-radius: 10px; font-family: "Jost", sans-serif; font-size: 0.85rem; color: var(--text); background: white; outline: none; width: 240px; transition: border-color 0.2s, width 0.3s; }
+.cerca-input:focus { border-color: var(--verde-clar); width: 280px; }
+.cerca-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-suau); font-size: 0.9rem; pointer-events: none; }
+.btn-nou-pacient { padding: 10px 20px; background: var(--verde); color: white; border: none; border-radius: 10px; font-family: "Jost", sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; white-space: nowrap; }
+.btn-nou-pacient:hover { background: var(--verde-mig); }
+.btn-importar-plats { padding: 10px 16px; background: white; color: var(--verde); border: 1.5px solid var(--verde-clar); border-radius: 10px; font-family: "Jost", sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap; }
+.btn-importar-plats:hover { background: var(--verde-suau); border-color: var(--verde); }
+.stats-bar { display: flex; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+.stat-pill { background: white; border: 1.5px solid var(--vora); border-radius: 10px; padding: 10px 18px; display: flex; align-items: center; gap: 10px; }
+.stat-pill-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+.stat-pill-icon.verd { background: var(--verde-suau); }
+.stat-pill-text strong { display: block; font-size: 1.1rem; font-weight: 600; color: var(--text); line-height: 1; }
+.stat-pill-text span { font-size: 0.72rem; color: var(--text-suau); text-transform: uppercase; letter-spacing: 0.5px; }
+.filtres { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.filtre-btn { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--vora); background: white; color: var(--text-suau); font-family: "Jost", sans-serif; font-size: 0.78rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.filtre-btn:hover { border-color: var(--verde-clar); color: var(--verde); }
+.filtre-btn.actiu { background: var(--verde); color: white; border-color: var(--verde); }
+.pacients-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.pacient-card { background: white; border-radius: var(--radi); padding: 20px; border: 1.5px solid var(--vora); cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; animation: fadeIn 0.3s ease forwards; opacity: 0; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.pacient-card:hover { border-color: var(--verde-clar); box-shadow: var(--ombra-hover); transform: translateY(-2px); }
+.pacient-card::before { content: ""; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--verde-clar); transform: scaleY(0); transition: transform 0.2s; transform-origin: bottom; }
+.pacient-card:hover::before { transform: scaleY(1); }
+.pacient-card-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.pacient-avatar { width: 46px; height: 46px; border-radius: 50%; background: var(--verde-suau); color: var(--verde); font-family: "Cormorant Garamond", serif; font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 2px solid rgba(116,198,157,0.3); }
+.pacient-nom h3 { font-size: 0.95rem; font-weight: 600; color: var(--text); line-height: 1.2; }
+.pacient-nom p { font-size: 0.75rem; color: var(--text-suau); margin-top: 2px; }
+.pacient-card-info { display: flex; flex-direction: column; gap: 5px; padding-top: 12px; border-top: 1px solid var(--vora); }
+.info-fila { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--text-suau); }
+.pacient-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--vora); }
+.badge-edat { font-size: 0.72rem; font-weight: 600; color: var(--verde); background: var(--verde-suau); padding: 3px 10px; border-radius: 20px; }
+.btn-obrir { font-size: 0.75rem; color: var(--verde); font-weight: 600; display: flex; align-items: center; gap: 4px; transition: gap 0.15s; }
+.pacient-card:hover .btn-obrir { gap: 8px; }
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-suau); grid-column: 1 / -1; }
+
+/* ACTIU/INACTIU */
+.badge-inactiu { font-size:0.72rem; font-weight:700; color:white; background:#E53935; padding:4px 12px; border-radius:20px; letter-spacing:0.3px; }
+.pacient-card.inactiu { opacity:0.6; border-color:#ffcdd2; border-style: dashed; }
+.pacient-card.inactiu .pacient-avatar { background:#ffebee; color:#E53935; }
+
+.toggle-wrap { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.toggle-label { font-size:0.82rem; color:var(--text-suau); }
+.toggle { position:relative; width:44px; height:24px; flex-shrink:0; }
+.toggle input { opacity:0; width:0; height:0; }
+.toggle-slider { position:absolute; cursor:pointer; inset:0; background:#ddd; border-radius:24px; transition:0.3s; }
+.toggle-slider:before { content:""; position:absolute; height:18px; width:18px; left:3px; bottom:3px; background:white; border-radius:50%; transition:0.3s; box-shadow:0 1px 4px rgba(0,0,0,0.2); }
+input:checked + .toggle-slider { background:var(--verde-clar); }
+input:checked + .toggle-slider:before { transform:translateX(20px); }
+
+.filtres-extra { display:flex; align-items:center; gap:8px; margin-left:auto; }
+.filtre-inactius { display:flex; align-items:center; gap:6px; font-size:0.78rem; color:var(--text-suau); cursor:pointer; padding:6px 12px; border-radius:20px; border:1.5px solid var(--vora); background:white; transition:all 0.15s; font-family:"Jost",sans-serif; }
+.filtre-inactius:hover { border-color:var(--verde-clar); color:var(--verde); }
+.filtre-inactius.actiu { background:#f0f0f0; color:#666; border-color:#ccc; }
+
+/* ZONA PERILL */
+/* ── CUESTIONARI ── */
+.cues-step { display:none; }
+.cues-step.actiu { display:block; }
+.cues-progress { display:flex; gap:6px; margin-bottom:24px; }
+.cues-progress-dot { flex:1; height:4px; border-radius:4px; background:var(--vora); transition:background 0.3s; }
+.cues-progress-dot.fet { background:var(--verde); }
+.cues-progress-dot.actiu { background:var(--verde-clar); }
+.cues-titol { font-family:"Cormorant Garamond",serif; font-size:1.3rem; color:var(--text); margin-bottom:4px; }
+.cues-subtitol { font-size:0.8rem; color:var(--text-suau); margin-bottom:20px; }
+.cues-label { font-size:0.75rem; font-weight:600; color:var(--text-suau); letter-spacing:0.8px; text-transform:uppercase; margin-bottom:8px; display:block; }
+.cues-textarea { width:100%; padding:10px 14px; border:1.5px solid var(--vora); border-radius:10px; font-family:"Jost",sans-serif; font-size:0.88rem; color:var(--text); background:var(--crema); outline:none; resize:vertical; min-height:70px; transition:border-color 0.2s; }
+.cues-textarea:focus { border-color:var(--verde-clar); background:white; }
+.cues-input { width:100%; padding:10px 14px; border:1.5px solid var(--vora); border-radius:10px; font-family:"Jost",sans-serif; font-size:0.88rem; color:var(--text); background:var(--crema); outline:none; transition:border-color 0.2s; margin-bottom:10px; }
+.cues-input:focus { border-color:var(--verde-clar); background:white; }
+.cues-opcions { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+.cues-opcio { padding:7px 16px; border:1.5px solid var(--vora); border-radius:20px; font-family:"Jost",sans-serif; font-size:0.82rem; color:var(--text-suau); cursor:pointer; transition:all 0.15s; background:white; }
+.cues-opcio:hover { border-color:var(--verde-clar); color:var(--verde); }
+.cues-opcio.seleccionat { background:var(--verde); color:white; border-color:var(--verde); }
+.cues-check-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:6px; max-height:300px; overflow-y:auto; padding:2px; margin-bottom:10px; }
+.cues-check-item { display:flex; align-items:center; gap:8px; padding:6px 10px; border:1.5px solid var(--vora); border-radius:8px; cursor:pointer; transition:all 0.15s; background:white; font-size:0.8rem; }
+.cues-check-item:hover { border-color:var(--verde-clar); }
+.cues-check-item.seleccionat { border-color:var(--verde); background:var(--verde-suau); }
+.cues-check-item input { accent-color:var(--verde); flex-shrink:0; }
+.cues-cerca-path { padding:8px 12px; border:1.5px solid var(--vora); border-radius:8px; font-family:"Jost",sans-serif; font-size:0.82rem; width:100%; margin-bottom:10px; outline:none; }
+.cues-cerca-path:focus { border-color:var(--verde-clar); }
+.cues-nav { display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-top:16px; border-top:1px solid var(--vora); }
+.cues-nav-info { font-size:0.78rem; color:var(--text-suau); }
+.resum-item { display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--vora); font-size:0.84rem; }
+.resum-item:last-child { border-bottom:none; }
+.resum-label { font-weight:600; color:var(--text-suau); min-width:160px; flex-shrink:0; }
+.resum-val { color:var(--text); }
+
+.inici-card { background:white; border:1.5px solid var(--vora); border-radius:var(--radi); padding:22px 24px; display:flex; align-items:center; gap:16px; cursor:pointer; transition:all 0.2s; }
+.inici-card:hover { border-color:var(--verde-clar); box-shadow:var(--ombra-hover); transform:translateY(-2px); }
+.inici-card-disabled { opacity:0.5; cursor:default; }
+.inici-card-disabled:hover { transform:none; box-shadow:none; border-color:var(--vora); }
+.inici-card-icon { width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.6rem; flex-shrink:0; }
+.inici-card-text { flex:1; }
+.inici-card-text strong { display:block; font-size:1.05rem; font-weight:600; color:var(--text); }
+.inici-card-text span { font-size:0.8rem; color:var(--text-suau); margin-top:2px; display:block; }
+.inici-card-arrow { font-size:1.2rem; color:var(--verde-clar); transition:transform 0.15s; }
+.inici-card:hover .inici-card-arrow { transform:translateX(4px); }
+
+.zona-perill { background:#fff5f5; border:1.5px solid #fdd; border-radius:var(--radi); padding:20px 24px; margin-top:20px; }
+.zona-perill h4 { font-family:"Cormorant Garamond",serif; font-size:1rem; color:var(--rosa); margin-bottom:12px; }
+.zona-perill p { font-size:0.82rem; color:var(--text-suau); margin-bottom:14px; }
+.btn-danger { padding:9px 18px; border-radius:10px; border:1.5px solid var(--rosa); background:transparent; color:var(--rosa); font-family:"Jost",sans-serif; font-size:0.82rem; font-weight:600; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:6px; }
+.btn-danger:hover { background:var(--rosa); color:white; }
+
+/* MODAL CONFIRMACIÓ */
+.modal-confirm { width:420px; }
+.modal-confirm-icon { font-size:2.5rem; text-align:center; margin-bottom:12px; }
+.modal-confirm-text { font-size:0.88rem; color:var(--text-suau); text-align:center; line-height:1.5; }
+.modal-confirm-text strong { color:var(--text); }
+.empty-state h3 { font-family: "Cormorant Garamond", serif; font-size: 1.4rem; color: var(--text); margin: 12px 0 6px; }
+
+/* ── PANTALLA PACIENT ── */
+#pantalla-pacient { display: none; }
+.pacient-topbar { background: white; border-bottom: 1px solid var(--vora); padding: 16px 32px; display: flex; align-items: center; gap: 16px; }
+.btn-tornar { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-suau); background: transparent; border: 1.5px solid var(--vora); border-radius: 8px; padding: 7px 14px; cursor: pointer; font-family: "Jost", sans-serif; transition: all 0.15s; }
+.btn-tornar:hover { border-color: var(--verde); color: var(--verde); background: var(--verde-suau); }
+.pacient-topbar-info { flex: 1; }
+.pacient-topbar-info h2 { font-family: "Cormorant Garamond", serif; font-size: 1.5rem; color: var(--text); }
+.pacient-topbar-info p { font-size: 0.78rem; color: var(--text-suau); margin-top: 2px; }
+.pacient-topbar-accions { display: flex; gap: 8px; }
+
+/* TABS */
+.tabs-wrap { background: white; border-bottom: 1px solid var(--vora); padding: 0 32px; display: flex; gap: 4px; }
+.tab-btn { padding: 14px 20px; font-family: "Jost", sans-serif; font-size: 0.85rem; font-weight: 500; color: var(--text-suau); background: transparent; border: none; border-bottom: 2.5px solid transparent; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.tab-btn:hover { color: var(--verde); }
+.tab-btn.actiu { color: var(--verde); border-bottom-color: var(--verde); font-weight: 600; }
+
+/* FICHA RESUM */
+.ficha-resum { background: white; margin: 24px 32px 0; border-radius: var(--radi); padding: 20px 24px; display: flex; align-items: center; gap: 24px; box-shadow: var(--ombra); flex-wrap: wrap; }
+.ficha-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--verde-suau); color: var(--verde); font-family: "Cormorant Garamond", serif; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 2px solid rgba(116,198,157,0.4); }
+.ficha-info { flex: 1; min-width: 200px; }
+.ficha-info h3 { font-family: "Cormorant Garamond", serif; font-size: 1.2rem; color: var(--text); }
+.ficha-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.tag { padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 500; }
+.tag-verd { background: var(--verde-suau); color: var(--verde); }
+.tag-rosa { background: var(--rosa-clar); color: var(--rosa); }
+.tag-gris { background: #EEF2EF; color: var(--text-suau); }
+.ficha-stats { display: flex; gap: 20px; flex-wrap: wrap; }
+.ficha-stat { text-align: center; }
+.ficha-stat-val { font-family: "Cormorant Garamond", serif; font-size: 1.4rem; color: var(--verde); line-height: 1; }
+.ficha-stat-label { font-size: 0.68rem; color: var(--text-suau); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+.ficha-stat-sep { width: 1px; background: var(--vora); height: 36px; align-self: center; }
+
+/* CONTINGUT TABS */
+.tab-content { display: none; padding: 24px 32px 40px; max-width: 1200px; }
+.tab-content.actiu { display: block; }
+
+/* ── PLANIFICACIÓ ── */
+.planif-controls { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+.planif-controls h3 { font-family: "Cormorant Garamond", serif; font-size: 1.2rem; color: var(--text); flex: 1; }
+.semana-nav-btn { width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--vora); background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--verde); transition: all 0.15s; font-size: 1rem; }
+.semana-nav-btn:hover { background: var(--verde-suau); border-color: var(--verde); }
+
+.btn { padding: 9px 18px; border-radius: 10px; font-family: "Jost", sans-serif; font-size: 0.82rem; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--verde); color: white; }
+.btn-primary:hover { background: var(--verde-mig); }
+.btn-secondary { background: #EEF2EF; color: var(--text); }
+.btn-secondary:hover { background: #dde8df; }
+.btn-outline { background: transparent; color: var(--verde); border: 1.5px solid var(--verde); }
+.btn-outline:hover { background: var(--verde-suau); }
+
+/* MACROS BAR */
+.macros-bar { background: white; border-radius: var(--radi); padding: 16px 22px; margin-bottom: 20px; box-shadow: var(--ombra); display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.macros-title { font-size: 0.72rem; font-weight: 600; color: var(--text-suau); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+.macro-item { flex: 1; min-width: 100px; }
+.macro-nom { font-size: 0.72rem; color: var(--text-suau); margin-bottom: 4px; display: flex; justify-content: space-between; }
+.macro-barra-wrap { height: 6px; background: #EEF2EF; border-radius: 3px; overflow: hidden; }
+.macro-barra { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+.macro-val { font-size: 0.82rem; font-weight: 600; color: var(--text); margin-top: 3px; }
+
+/* TAULA PLANIFICACIÓ */
+.tabla-wrap { overflow-x: auto; border-radius: var(--radi); box-shadow: var(--ombra); }
+.tabla-plan { width: 100%; border-collapse: collapse; background: white; min-width: 900px; }
+.tabla-plan thead th { background: var(--verde); color: white; padding: 12px 10px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; text-align: left; border-right: 1px solid rgba(255,255,255,0.15); }
+.tabla-plan thead th:first-child { width: 100px; }
+.tabla-plan thead th:last-child { border-right: none; }
+.tabla-plan tbody tr:not(:last-child) td { border-bottom: 1px solid var(--vora); }
+.tabla-plan tbody td { padding: 0; vertical-align: top; border-right: 1px solid var(--vora); }
+.tabla-plan tbody td:last-child { border-right: none; }
+.moment-label { padding: 10px 12px; background: #F4F8F5; font-size: 0.72rem; font-weight: 600; color: var(--text-suau); text-transform: uppercase; letter-spacing: 0.8px; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-height: 80px; justify-content: center; }
+.moment-label span { font-size: 1.1rem; }
+.celda { padding: 8px; min-height: 80px; cursor: pointer; transition: background 0.12s; position: relative; }
+.celda:hover { background: #F4FAF5; }
+.celda-inner { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.btn-add { width: 28px; height: 28px; border-radius: 50%; border: 1.5px dashed #C2D4C8; background: transparent; color: #C2D4C8; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.celda:hover .btn-add { border-color: var(--verde-clar); color: var(--verde-clar); }
+.plat-card { background: var(--verde-suau); border-radius: 8px; padding: 6px 8px; width: 100%; cursor: pointer; transition: all 0.15s; position: relative; }
+.plat-card:hover { background: #b7e4c7; }
+.plat-card.cap-de-setmana { background: #FEF0E0; }
+.plat-card.cap-de-setmana:hover { background: #fde0c0; }
+.plat-nom { font-size: 0.75rem; font-weight: 600; color: var(--text); line-height: 1.3; margin-bottom: 4px; }
+.plat-macros { display: flex; gap: 4px; flex-wrap: wrap; }
+.macro-badge { font-size: 0.62rem; padding: 1px 5px; border-radius: 4px; font-weight: 500; }
+.macro-kcal { background: rgba(45,106,79,0.15); color: var(--verde); }
+.macro-prot { background: rgba(26,86,160,0.12); color: #1a56a0; }
+.macro-hc { background: rgba(244,162,97,0.2); color: #c07020; }
+.macro-gras { background: rgba(233,196,106,0.3); color: #9a7010; }
+.plat-delete { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: rgba(224,112,112,0.15); border: none; color: var(--rosa); font-size: 0.65rem; cursor: pointer; display: none; align-items: center; justify-content: center; transition: all 0.15s; }
+.plat-card:hover .plat-delete { display: flex; }
+.plat-delete:hover { background: var(--rosa); color: white; }
+
+/* MODAL PLAT */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(28,43,34,0.4); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; }
+.modal-overlay.visible { display: flex; }
+.modal { background: white; border-radius: 20px; width: 520px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(28,43,34,0.2); animation: fadeUp 0.25s ease; }
+.modal-header { padding: 22px 26px 14px; border-bottom: 1px solid var(--vora); display: flex; align-items: center; justify-content: space-between; }
+.modal-header h3 { font-family: "Cormorant Garamond", serif; font-size: 1.25rem; color: var(--text); }
+.modal-header p { font-size: 0.75rem; color: var(--text-suau); margin-top: 2px; }
+.modal-close { width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid var(--vora); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-suau); transition: all 0.15s; }
+.modal-close:hover { border-color: var(--rosa); color: var(--rosa); }
+.modal-body { padding: 20px 26px; }
+.modal-footer { padding: 14px 26px 22px; display: flex; gap: 10px; justify-content: flex-end; }
+.form-grup { margin-bottom: 16px; }
+.form-label { display: block; font-size: 0.72rem; font-weight: 600; color: var(--text-suau); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+.form-input, .form-select { width: 100%; padding: 10px 14px; border: 1.5px solid var(--vora); border-radius: 10px; font-family: "Jost", sans-serif; font-size: 0.88rem; color: var(--text); background: var(--crema); outline: none; transition: border-color 0.2s; }
+.form-input:focus, .form-select:focus { border-color: var(--verde-clar); background: white; }
+.form-fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-fila-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+.cerca-plats-wrap { position: relative; margin-bottom: 12px; }
+.cerca-plats-input { width: 100%; padding: 10px 14px 10px 38px; border: 1.5px solid var(--vora); border-radius: 10px; font-family: "Jost", sans-serif; font-size: 0.88rem; outline: none; transition: border-color 0.2s; background: var(--crema); }
+.cerca-plats-input:focus { border-color: var(--verde-clar); background: white; }
+.cerca-plats-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-suau); }
+.plats-resultats { max-height: 200px; overflow-y: auto; border: 1.5px solid var(--vora); border-radius: 10px; background: white; }
+.plat-resultat-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--vora); transition: background 0.12s; }
+.plat-resultat-item:last-child { border-bottom: none; }
+.plat-resultat-item:hover { background: var(--verde-suau); }
+.plat-resultat-nom { font-size: 0.85rem; font-weight: 500; color: var(--text); }
+.plat-resultat-macros { font-size: 0.72rem; color: var(--text-suau); margin-top: 2px; }
+.plat-manual-toggle { font-size: 0.78rem; color: var(--verde); cursor: pointer; text-decoration: underline; margin-top: 8px; display: inline-block; }
+.separador-modal { height: 1px; background: var(--vora); margin: 16px 0; }
+.separador-text { text-align: center; margin: -10px 0 8px; }
+.separador-text span { background: white; padding: 0 10px; font-size: 0.72rem; color: var(--text-suau); }
+
+/* NOU PACIENT MODAL */
+.modal-nou-pacient { width: 480px; }
+
+/* FICHA TAB */
+.ficha-seccio { background: white; border-radius: var(--radi); padding: 22px 26px; margin-bottom: 20px; box-shadow: var(--ombra); }
+.ficha-seccio h4 { font-family: "Cormorant Garamond", serif; font-size: 1.1rem; color: var(--text); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--vora); }
+.ficha-camp { display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f0f4f1; font-size: 0.85rem; }
+.ficha-camp:last-child { border-bottom: none; }
+.ficha-camp-label { color: var(--text-suau); min-width: 160px; flex-shrink: 0; font-size: 0.8rem; }
+.ficha-camp-val { color: var(--text); font-weight: 500; }
+.ficha-camp-buit { color: #ccc; font-style: italic; }
+
+/* HISTORIAL */
+.historial-buit { text-align:center; padding:50px 20px; color:var(--text-suau); }
+.historial-buit .emoji { font-size:2.5rem; margin-bottom:10px; }
+.historial-buit h4 { font-family:"Cormorant Garamond",serif; font-size:1.2rem; color:var(--text); margin-bottom:6px; }
+.planif-card { background:white; border-radius:var(--radi); border:1.5px solid var(--vora); padding:18px 22px; margin-bottom:12px; display:flex; align-items:center; gap:16px; transition:all 0.15s; box-shadow:var(--ombra); }
+.planif-card:hover { border-color:var(--verde-clar); box-shadow:var(--ombra-hover); }
+.planif-card-icon { width:44px; height:44px; border-radius:10px; background:var(--verde-suau); color:var(--verde); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
+.planif-card-icon.importat { background:#E8F0FE; color:#1a56a0; }
+.planif-card-info { flex:1; }
+.planif-card-info h4 { font-size:0.92rem; font-weight:600; color:var(--text); }
+.planif-card-info p { font-size:0.76rem; color:var(--text-suau); margin-top:3px; }
+.planif-card-accions { display:flex; gap:8px; }
+
+/* IMPORT PREVIEW */
+.preview-taula { width:100%; border-collapse:collapse; font-size:0.78rem; margin-top:12px; }
+.preview-taula th { background:var(--verde); color:white; padding:8px 10px; text-align:left; font-size:0.72rem; letter-spacing:0.5px; }
+.preview-taula td { padding:7px 10px; border-bottom:1px solid var(--vora); vertical-align:top; }
+.preview-taula tr:last-child td { border-bottom:none; }
+.preview-taula tr:hover td { background:#f4faf5; }
+.preview-moment { font-weight:600; color:var(--verde); white-space:nowrap; font-size:0.72rem; }
+.preview-plat { color:var(--text); }
+.preview-info-box { background:var(--verde-suau); border-radius:10px; padding:12px 16px; margin-bottom:14px; }
+.preview-info-box h4 { font-size:0.82rem; font-weight:600; color:var(--verde); margin-bottom:6px; }
+.preview-info-row { display:flex; gap:16px; flex-wrap:wrap; }
+.preview-info-item { font-size:0.78rem; color:var(--text); }
+.preview-info-item span { color:var(--text-suau); display:block; font-size:0.7rem; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--vora); border-radius: 3px; }
+
+.btn-cancel { padding: 9px 18px; border-radius: 10px; border: 1.5px solid var(--vora); background: transparent; color: var(--text-suau); font-family: "Jost", sans-serif; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; }
+.btn-cancel:hover { border-color: var(--rosa); color: var(--rosa); }
+.btn-guardar { padding: 9px 22px; border-radius: 10px; border: none; background: var(--verde); color: white; font-family: "Jost", sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.btn-guardar:hover { background: var(--verde-mig); }
+</style>
+</head>
+<body>
+
+<!-- PORTADA -->
+<div id="portada-screen">
+  <div class="portada-bg"></div>
+  <div class="portada-overlay"></div>
+  <div class="portada-content">
+    <div class="portada-logo-circle">
+      <img src="data:image/jpeg;base64,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" alt="Logo Irene Monroig">
+    </div>
+    <h1 class="portada-titulo">Irene Monroig</h1>
+    <p class="portada-subtitol">Farmàcia i Nutrició</p>
+    <div class="portada-eslogans">
+      <p class="eslogan-va">La salut comença en el que menges</p>
+      <div class="eslogan-sep">·</div>
+      <p class="eslogan-es">Pequeños cambios, grandes resultados</p>
+    </div>
+    <div class="portada-moduls">
+      <div class="modul-card" onclick="anar_a_login()">
+        <div class="modul-icon">🔐</div>
+        <div class="modul-text"><strong>Entrar</strong><span>Acceso a la plataforma</span></div>
+        <div class="modul-arrow">→</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen" style="display:none;">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="data:image/jpeg;base64,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" alt="Logo">
+      <h1>Irene Monroig</h1>
+      <p>Farmàcia i Nutrició</p>
+    </div>
+    <div class="login-divider"></div>
+    <label class="login-label">Usuario</label>
+    <input class="login-input" type="text" id="login-user" placeholder="Tu usuario" autocomplete="username">
+    <label class="login-label">Contraseña</label>
+    <input class="login-input" type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    <button class="login-btn" onclick="fer_login()">Entrar</button>
+    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;">
+  <header class="header">
+    <div class="header-logo">
+      <img class="header-logo-img" src="data:image/jpeg;base64,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" alt="Logo">
+      <div class="header-logo-text">
+        <h1>Irene Monroig</h1>
+        <p>Farmàcia i Nutrició</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-logout" onclick="mostrar_pantalla_inici()" style="border-color:var(--verde-clar);color:var(--verde)">⌂ Inicio</button>
+      <div class="header-avatar">IM</div>
+      <button class="btn-logout" onclick="fer_logout()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <!-- PANTALLA INICI -->
+  <div id="pantalla-inici" style="display:none;">
+    <div style="max-width:900px;margin:0 auto;padding:48px 24px;">
+      <div style="margin-bottom:36px;">
+        <h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--text)">Bienvenida, Irene</h2>
+        <p style="font-size:0.88rem;color:var(--text-suau);margin-top:4px">Selecciona un módulo para empezar</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px;">
+        <div class="inici-card" onclick="mostrar_pantalla_pacients()">
+          <div class="inici-card-icon" style="background:var(--verde-suau);color:var(--verde)">👥</div>
+          <div class="inici-card-text">
+            <strong>Pacientes</strong>
+            <span id="inici-stat-pacients">Cargando...</span>
+          </div>
+          <div class="inici-card-arrow">→</div>
+        </div>
+        <div class="inici-card" onclick="mostrar_pantalla_plats()">
+          <div class="inici-card-icon" style="background:#f0f0ff;color:#6b5ce7">🍽️</div>
+          <div class="inici-card-text">
+            <strong>Platos</strong>
+            <span id="inici-stat-plats">Catálogo de Dietopro</span>
+          </div>
+          <div class="inici-card-arrow">→</div>
+        </div>
+        <div class="inici-card inici-card-disabled">
+          <div class="inici-card-icon" style="background:#f5f5f5;color:#aaa">📊</div>
+          <div class="inici-card-text">
+            <strong>Estadísticas</strong>
+            <span>Próximamente</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANTALLA PLATS GLOBAL -->
+  <div id="pantalla-plats-global" style="display:none;">
+    <div style="background:white;border-bottom:1px solid var(--vora);padding:16px 32px;display:flex;align-items:center;gap:16px;">
+      <button class="btn-tornar" onclick="mostrar_pantalla_inici()">← Inicio</button>
+      <div style="flex:1">
+        <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--text)">Catálogo de platos</h2>
+        <p style="font-size:0.78rem;color:var(--text-suau)"><span id="stat-plats-global">0</span> platos importados de Dietopro</p>
+      </div>
+    </div>
+    <div style="max-width:1100px;margin:0 auto;padding:28px 24px;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center;">
+        <input class="cerca-input" type="text" id="cerca-plats-global" placeholder="🔍 Buscar plato..." oninput="renderitzar_cataleg_global()" style="flex:1;min-width:200px;max-width:360px;">
+        <button class="btn btn-secondary" onclick="document.getElementById('input-importar-plats-global').click()">🍽️ Importar platos</button>
+        <input type="file" id="input-importar-plats-global" accept=".json" style="display:none" onchange="importar_cataleg_plats(this)">
+        <button class="btn btn-secondary" onclick="document.getElementById('input-importar-composicio-global').click()">🔬 Importar composición</button>
+        <input type="file" id="input-importar-composicio-global" accept=".json" style="display:none" onchange="importar_composicio_plat(this)">
+        <button class="btn btn-danger" onclick="confirmar_borrar_cataleg()" style="margin-left:auto">🗑️ Borrar todo</button>
+      </div>
+      <div id="cataleg-grid-global"></div>
+    </div>
+  </div>
+
+  <!-- LLISTA PACIENTS -->
+  <div id="pantalla-pacients">
+    <div class="pacients-header">
+      <div class="pacients-titol">
+        <h2 style="cursor:pointer" onclick="mostrar_pantalla_inici()" title="Volver al inicio">Pacientes</h2>
+        <p id="subtitol-pacients">Cargando...</p>
+      </div>
+      <div class="pacients-accions">
+        <div class="cerca-wrap">
+          <span class="cerca-icon">🔍</span>
+          <input class="cerca-input" type="text" placeholder="Buscar paciente..." id="cerca-input" oninput="filtrar_pacients()">
+        </div>
+        <button class="btn-nou-pacient" onclick="obrir_modal_nou_pacient()">＋ Nuevo paciente</button>
+      </div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-pill">
+        <div class="stat-pill-icon verd">👥</div>
+        <div class="stat-pill-text"><strong id="stat-total">0</strong><span>Pacientes totales</span></div>
+      </div>
+
+    </div>
+    <div class="filtres">
+      <button class="filtre-btn actiu" onclick="filtrar_per_lletra('tots',this)">Todos</button>
+      <button class="filtre-btn" onclick="filtrar_per_lletra('A-F',this)">A – F</button>
+      <button class="filtre-btn" onclick="filtrar_per_lletra('G-L',this)">G – L</button>
+      <button class="filtre-btn" onclick="filtrar_per_lletra('M-R',this)">M – R</button>
+      <button class="filtre-btn" onclick="filtrar_per_lletra('S-Z',this)">S – Z</button>
+      <button class="filtre-inactius" id="btn-inactius" onclick="toggle_inactius(this)">👁 Ver inactivos</button>
+    </div>
+    <div class="pacients-grid" id="pacients-grid"></div>
+  </div>
+
+  <!-- PANTALLA PACIENT -->
+  <div id="pantalla-pacient" style="display:none;">
+    <div class="pacient-topbar">
+      <button class="btn-tornar" onclick="tornar_a_llista()">← Volver</button>
+      <div class="pacient-topbar-info">
+        <h2 id="pac-nom-header">—</h2>
+        <p id="pac-meta-header">—</p>
+      </div>
+      <div class="pacient-topbar-accions">
+        <button class="btn btn-secondary" onclick="copiar_setmana_anterior()">📋 Copiar semana anterior</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('input-tanita').click()">⚖️ Báscula Tanita</button>
+        <button class="btn btn-outline" onclick="alert('Próximamente: exportar PDF')">📄 Exportar PDF</button>
+        <input type="file" id="input-tanita" accept=".pdf,.json" style="display:none" onchange="importar_tanita(this)">
+      </div>
+    </div>
+
+    <!-- RESUM FICHA -->
+    <div class="ficha-resum" id="ficha-resum">
+      <div class="ficha-avatar" id="ficha-avatar">—</div>
+      <div class="ficha-info">
+        <h3 id="ficha-nom-complet">—</h3>
+        <div class="ficha-tags" id="ficha-tags"></div>
+      </div>
+      <div class="ficha-stats" id="ficha-stats"></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs-wrap">
+      <button class="tab-btn actiu" onclick="canviar_tab('planificacio',this)">📅 Planificación</button>
+      <button class="tab-btn" onclick="canviar_tab('ficha',this)">👤 Ficha</button>
+      <button class="tab-btn" onclick="canviar_tab('evolucio',this)">📊 Evolución</button>
+      <button class="tab-btn" onclick="canviar_tab('historial',this)">📁 Historial</button>
+      <button class="tab-btn" onclick="canviar_tab('plats',this)">🍽️ Platos</button>
+    </div>
+
+    <!-- TAB: PLANIFICACIÓ -->
+    <div id="tab-planificacio" class="tab-content actiu">
+      <div class="planif-controls">
+        <button class="semana-nav-btn" onclick="canviar_setmana(-1)">←</button>
+        <h3 id="setmana-titol">—</h3>
+        <button class="semana-nav-btn" onclick="canviar_setmana(1)">→</button>
+      </div>
+      <div class="macros-bar" id="macros-bar">
+        <div class="macros-title">Media diaria</div>
+        <div class="macro-item">
+          <div class="macro-nom"><span>Energía</span><span id="val-kcal">— kcal</span></div>
+          <div class="macro-barra-wrap"><div class="macro-barra" id="bar-kcal" style="width:0%;background:var(--verde-clar)"></div></div>
+        </div>
+        <div class="macro-item">
+          <div class="macro-nom"><span>Proteínas</span><span id="val-prot">— g</span></div>
+          <div class="macro-barra-wrap"><div class="macro-barra" id="bar-prot" style="width:0%;background:#74C69D"></div></div>
+        </div>
+        <div class="macro-item">
+          <div class="macro-nom"><span>Hidratos</span><span id="val-hc">— g</span></div>
+          <div class="macro-barra-wrap"><div class="macro-barra" id="bar-hc" style="width:0%;background:#F4A261"></div></div>
+        </div>
+        <div class="macro-item">
+          <div class="macro-nom"><span>Grasas</span><span id="val-gras">— g</span></div>
+          <div class="macro-barra-wrap"><div class="macro-barra" id="bar-gras" style="width:0%;background:#E9C46A"></div></div>
+        </div>
+      </div>
+      <div class="tabla-wrap">
+        <table class="tabla-plan" id="tabla-plan">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Lunes</th><th>Martes</th><th>Miércoles</th>
+              <th>Jueves</th><th>Viernes</th><th>Sábado</th><th>Domingo</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: FICHA -->
+    <div id="tab-ficha" class="tab-content">
+      <div class="ficha-seccio">
+        <h4>Datos personales</h4>
+        <div id="ficha-dades-personals"></div>
+        <div class="toggle-wrap" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--vora)">
+          <label class="toggle">
+            <input type="checkbox" id="toggle-actiu" onchange="canviar_estat_actiu(this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label" id="toggle-actiu-label">Paciente activo</span>
+        </div>
+      </div>
+      <div class="ficha-seccio" id="seccio-cuestionari">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--vora)">
+          <h4 style="margin:0;border:none;padding:0">Cuestionario inicial <span id="badge-cuestionari" style="font-size:0.72rem;font-weight:600;padding:3px 10px;border-radius:20px;margin-left:8px;background:#fff3cd;color:#856404">Sin completar</span></h4>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary" id="btn-editar-cuestionari" onclick="obrir_cuestionari()" style="font-size:0.78rem;padding:7px 14px">✏️ Completar</button>
+            <button class="btn btn-secondary" id="btn-borrar-cuestionari" onclick="borrar_cuestionari()" style="font-size:0.78rem;padding:7px 14px;display:none">🗑️ Borrar</button>
+          </div>
+        </div>
+        <div id="cuestionari-resum"></div>
+      </div>
+      <div class="zona-perill">
+        <h4>⚠️ Zona de peligro</h4>
+        <p>Eliminar un paciente borra permanentemente todos sus datos, planificaciones e historial. Esta acción no se puede deshacer.</p>
+        <button class="btn-danger" onclick="confirmar_borrar_pacient()">🗑️ Eliminar paciente</button>
+      </div>
+    </div>
+
+    <!-- TAB: EVOLUCIÓ -->
+    <div id="tab-evolucio" class="tab-content">
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--text)">Evolución corporal · Tanita</h3>
+          <p style="font-size:0.82rem;color:var(--text-suau);margin-top:3px">Sube los PDFs de la báscula para ver la evolución</p>
+        </div>
+        <label style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;background:var(--verde);color:white;border-radius:10px;font-family:'Jost',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='var(--verde-mig)'" onmouseout="this.style.background='var(--verde)'">
+          ⚖️ Subir PDF Tanita
+          <input type="file" accept=".pdf" style="display:none" onchange="importar_tanita_nou(this)">
+        </label>
+      </div>
+
+      <!-- Empty state -->
+      <div id="evolucio-empty" style="text-align:center;padding:60px 20px;color:var(--text-suau)">
+        <div style="font-size:3rem;margin-bottom:12px">⚖️</div>
+        <p style="font-size:0.9rem">No hay mediciones todavía.<br>Sube el PDF de la báscula Tanita para empezar.</p>
+      </div>
+
+      <!-- Gràfiques -->
+      <div id="evolucio-contingut" style="display:none;">
+        <!-- Última medición -->
+        <div class="ficha-seccio" id="evolucio-ultima" style="margin-bottom:16px;"></div>
+
+        <!-- Gràfica -->
+        <div class="ficha-seccio" style="margin-bottom:16px;">
+          <h4 style="margin-bottom:16px;">Evolución histórica</h4>
+          <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;" id="evolucio-grafic-tabs">
+            <button class="filtre-btn actiu" onclick="canviar_grafic('pes',this)">⚖️ Peso</button>
+            <button class="filtre-btn" onclick="canviar_grafic('grassa',this)">🔴 % Grasa</button>
+            <button class="filtre-btn" onclick="canviar_grafic('muscul',this)">💪 Masa muscular</button>
+            <button class="filtre-btn" onclick="canviar_grafic('imc',this)">📊 IMC</button>
+          </div>
+          <canvas id="grafic-evolucio" style="width:100%;max-height:280px;"></canvas>
+        </div>
+
+        <!-- Taula historial -->
+        <div class="ficha-seccio">
+          <h4 style="margin-bottom:16px;">Historial de mediciones</h4>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:0.82rem;" id="evolucio-taula">
+              <thead>
+                <tr style="background:var(--verde-suau);color:var(--verde);">
+                  <th style="padding:10px 12px;text-align:left;font-weight:600;">Fecha</th>
+                  <th style="padding:10px 12px;text-align:right;">Peso (kg)</th>
+                  <th style="padding:10px 12px;text-align:right;">% Grasa</th>
+                  <th style="padding:10px 12px;text-align:right;">Masa musc. (kg)</th>
+                  <th style="padding:10px 12px;text-align:right;">IMC</th>
+                  <th style="padding:10px 12px;text-align:right;">Agua (%)</th>
+                  <th style="padding:10px 12px;text-align:right;">Gr. Visceral</th>
+                  <th style="padding:10px 12px;text-align:right;">TMB (kcal)</th>
+                  <th style="padding:10px 12px;text-align:center;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="evolucio-taula-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: HISTORIAL -->
+    <div id="tab-historial" class="tab-content">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--text)">Historial de planificaciones</h3>
+          <p style="font-size:0.82rem;color:var(--text-suau);margin-top:3px">Importa PDFs de Dietopro o clona planificaciones existentes</p>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" onclick="document.getElementById('input-pdf-dietopro').click()">
+            📥 Importar planificación
+          </button>
+          <input type="file" id="input-pdf-dietopro" accept=".pdf,.json" style="display:none" onchange="importar_pdf_dietopro(this)">
+        </div>
+      </div>
+      <div id="historial-llista"></div>
+    <div id="tab-plats" class="tab-content">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--text)">Catálogo de platos</h3>
+          <p style="font-size:0.82rem;color:var(--text-suau);margin-top:3px"><span id="stat-plats-cataleg">0</span> platos importados de Dietopro</p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-secondary" onclick="document.getElementById('input-importar-plats').click()">🍽️ Importar platos</button>
+          <input type="file" id="input-importar-plats" accept=".json" style="display:none" onchange="importar_cataleg_plats(this)">
+          <button class="btn btn-secondary" onclick="document.getElementById('input-importar-composicio').click()">🔬 Importar composición</button>
+          <input type="file" id="input-importar-composicio" accept=".json" style="display:none" onchange="importar_composicio_plat(this)">
+          <button class="btn btn-danger" onclick="confirmar_borrar_cataleg()">🗑️ Borrar todo</button>
+        </div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <input class="cerca-input" type="text" id="cerca-plats-cataleg" placeholder="🔍 Buscar en el catálogo..." oninput="renderitzar_cataleg()" style="width:100%;max-width:360px;">
+      </div>
+      <div id="cataleg-grid"></div>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AÑADIR PLATO -->
+<div class="modal-overlay" id="modal-plat">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h3 id="modal-plat-titol">Añadir plato</h3>
+        <p id="modal-plat-subtitol">—</p>
+      </div>
+      <button class="modal-close" onclick="tancar_modal_plat()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grup">
+        <label class="form-label">Buscar plato</label>
+        <div class="cerca-plats-wrap">
+          <span class="cerca-plats-icon">🔍</span>
+          <input class="cerca-plats-input" type="text" id="cerca-plat-input" placeholder="Escribe el nombre del plato..." oninput="buscar_plat()">
+        </div>
+        <div class="plats-resultats" id="plats-resultats" style="display:none;"></div>
+      </div>
+      <div class="separador-modal">
+        <div class="separador-text"><span>o introduce manualmente</span></div>
+      </div>
+      <div class="form-grup">
+        <label class="form-label">Nombre del plato</label>
+        <input class="form-input" type="text" id="plat-nom-input" placeholder="Nombre del plato">
+      </div>
+      <div class="form-fila-4">
+        <div class="form-grup">
+          <label class="form-label">Kcal</label>
+          <input class="form-input" type="number" id="plat-kcal" placeholder="0">
+        </div>
+        <div class="form-grup">
+          <label class="form-label">Prot (g)</label>
+          <input class="form-input" type="number" id="plat-prot" placeholder="0">
+        </div>
+        <div class="form-grup">
+          <label class="form-label">HC (g)</label>
+          <input class="form-input" type="number" id="plat-hc" placeholder="0">
+        </div>
+        <div class="form-grup">
+          <label class="form-label">Grasas (g)</label>
+          <input class="form-input" type="number" id="plat-gras" placeholder="0">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="tancar_modal_plat()">Cancelar</button>
+      <button class="btn-guardar" onclick="guardar_plat()">Añadir plato</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PREVISUALITZAR IMPORTACIÓ PDF -->
+<div class="modal-overlay" id="modal-import-preview">
+  <div class="modal" style="width:680px;max-width:96vw;">
+    <div class="modal-header">
+      <div>
+        <h3>Vista previa de importación</h3>
+        <p id="import-preview-subtitol">Revisando planificación...</p>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('modal-import-preview').classList.remove('visible')">✕</button>
+    </div>
+    <div class="modal-body" id="import-preview-body" style="max-height:60vh;overflow-y:auto;">
+      <div style="text-align:center;padding:40px;color:var(--text-suau)">
+        <div style="font-size:2rem;margin-bottom:10px">⏳</div>
+        <p>Leyendo PDF...</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="document.getElementById('modal-import-preview').classList.remove('visible')">Cancelar</button>
+      <button class="btn-guardar" id="btn-confirmar-import" onclick="confirmar_importacio()">✅ Confirmar importación</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR BORRAR -->
+<div class="modal-overlay" id="modal-confirmar-borrar">
+  <div class="modal modal-confirm">
+    <div class="modal-header">
+      <div><h3>Eliminar paciente</h3></div>
+      <button class="modal-close" onclick="document.getElementById('modal-confirmar-borrar').classList.remove('visible')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-confirm-icon">🗑️</div>
+      <p class="modal-confirm-text">¿Estás segura de que quieres eliminar a <strong id="confirmar-borrar-nom">—</strong>?<br><br>Se borrarán todos sus datos, planificaciones e historial. <strong>Esta acción no se puede deshacer.</strong></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="document.getElementById('modal-confirmar-borrar').classList.remove('visible')">Cancelar</button>
+      <button class="btn-danger" style="border:none;background:var(--rosa);color:white;padding:9px 22px;border-radius:10px;font-family:Jost,sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;" onclick="borrar_pacient_definitiu()">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOU PACIENT -->
+<div class="modal-overlay" id="modal-nou-pacient">
+  <div class="modal modal-nou-pacient">
+    <div class="modal-header">
+      <div><h3>Nuevo paciente</h3><p>El cuestionario completo se realizará en la primera visita</p></div>
+      <button class="modal-close" onclick="tancar_modal_nou_pacient()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-fila">
+        <div class="form-grup"><label class="form-label">Nombre *</label><input class="form-input" type="text" id="nou-nom" placeholder="Nombre"></div>
+        <div class="form-grup"><label class="form-label">Apellidos *</label><input class="form-input" type="text" id="nou-cognoms" placeholder="Apellidos"></div>
+      </div>
+      <div class="form-grup"><label class="form-label">Fecha de nacimiento</label><input class="form-input" type="date" id="nou-data"></div>
+      <div class="form-fila">
+        <div class="form-grup"><label class="form-label">Teléfono</label><input class="form-input" type="tel" id="nou-tel" placeholder="6XX XXX XXX"></div>
+        <div class="form-grup"><label class="form-label">E-mail</label><input class="form-input" type="email" id="nou-email" placeholder="correo@ejemplo.com"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="tancar_modal_nou_pacient()">Cancelar</button>
+      <button class="btn-guardar" onclick="guardar_nou_pacient()">Guardar paciente</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const USUARI = 'irene';
+const CONTRASENYA = '1234';
+const MOMENTS = ['Desayuno','Media mañana','Comida','Merienda','Cena','Recena'];
+const DIES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+
+const PACIENTS_INICIALS = [
+  {nom:"Josefa",cognoms:"Merce Borras",email:"pepitamerceborras@gmail.com",tel:"680316995",naix:"1957-01-21"},
+  {nom:"Antonia",cognoms:"Diaz Gonzalez",email:"antoniadg4@hotmail.es",tel:"654035983",naix:"1964-09-04"},
+  {nom:"Emilia Beatriz",cognoms:"Ferrer Meseguer",email:"beatrizferrer.meseguer@gmail.com",tel:"631033901",naix:"1967-02-24"},
+  {nom:"Elisabeth",cognoms:"Vergara Solé",email:"eli.puchina@hotmail.com",tel:"660828028",naix:"1977-11-08"},
+  {nom:"Francisco Javier",cognoms:"Pruñonosa Zaragozá",email:"kiko.pz@hotmail.com",tel:"638488967",naix:"1984-12-20"},
+  {nom:"M. Pilar",cognoms:"Vizcarro Bofarrull",email:"pilarcosta33@gmail.com",tel:"609960044",naix:"1958-10-12"},
+  {nom:"Daniela",cognoms:"Pauner Pruñonosa",email:"danielapauner@gmail.com",tel:"",naix:"2009-08-16"},
+  {nom:"Amparo Elisa",cognoms:"Bernal García",email:"bernalamparo12@gmail.com",tel:"641870499",naix:"1968-11-29"},
+  {nom:"Mario",cognoms:"Ribera Querol",email:"mario04.ribera@gmail.com",tel:"",naix:"2004-06-22"},
+  {nom:"Yolanda",cognoms:"San Abdon Quixal",email:"quersan@quersan.com",tel:"685528993",naix:"1965-04-14"},
+  {nom:"Roxana",cognoms:"Vega Ramirez",email:"rmanu6158@gmail.com",tel:"656725089",naix:"1978-05-17"},
+  {nom:"Ana Isabel",cognoms:"Cuartero Borras",email:"anabel-joseluis@hotmail.com",tel:"",naix:"1968-07-08"},
+  {nom:"Paula",cognoms:"Pruñonosa San Abdon",email:"paulapru95@gmail.com",tel:"669596663",naix:"1995-11-07"},
+  {nom:"Zaid",cognoms:"Chellou Novales",email:"zaidchellou@gmail.com",tel:"649691298",naix:"1994-03-30"},
+  {nom:"Victor Javier",cognoms:"Batiste Zaragoza",email:"victorbatiste@yahoo.es",tel:"",naix:"1971-01-01"},
+  {nom:"Rosa Elena",cognoms:"Borras Cruselles",email:"RBORRAS8@XTEC.CAT",tel:"651618717",naix:"1966-05-23"},
+  {nom:"Alicia",cognoms:"Balaguer Sancho",email:"aliciabalaguer@hotmail.es",tel:"665029678",naix:"1965-08-07"},
+  {nom:"Gilma Rosa",cognoms:"Casiani",email:"gsi-67@hotmail.com",tel:"61382825492",naix:"1967-07-23"},
+  {nom:"Vicente Ramon",cognoms:"Grau Monroig",email:"vgraum@gmail.com",tel:"656872009",naix:"1974-04-15"},
+  {nom:"Vanesa",cognoms:"Perez Balsas",email:"vanesa.pb@hotmail.com",tel:"646696365",naix:"1981-04-09"},
+  {nom:"Juan Bautista",cognoms:"Arayo Conesa",email:"mariajosebayarrillorens@gmail.com",tel:"642287176",naix:"1964-02-24"},
+  {nom:"Pilar",cognoms:"Ventura Curto",email:"MARIAVENTURA@GMAIL.COM",tel:"685150854",naix:"1963-10-12"},
+  {nom:"Joaquin",cognoms:"Sorli Gil",email:"joaquinsorligil@hotmail.com",tel:"649475244",naix:"1986-12-10"},
+  {nom:"Ana",cognoms:"Angles Monroig",email:"anaanglesmonroig@gmail.com",tel:"656270415",naix:"1959-12-27"},
+  {nom:"Maria Dolores",cognoms:"Meseguer Pio",email:"MDOLORESMESEGUERPIO@GMAIL.COM",tel:"699456483",naix:"1955-11-21"},
+  {nom:"Carmen",cognoms:"Ferre Monroig",email:"carmen.ferremonroig@gmail.com",tel:"626625514",naix:"1969-02-12"},
+  {nom:"Maria Rosa",cognoms:"Llorens Alberich",email:"mariarosallorensalberich@gmail.com",tel:"654506235",naix:"1977-03-09"},
+  {nom:"Jose Antonio",cognoms:"Torres Miron",email:"joseantoniotorresmiron@gmail.com",tel:"",naix:"1963-10-04"},
+  {nom:"Ana",cognoms:"Diaz Jadraque",email:"anadiazja@gmail.com",tel:"",naix:"1973-04-13"},
+  {nom:"Raimunda",cognoms:"Gascó Serret",email:"r.gascoserret@gmail.com",tel:"685897498",naix:"1939-05-11"},
+  {nom:"Sagrario",cognoms:"Marzal Gómez",email:"irenemben@gmail.com",tel:"601172835",naix:"1962-04-28"},
+  {nom:"Ruth",cognoms:"Sanz Monroig",email:"ruthsanzmonroig@gmail.com",tel:"",naix:"1980-12-18"},
+  {nom:"Maria Pilar",cognoms:"Gil Sancho",email:"albertopilicristian@gmail.com",tel:"667243765",naix:"1976-11-01"},
+  {nom:"Hector Hugo",cognoms:"Suárez Alberdi",email:"everian777@gmail.com",tel:"626791957",naix:"1975-04-26"},
+  {nom:"Montserrat",cognoms:"Fontanet Marzà",email:"montseefontanet@gmail.com",tel:"",naix:"1965-05-07"},
+  {nom:"Nerea",cognoms:"Gómez Valera",email:"nereagomezvalera@hotmail.com",tel:"",naix:"1998-06-29"},
+  {nom:"Agnès",cognoms:"Galan Tena",email:"senganalag@gmail.com",tel:"",naix:"1998-06-22"},
+  {nom:"Lesvia Francisca",cognoms:"Acosta Potilla",email:"acostaportillalesviafrancisca@gmail.com",tel:"671779814",naix:"1965-09-29"},
+  {nom:"Rosa María",cognoms:"Solé Morell",email:"rosamariasole@gmail.com",tel:"645815941",naix:"1950-04-25"},
+  {nom:"Melani",cognoms:"Forés Forner",email:"melaniforesforner@gmail.com",tel:"638936790",naix:"2005-08-19"},
+  {nom:"Angela",cognoms:"Coronel",email:"arg-rosario@hotmail.com",tel:"655216875",naix:"1953-11-09"},
+  {nom:"Rosa Mari",cognoms:"Andrés Camañes",email:"rosamarjo@gmail.com",tel:"",naix:"1973-07-23"},
+  {nom:"Rebeca",cognoms:"Fuentes Saura",email:"rebeca_fs91@hotmail.com",tel:"",naix:"1991-03-22"},
+  {nom:"Teresa",cognoms:"Pira Llatser",email:"terepira5@gmail.com",tel:"695591555",naix:"1960-06-04"},
+  {nom:"Jessica",cognoms:"Reyes Moraleda",email:"fruteriallopis@gmail.com",tel:"",naix:"1982-11-13"},
+  {nom:"Vicentica",cognoms:"Cuartero Sorli",email:"vcuartero@gmail.com",tel:"619220154",naix:"1946-08-03"},
+  {nom:"María D.",cognoms:"Batiste Redó",email:"md.batisteredo@gmail.com",tel:"",naix:"1968-09-27"},
+  {nom:"Ernestina",cognoms:"Borràs Bayarri",email:"erneboras@gmail.com",tel:"686662504",naix:"1964-12-05"},
+  {nom:"Bianca",cognoms:"Gil Castellano",email:"gilcastellanob@gmail.com",tel:"",naix:"1995-11-04"},
+  {nom:"Geno",cognoms:"Salvador Ballester",email:"genoballester@gmail.com",tel:"",naix:"1949-09-21"},
+  {nom:"Encarna",cognoms:"Arquelladas Sampedro",email:"encarnaarquelladas@gmail.com",tel:"606641808",naix:"1951-02-23"},
+  {nom:"Myriam",cognoms:"Capilla Llorens",email:"myriamcapilla039@gmail.com",tel:"637235853",naix:"1993-07-09"},
+  {nom:"Isidro",cognoms:"Raya Robles",email:"isidroray@gmail.com",tel:"",naix:"1992-05-18"},
+  {nom:"Rosabel",cognoms:"Ciurana Antolí",email:"ciur75@outlook.com",tel:"640862419",naix:"1975-08-30"},
+  {nom:"Secundina",cognoms:"Roig Climent",email:"secundinaroigcliment@gmail.com",tel:"677614766",naix:"1954-10-03"},
+  {nom:"Jeremías",cognoms:"Monroig Monroig",email:"jeremiasmonroig@gmail.com",tel:"609280525",naix:"1965-01-10"},
+  {nom:"Alexis",cognoms:"Bofarrull Díez",email:"alexisbdiez@gmail.com",tel:"606366110",naix:"1974-02-15"},
+  {nom:"Angelita",cognoms:"Monroig",email:"irenembengochea@gmail.co",tel:"650923108",naix:"1956-09-13"},
+];
+
+let pacients = [];
+let pacient_actiu = null;
+let filtre_lletra = 'tots';
+let setmana_offset = 0;
+let celda_activa = null;
+
+// ── INIT ──
+function init() {
+  const g = localStorage.getItem('im_pacients');
+  if (g) { pacients = JSON.parse(g); }
+  else {
+    pacients = PACIENTS_INICIALS.map((p,i) => ({
+      id:'p_'+i, nom:p.nom, cognoms:p.cognoms, email:p.email,
+      tel:p.tel, naix:p.naix, creat:new Date().toISOString(),
+      planificacions: {}
+    }));
+    guardar_pacients();
+  }
+  renderitzar_pacients();
+  actualitzar_stat_cataleg();
+}
+
+function guardar_pacients() { localStorage.setItem('im_pacients', JSON.stringify(pacients)); }
+
+// ── LOGIN ──
+function anar_a_login() {
+  document.getElementById('portada-screen').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+}
+function fer_login() {
+  const u=document.getElementById('login-user').value.trim().toLowerCase();
+  const p=document.getElementById('login-pass').value;
+  if(u===USUARI && p===CONTRASENYA){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    init();
+    mostrar_pantalla_inici();
+  } else {
+    const e=document.getElementById('login-error');
+    e.style.display='block';
+    setTimeout(()=>e.style.display='none',3000);
+  }
+}
+function fer_logout() {
+  document.getElementById('app').style.display='none';
+  document.getElementById('portada-screen').style.display='flex';
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter' && document.getElementById('login-screen').style.display==='flex') fer_login();
+});
+
+// ── PACIENTS ──
+function calcular_edat(naix) {
+  if(!naix) return null;
+  const a=new Date(), n=new Date(naix);
+  let e=a.getFullYear()-n.getFullYear();
+  if(a.getMonth()-n.getMonth()<0||(a.getMonth()-n.getMonth()===0&&a.getDate()<n.getDate())) e--;
+  return e;
+}
+function inicials(nom,cog) { return (nom?nom[0]:'')+(cog?cog[0]:''); }
+
+let mostrar_inactius = false;
+
+function toggle_inactius(btn) {
+  mostrar_inactius = !mostrar_inactius;
+  btn.classList.toggle('actiu', mostrar_inactius);
+  btn.textContent = mostrar_inactius ? '👁 Ocultar inactivos' : '👁 Ver inactivos';
+  renderitzar_pacients();
+}
+
+function pacients_filtrats() {
+  const cerca=document.getElementById('cerca-input').value.toLowerCase().trim();
+  let l=[...pacients];
+  // Filtrar per actiu/inactiu
+  if(!mostrar_inactius) l=l.filter(p=>p.actiu!==false);
+  if(cerca) l=l.filter(p=>(p.nom+' '+p.cognoms).toLowerCase().includes(cerca)||(p.email||'').toLowerCase().includes(cerca)||(p.tel||'').includes(cerca));
+  if(filtre_lletra!=='tots'){
+    const r={'A-F':'AF','G-L':'GL','M-R':'MR','S-Z':'SZ'}[filtre_lletra];
+    l=l.filter(p=>p.cognoms[0]>=r[0]&&p.cognoms[0]<=r[1]);
+  }
+  return l.sort((a,b)=>(a.cognoms+a.nom).localeCompare(b.cognoms+b.nom,'es'));
+}
+
+function renderitzar_pacients() {
+  const l=pacients_filtrats();
+  const actius=pacients.filter(p=>p.actiu!==false).length;
+  document.getElementById('stat-total').textContent=actius+(mostrar_inactius?` (${pacients.length-actius} inactivos)`:'');
+  document.getElementById('subtitol-pacients').textContent=
+    l.length===pacients.length?`${pacients.length} pacientes en total`:`${l.length} de ${pacients.length} pacientes`;
+  const g=document.getElementById('pacients-grid');
+  if(!l.length){g.innerHTML=`<div class="empty-state"><div style="font-size:3rem">🔍</div><h3>Sin resultados</h3><p>No se ha encontrado ningún paciente.</p></div>`;return;}
+  g.innerHTML=l.map((p,i)=>{
+    const e=calcular_edat(p.naix), ini=inicials(p.nom,p.cognoms).toUpperCase();
+    return `<div class="pacient-card ${p.actiu===false?'inactiu':''}" style="animation-delay:${i*0.025}s" onclick="obrir_pacient('${p.id}')">
+      <div class="pacient-card-top">
+        <div class="pacient-avatar">${ini}</div>
+        <div class="pacient-nom"><h3>${p.cognoms}, ${p.nom}</h3><p>${e?e+' años':'Edad desconocida'}</p></div>
+      </div>
+      <div class="pacient-card-info">
+        ${p.email?`<div class="info-fila"><span>✉️</span><span>${p.email}</span></div>`:''}
+        ${p.tel?`<div class="info-fila"><span>📱</span><span>${p.tel}</span></div>`:''}
+        ${!p.email&&!p.tel?`<div class="info-fila"><span>ℹ️</span><span>Sin datos de contacto</span></div>`:''}
+      </div>
+      <div class="pacient-card-footer">
+        ${p.actiu===false?'<span class="badge-inactiu">Inactivo</span>':(e?`<span class="badge-edat">${e} años</span>`:'<span></span>')}
+        <span class="btn-obrir">Abrir ficha →</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+function filtrar_pacients(){renderitzar_pacients();}
+function filtrar_per_lletra(r,btn){
+  filtre_lletra=r;
+  document.querySelectorAll('.filtre-btn').forEach(b=>b.classList.remove('actiu'));
+  btn.classList.add('actiu');
+  document.getElementById('cerca-input').value='';
+  renderitzar_pacients();
+}
+
+// ── NAVEGACIÓ ──
+function obrir_pacient(id){
+  pacient_actiu=pacients.find(p=>p.id===id);
+  if(!pacient_actiu) return;
+  if(!pacient_actiu.planificacions) pacient_actiu.planificacions={};
+  setmana_offset=0;
+  document.getElementById('pac-nom-header').textContent=pacient_actiu.nom+' '+pacient_actiu.cognoms;
+  const e=calcular_edat(pacient_actiu.naix);
+  document.getElementById('pac-meta-header').textContent=e?`${e} años · ${pacient_actiu.email||'Sin email'}`:(pacient_actiu.email||'Sin datos');
+  renderitzar_ficha_resum();
+  renderitzar_ficha_dades();
+  renderitzar_setmana();
+  // Actualitzar toggle actiu
+  const toggle = document.getElementById('toggle-actiu');
+  if(toggle) {
+    toggle.checked = pacient_actiu.actiu !== false;
+    document.getElementById('toggle-actiu-label').textContent = toggle.checked ? 'Paciente activo' : 'Paciente inactivo';
+  }
+  document.getElementById('pantalla-pacients').style.display='none';
+  document.getElementById('pantalla-pacient').style.display='block';
+  canviar_tab('planificacio', document.querySelector('.tab-btn[onclick*="planificacio"]'));
+  renderitzar_cuestionari_resum();
+}
+function tornar_a_llista(){
+  document.getElementById('pantalla-pacient').style.display='none';
+  document.getElementById('pantalla-pacients').style.display='block';
+  document.getElementById('pantalla-inici').style.display='none';
+  pacient_actiu=null;
+}
+
+// ── FICHA RESUM ──
+function renderitzar_ficha_resum(){
+  const p=pacient_actiu, e=calcular_edat(p.naix);
+  const ini=inicials(p.nom,p.cognoms).toUpperCase();
+  document.getElementById('ficha-avatar').textContent=ini;
+  document.getElementById('ficha-nom-complet').textContent=`${p.nom} ${p.cognoms}${e?', '+e+' años':''}`;
+  const cq = pacient_actiu.cuestionari;
+  const cq_complet = cq && (cq.motiu || cq.pes || cq.patologies?.length);
+  document.getElementById('ficha-tags').innerHTML = cq_complet
+    ? '<span class="tag" style="background:var(--verde-suau);color:var(--verde)">✅ Cuestionario completado</span>'
+    : '<span class="tag tag-gris">Sin cuestionario inicial</span>';
+  document.getElementById('ficha-stats').innerHTML='<div class="ficha-stat"><div class="ficha-stat-val">—</div><div class="ficha-stat-label">kcal / día</div></div>';
+}
+function renderitzar_ficha_dades(){
+  const p=pacient_actiu, e=calcular_edat(p.naix);
+  const fmt_data = d => { if(!d) return '—'; const x=new Date(d); return x.toLocaleDateString('es-ES'); };
+  document.getElementById('ficha-dades-personals').innerHTML=`
+    <div class="ficha-camp"><span class="ficha-camp-label">Nombre completo</span><span class="ficha-camp-val">${p.nom} ${p.cognoms}</span></div>
+    <div class="ficha-camp"><span class="ficha-camp-label">Fecha de nacimiento</span><span class="ficha-camp-val">${fmt_data(p.naix)}${e?' ('+e+' años)':''}</span></div>
+    <div class="ficha-camp"><span class="ficha-camp-label">Teléfono</span><span class="ficha-camp-val ${p.tel?'':'ficha-camp-buit'}">${p.tel||'No especificado'}</span></div>
+    <div class="ficha-camp"><span class="ficha-camp-label">E-mail</span><span class="ficha-camp-val ${p.email?'':'ficha-camp-buit'}">${p.email||'No especificado'}</span></div>
+  `;
+}
+
+// ── ACTIU / BORRAR ──
+function canviar_estat_actiu(actiu) {
+  pacient_actiu.actiu = actiu;
+  guardar_pacients();
+  const label = document.getElementById('toggle-actiu-label');
+  label.textContent = actiu ? 'Paciente activo' : 'Paciente inactivo';
+}
+
+function confirmar_borrar_pacient() {
+  document.getElementById('confirmar-borrar-nom').textContent = pacient_actiu.nom + ' ' + pacient_actiu.cognoms;
+  document.getElementById('modal-confirmar-borrar').classList.add('visible');
+}
+
+function borrar_pacient_definitiu() {
+  pacients = pacients.filter(p => p.id !== pacient_actiu.id);
+  guardar_pacients();
+  document.getElementById('modal-confirmar-borrar').classList.remove('visible');
+  tornar_a_llista();
+}
+
+// ── TABS ──
+function canviar_tab(id, btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('actiu'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('actiu'));
+  document.getElementById('tab-'+id).classList.add('actiu');
+  if(btn) btn.classList.add('actiu');
+  if(id==='historial') renderitzar_historial();
+}
+
+// ── SETMANA ──
+function clau_setmana(offset){
+  const avui=new Date();
+  const dia=avui.getDay()===0?6:avui.getDay()-1;
+  const dll=new Date(avui); dll.setDate(avui.getDate()-dia+(offset*7));
+  return dll.toISOString().split('T')[0];
+}
+function titol_setmana(offset){
+  const avui=new Date();
+  const dia=avui.getDay()===0?6:avui.getDay()-1;
+  const dll=new Date(avui); dll.setDate(avui.getDate()-dia+(offset*7));
+  const dg=new Date(dll); dg.setDate(dll.getDate()+6);
+  const fmt=d=>d.toLocaleDateString('es-ES',{day:'numeric',month:'long'});
+  return `Semana del ${fmt(dll)} al ${fmt(dg)}`;
+}
+function canviar_setmana(dir){ setmana_offset+=dir; renderitzar_setmana(); }
+
+function renderitzar_setmana(){
+  document.getElementById('setmana-titol').textContent=titol_setmana(setmana_offset);
+  const clau=clau_setmana(setmana_offset);
+  if(!pacient_actiu.planificacions[clau]) pacient_actiu.planificacions[clau]={};
+  const planif=pacient_actiu.planificacions[clau];
+
+  const tbody=document.getElementById('tabla-body');
+  const caps=[5,6]; // dissabte=5, diumenge=6 (0-indexed)
+
+  tbody.innerHTML=MOMENTS.map((moment,mi)=>`
+    <tr>
+      <td><div class="moment-label"><span>${['☀️','🍎','🍽️','☕','🌙','🌟'][mi]}</span>${moment}</div></td>
+      ${DIES.map((dia,di)=>{
+        const plat=planif[mi+'_'+di];
+        const cap=di>=5;
+        return `<td><div class="celda ${cap?'cap':''}">
+          ${plat?`<div class="plat-card ${cap?'cap-de-setmana':''}">
+            <button class="plat-delete" onclick="event.stopPropagation();eliminar_plat(${mi},${di})">✕</button>
+            <div class="plat-nom">${plat.nom}</div>
+            <div class="plat-macros">
+              ${plat.kcal?`<span class="macro-badge macro-kcal">${plat.kcal}kcal</span>`:''}
+              ${plat.prot?`<span class="macro-badge macro-prot">P:${plat.prot}g</span>`:''}
+              ${plat.hc?`<span class="macro-badge macro-hc">HC:${plat.hc}g</span>`:''}
+              ${plat.gras?`<span class="macro-badge macro-gras">G:${plat.gras}g</span>`:''}
+            </div>
+          </div>`
+          :`<div class="celda-inner"><button class="btn-add" onclick="obrir_modal_plat(${mi},${di})">+</button></div>`}
+        </div></td>`;
+      }).join('')}
+    </tr>`).join('');
+
+  actualitzar_macros(planif);
+}
+
+function actualitzar_macros(planif){
+  let kcal=0,prot=0,hc=0,gras=0,dies_amb_dades=0;
+  for(let di=0;di<7;di++){
+    let te=false;
+    for(let mi=0;mi<MOMENTS.length;mi++){
+      const pl=planif[mi+'_'+di];
+      if(pl){te=true;kcal+=pl.kcal||0;prot+=pl.prot||0;hc+=pl.hc||0;gras+=pl.gras||0;}
+    }
+    if(te) dies_amb_dades++;
+  }
+  const d=dies_amb_dades||1;
+  document.getElementById('val-kcal').textContent=Math.round(kcal/d)+' kcal';
+  document.getElementById('val-prot').textContent=Math.round(prot/d)+' g';
+  document.getElementById('val-hc').textContent=Math.round(hc/d)+' g';
+  document.getElementById('val-gras').textContent=Math.round(gras/d)+' g';
+  const maxK=2500;
+  document.getElementById('bar-kcal').style.width=Math.min(100,Math.round(kcal/d/maxK*100))+'%';
+  document.getElementById('bar-prot').style.width=Math.min(100,Math.round(prot/d/200*100))+'%';
+  document.getElementById('bar-hc').style.width=Math.min(100,Math.round(hc/d/300*100))+'%';
+  document.getElementById('bar-gras').style.width=Math.min(100,Math.round(gras/d/80*100))+'%';
+}
+
+function copiar_setmana_anterior(){
+  const clau_actual=clau_setmana(setmana_offset);
+  const clau_anterior=clau_setmana(setmana_offset-1);
+  const ant=pacient_actiu.planificacions[clau_anterior];
+  if(!ant||!Object.keys(ant).length){alert('No hay planificación en la semana anterior.');return;}
+  if(!confirm('¿Copiar la planificación de la semana anterior a esta semana?')) return;
+  pacient_actiu.planificacions[clau_actual]=JSON.parse(JSON.stringify(ant));
+  guardar_pacients();
+  renderitzar_setmana();
+}
+
+// ── MODAL PLAT ──
+function obrir_modal_plat(mi,di){
+  celda_activa={mi,di};
+  document.getElementById('modal-plat-titol').textContent=`Añadir plato — ${MOMENTS[mi]}`;
+  document.getElementById('modal-plat-subtitol').textContent=DIES[di];
+  document.getElementById('cerca-plat-input').value='';
+  document.getElementById('plat-nom-input').value='';
+  document.getElementById('plat-kcal').value='';
+  document.getElementById('plat-prot').value='';
+  document.getElementById('plat-hc').value='';
+  document.getElementById('plat-gras').value='';
+  document.getElementById('plats-resultats').style.display='none';
+  document.getElementById('modal-plat').classList.add('visible');
+  setTimeout(()=>document.getElementById('cerca-plat-input').focus(),100);
+}
+function tancar_modal_plat(){ document.getElementById('modal-plat').classList.remove('visible'); celda_activa=null; }
+
+let cerca_timeout=null;
+function buscar_plat(){
+  clearTimeout(cerca_timeout);
+  const q=document.getElementById('cerca-plat-input').value.trim();
+  if(q.length<2){ document.getElementById('plats-resultats').style.display='none'; return; }
+  cerca_timeout=setTimeout(()=>_fer_cerca(q),400);
+}
+
+async function _fer_cerca(q){
+  const res=document.getElementById('plats-resultats');
+  res.style.display='block';
+  res.innerHTML='<div class="plat-resultat-item"><div class="plat-resultat-nom" style="color:var(--text-suau)">🔍 Buscando...</div></div>';
+
+  // 1. Search local Dietopro catalog first
+  const locals = buscar_en_cataleg(q);
+  let html = '';
+
+  if(locals.length > 0){
+    html += `<div style="font-size:0.7rem;font-weight:700;color:var(--verde);padding:6px 10px 2px;text-transform:uppercase;letter-spacing:0.5px">🍽️ Catálogo Dietopro (${locals.length})</div>`;
+    html += locals.map(p=>{
+      const macros = [
+        p.kcal?p.kcal+'kcal':'',
+        p.prot?'P:'+p.prot+'g':'',
+        p.hc?'HC:'+p.hc+'g':'',
+        p.gras?'G:'+p.gras+'g':''
+      ].filter(Boolean).join(' · ');
+      const alerg = p.alergenos&&p.alergenos.length?'<span style="color:#E07070;font-size:0.7rem"> ⚠️ '+p.alergenos.slice(0,3).join(', ')+(p.alergenos.length>3?'...':'')+'</span>':'';
+      return `<div class="plat-resultat-item" onclick="seleccionar_plat_off(${JSON.stringify(p.nombre).replace(/"/g,'&quot;')},${p.kcal||0},${p.prot||0},${p.hc||0},${p.gras||0})" style="border-left:3px solid var(--verde-clar)">
+        <div class="plat-resultat-nom">${p.nombre}${alerg}</div>
+        ${macros?`<div class="plat-resultat-macros">${macros}${p.dificultad?' · '+p.dificultad:''}</div>`:''}
+      </div>`;
+    }).join('');
+  }
+
+  // 2. Also search OpenFoodFacts
+  try{
+    const url=`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=6&lc=es`;
+    const r=await fetch(url);
+    const d=await r.json();
+    if(d.products&&d.products.length){
+      if(html) html += `<div style="font-size:0.7rem;font-weight:700;color:var(--text-suau);padding:6px 10px 2px;text-transform:uppercase;letter-spacing:0.5px">🌐 OpenFoodFacts</div>`;
+      html += d.products.slice(0,6).map(p=>{
+        const kcal=Math.round(p.nutriments?.['energy-kcal_100g']||p.nutriments?.['energy-kcal']||0);
+        const prot=Math.round(p.nutriments?.proteins_100g||0);
+        const hc=Math.round(p.nutriments?.carbohydrates_100g||0);
+        const gras=Math.round(p.nutriments?.fat_100g||0);
+        return `<div class="plat-resultat-item" onclick="seleccionar_plat_off(${JSON.stringify(p.product_name||p.product_name_es||'').replace(/"/g,'&quot;')},${kcal},${prot},${hc},${gras})">
+          <div class="plat-resultat-nom">${p.product_name_es||p.product_name||'Sin nombre'}</div>
+          <div class="plat-resultat-macros">${kcal?kcal+'kcal':''} ${prot?'· P:'+prot+'g':''} ${hc?'· HC:'+hc+'g':''} ${gras?'· G:'+gras+'g':''}</div>
+        </div>`;
+      }).join('');
+    }
+  }catch(e){console.error(e);}
+
+  if(!html){
+    html='<div class="plat-resultat-item"><div class="plat-resultat-nom">Sin resultados. Introduce los datos manualmente.</div></div>';
+  }
+  res.innerHTML=html;
+}
+
+function seleccionar_plat_off(nom,kcal,prot,hc,gras){
+  document.getElementById('plat-nom-input').value=nom;
+  document.getElementById('plat-kcal').value=kcal||'';
+  document.getElementById('plat-prot').value=prot||'';
+  document.getElementById('plat-hc').value=hc||'';
+  document.getElementById('plat-gras').value=gras||'';
+  document.getElementById('plats-resultats').style.display='none';
+}
+
+function guardar_plat(){
+  const nom=document.getElementById('plat-nom-input').value.trim();
+  if(!nom){alert('Introduce el nombre del plato.');return;}
+  const plat={
+    nom,
+    kcal:parseFloat(document.getElementById('plat-kcal').value)||0,
+    prot:parseFloat(document.getElementById('plat-prot').value)||0,
+    hc:parseFloat(document.getElementById('plat-hc').value)||0,
+    gras:parseFloat(document.getElementById('plat-gras').value)||0,
+  };
+  const clau=clau_setmana(setmana_offset);
+  if(!pacient_actiu.planificacions[clau]) pacient_actiu.planificacions[clau]={};
+  pacient_actiu.planificacions[clau][celda_activa.mi+'_'+celda_activa.di]=plat;
+  guardar_pacients();
+  tancar_modal_plat();
+  renderitzar_setmana();
+}
+
+function eliminar_plat(mi,di){
+  const clau=clau_setmana(setmana_offset);
+  delete pacient_actiu.planificacions[clau][mi+'_'+di];
+  guardar_pacients();
+  renderitzar_setmana();
+}
+
+// ── MODAL NOU PACIENT ──
+function obrir_modal_nou_pacient(){ document.getElementById('modal-nou-pacient').classList.add('visible'); }
+function tancar_modal_nou_pacient(){
+  document.getElementById('modal-nou-pacient').classList.remove('visible');
+  ['nou-nom','nou-cognoms','nou-data','nou-tel','nou-email'].forEach(id=>document.getElementById(id).value='');
+}
+function guardar_nou_pacient(){
+  const nom=document.getElementById('nou-nom').value.trim();
+  const cog=document.getElementById('nou-cognoms').value.trim();
+  if(!nom||!cog){alert('Nombre y apellidos son obligatorios.');return;}
+  const nou={
+    id:'p_'+Date.now(), nom, cognoms:cog,
+    email:document.getElementById('nou-email').value.trim(),
+    tel:document.getElementById('nou-tel').value.trim(),
+    naix:document.getElementById('nou-data').value,
+    creat:new Date().toISOString(), planificacions:{}
+  };
+  pacients.unshift(nou);
+  guardar_pacients();
+  tancar_modal_nou_pacient();
+  renderitzar_pacients();
+  // Obrir el pacient i llançar el cuestionari automàticament
+  obrir_pacient(nou.id);
+  setTimeout(() => {
+    const tabBtn = document.querySelector('.tab-btn[onclick*="ficha"]');
+    if (tabBtn) canviar_tab('ficha', tabBtn);
+    obrir_cuestionari();
+  }, 100);
+}
+
+// ── HISTORIAL ──
+function renderitzar_historial() {
+  const llista = document.getElementById('historial-llista');
+  if(!llista) return;
+  const hists = pacient_actiu.historial || [];
+  if(!hists.length) {
+    llista.innerHTML = `<div class="historial-buit">
+      <div class="emoji">📁</div>
+      <h4>Sin planificaciones importadas</h4>
+      <p>Importa un PDF de Dietopro para empezar</p>
+    </div>`;
+    return;
+  }
+  llista.innerHTML = hists.map((h,i) => `
+    <div class="planif-card">
+      <div class="planif-card-icon ${h.tipus==='importat'?'importat':''}">
+        ${h.tipus==='importat'?'📥':'📋'}
+      </div>
+      <div class="planif-card-info">
+        <h4>${h.titol}</h4>
+        <p>${h.data_planif||''} · ${h.moments?h.moments.length+' momentos del día':''} · Importado el ${new Date(h.creat).toLocaleDateString('es-ES')}</p>
+      </div>
+      <div class="planif-card-accions">
+        <button class="btn btn-secondary" onclick="veure_historial(${i})" style="font-size:0.78rem;padding:7px 12px">👁 Ver</button>
+        <button class="btn btn-primary" onclick="clonar_historial(${i})" style="font-size:0.78rem;padding:7px 12px">📋 Clonar</button>
+      </div>
+    </div>`).join('');
+}
+
+function veure_historial(idx) {
+  const h = pacient_actiu.historial[idx];
+  mostrar_preview_historial(h);
+}
+
+function mostrar_preview_historial(h) {
+  const dies = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  let html = `<div class="preview-info-box">
+    <h4>📋 ${h.titol}</h4>
+    <div class="preview-info-row">
+      <div class="preview-info-item"><span>Fecha planificación</span>${h.data_planif||'—'}</div>
+      <div class="preview-info-item"><span>Momentos del día</span>${(h.moments||[]).join(', ')}</div>
+      ${h.tanita?`<div class="preview-info-item"><span>Peso</span>${h.tanita.pes||'—'} kg</div>`:''}
+      ${h.tensio?`<div class="preview-info-item"><span>Tensión</span>${h.tensio}</div>`:''}
+    </div>
+  </div>
+  <table class="preview-taula">
+    <thead><tr><th>Momento</th>${dies.map(d=>`<th>${d}</th>`).join('')}</tr></thead>
+    <tbody>`;
+  (h.moments||[]).forEach(moment => {
+    html += `<tr><td class="preview-moment">${moment}</td>`;
+    dies.forEach((dia, di) => {
+      const key = moment+'_'+di;
+      const plat = h.planificacio && h.planificacio[key];
+      html += `<td class="preview-plat">${plat?plat.nom:'<span style="color:#ddd">—</span>'}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('import-preview-body').innerHTML = html;
+  document.getElementById('import-preview-subtitol').textContent = h.titol;
+  document.getElementById('btn-confirmar-import').style.display = 'none';
+  document.getElementById('modal-import-preview').classList.add('visible');
+}
+
+function clonar_historial(idx) {
+  const h = pacient_actiu.historial[idx];
+  if(!h || !h.planificacio) { mostrar_toast('❌ Esta entrada no tiene planificación.', 'error'); return; }
+
+  setmana_offset = 0; // Sempre clonar a la setmana actual
+  const clau = clau_setmana(0);
+
+  if(pacient_actiu.planificacions[clau] && Object.keys(pacient_actiu.planificacions[clau]).length > 0) {
+    if(!confirm('La semana actual ya tiene planificación. ¿Sobreescribir?')) return;
+  }
+
+  // Copiar planificació — convertir format Desayuno_0 → mi_di si cal
+  if(!pacient_actiu.planificacions) pacient_actiu.planificacions = {};
+  const moments_ordre = ['Desayuno','Almuerzo 1','Almuerzo 2','Comida','Merienda 1','Merienda 2','Cena','Recena'];
+  const MOMENTS_APP = pacient_actiu.moments_dia || h.moments || moments_ordre;
+  const planif_src = JSON.parse(JSON.stringify(h.planificacio));
+  const planif_dst = {};
+  // Detectar si les claus ja son numeriques (0_0) o son textuals (Desayuno_0)
+  const claus = Object.keys(planif_src);
+  const ja_numeric = claus.length > 0 && /^\d+_\d+$/.test(claus[0]);
+  if (ja_numeric) {
+    // Ja té el format correcte
+    Object.assign(planif_dst, planif_src);
+  } else {
+    // Convertir Desayuno_0 → mi_di
+    claus.forEach(clau_orig => {
+      const parts = clau_orig.match(/^(.+)_(\d+)$/);
+      if (!parts) return;
+      const nom_moment = parts[1];
+      const di = parseInt(parts[2]);
+      const mi = MOMENTS_APP.indexOf(nom_moment);
+      if (mi >= 0) planif_dst[mi + '_' + di] = planif_src[clau_orig];
+    });
+  }
+  pacient_actiu.planificacions[clau] = planif_dst;
+
+  // Copiar moments si existeixen
+  if(h.moments && h.moments.length) pacient_actiu.moments_dia = h.moments;
+
+  guardar_pacients();
+
+  // Navegar a planificació
+  const tabBtn = document.querySelector('.tab-btn[onclick*="planificacio"]');
+  if(tabBtn) canviar_tab('planificacio', tabBtn);
+  renderitzar_setmana();
+  mostrar_toast('✅ Planificación clonada a la semana actual.', 'ok');
+}
+
+// ── IMPORTAR PDF DIETOPRO ──
+let dades_import_temp = null;
+
+async function importar_pdf_dietopro(input) {
+  const file = input.files[0];
+  if(!file) return;
+  input.value = '';
+
+  document.getElementById('import-preview-body').innerHTML = `
+    <div style="text-align:center;padding:40px;color:var(--text-suau)">
+      <div style="font-size:2rem;margin-bottom:10px">⏳</div>
+      <p>Leyendo archivo...</p>
+    </div>`;
+  document.getElementById('import-preview-subtitol').textContent = 'Procesando...';
+  document.getElementById('btn-confirmar-import').style.display = 'inline-flex';
+  document.getElementById('modal-import-preview').classList.add('visible');
+
+  try {
+    // ── JSON de la extensión Dietopro Extractor ──
+    if(file.name.toLowerCase().endsWith('.json')) {
+      const text = await file.text();
+      let data;
+      try { data = JSON.parse(text); }
+      catch(e) { throw new Error('El archivo JSON no es válido: ' + e.message); }
+
+      if(!data.planificacio || !data.moments) {
+        throw new Error('El JSON no tiene el formato esperado. Usa la extensión Dietopro Extractor para generar el archivo.');
+      }
+
+      dades_import_temp = {
+        titol: data.titol || ('Planificación ' + (data.data_planif||'') + ' · ' + (data.nom_pacient||'')),
+        data_planif: data.data_planif || new Date().toLocaleDateString('es-ES'),
+        nom_pdf: data.nom_pacient || '',
+        moments: data.moments || [],
+        planificacio: data.planificacio || {},
+        tanita: data.tanita || null,
+        tensio: data.tensio || null,
+        tipus: 'importat',
+        creat: new Date().toISOString(),
+        font: 'json_extractor'
+      };
+      mostrar_preview_importacio(dades_import_temp);
+      return;
+    }
+
+    // ── PDF ──
+    const pages = await llegir_pdf_text(file);
+    dades_import_temp = parsejar_pdf_dietopro(pages, file.name);
+    mostrar_preview_importacio(dades_import_temp);
+
+  } catch(e) {
+    document.getElementById('import-preview-body').innerHTML = `
+      <div style="text-align:center;padding:40px;color:var(--rosa)">
+        <div style="font-size:2rem;margin-bottom:10px">❌</div>
+        <p>Error leyendo el archivo.</p>
+        <p style="font-size:0.75rem;margin-top:8px;color:var(--text-suau)">${e.message}</p>
+      </div>`;
+    document.getElementById('btn-confirmar-import').style.display = 'none';
+    console.error(e);
+  }
+}
+
+async function llegir_pdf_text(file) {
+  const pdfjsLib = window['pdfjs-dist/build/pdf'];
+  if(!pdfjsLib) throw new Error('PDF.js no disponible. Recarga la página e inténtalo de nuevo.');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data: arrayBuffer, useWorkerFetch: false, isEvalSupported: false, useSystemFonts: true}).promise;
+  let fullText = '';
+  for(let i=1; i<=pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const pageText = content.items.map(item => item.str).join(' ');
+    fullText += pageText + '\n---PAGINA---\n';
+  }
+  return fullText;
+}
+
+// Versió amb coordenades per Tanita
+async function llegir_pdf_words(file) {
+  const pdfjsLib = window['pdfjs-dist/build/pdf'];
+  if(!pdfjsLib) throw new Error('PDF.js no disponible.');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data: arrayBuffer, useWorkerFetch: false, isEvalSupported: false, useSystemFonts: true}).promise;
+  const words = [];
+  for(let i=1; i<=pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const vp = page.getViewport({scale:1});
+    const content = await page.getTextContent();
+    content.items.forEach(item => {
+      if(!item.str.trim()) return;
+      const tx = item.transform;
+      words.push({ text: item.str.trim(), x: Math.round(tx[4]), y: Math.round(vp.height - tx[5]) });
+    });
+  }
+  return words;
+}
+
+function parsejar_pdf_dietopro(text, filename) {
+  const dies = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  const moments_possibles = ['Desayuno','Almuerzo 1','Almuerzo 2','Comida','Merienda 1','Merienda 2','Cena','Recena'];
+
+  // Extreure data del nom del fitxer (format: NomApellidos-plan-DDMMAA.pdf)
+  let data_planif = '';
+  const match_data = filename.match(/(\d{6})\.pdf$/i);
+  if(match_data) {
+    const d = match_data[1];
+    data_planif = `${d.slice(0,2)}/${d.slice(2,4)}/${d.slice(4,6)}`;
+  }
+
+  // Extreure nom del pacient de la primera pàgina
+  const match_nom = text.match(/PLAN DIETÉTICO SEMANAL DE ([A-ZÁÉÍÓÚÜÑ\s]+?)(?:\s+\d|---)/i);
+  const nom_pdf = match_nom ? match_nom[1].trim() : '';
+
+  // Extreure data de les observacions (format: dd/mm/yyyy o dd/mm/yyyy)
+  const match_data2 = text.match(/(?:RESULTATS?|RESULTADOS?)\s+(\d{1,2}[\/\.]\d{2}[\/\.]\d{2,4})/i);
+  if(match_data2 && !data_planif) data_planif = match_data2[1];
+
+  // Detectar moments del dia presents
+  const pagina2 = text.split('---PAGINA---')[1] || text;
+  const moments_presents = moments_possibles.filter(m => {
+    const regex = new RegExp(m.replace(' ','\\s+'), 'i');
+    return regex.test(pagina2);
+  });
+
+  // Parsejar planificació de la pàgina 2 (taula resum)
+  const planificacio = {};
+  const dies_lower = dies.map(d => d.toLowerCase());
+
+  // Buscar plats per cada moment i dia
+  moments_presents.forEach((moment, mi) => {
+    dies.forEach((dia, di) => {
+      // Buscar el plat en les pàgines de detall (pàg 3 en endavant)
+      const pages = text.split('---PAGINA---');
+      // Buscar la pàgina del dia corresponent
+      const pagina_dia = pages.find(p => {
+        const p_lower = p.toLowerCase();
+        return p_lower.includes(dia.toLowerCase()) && p_lower.includes(moment.toLowerCase());
+      });
+
+      if(pagina_dia) {
+        const plat = extreure_plat_pagina(pagina_dia, moment, dia);
+        if(plat) planificacio[moment+'_'+di] = plat;
+      }
+    });
+  });
+
+  // Si la planificació està buida, intentar parsejar la taula de la pàgina 2
+  if(Object.keys(planificacio).length === 0) {
+    parsejar_taula_p2(pagina2, moments_presents, planificacio);
+  }
+
+  // Extreure dades Tanita de les observacions
+  const tanita = extreure_tanita(text);
+  const tensio = extreure_tensio(text);
+
+  return {
+    titol: `Planificación ${data_planif||'importada'} · ${nom_pdf}`,
+    data_planif,
+    nom_pdf,
+    moments: moments_presents,
+    planificacio,
+    tanita,
+    tensio,
+    tipus: 'importat',
+    creat: new Date().toISOString()
+  };
+}
+
+function extreure_plat_pagina(text, moment, dia) {
+  // Buscar el nom del plat associat a aquest moment
+  // regex not used - using pattern below instead
+
+  // Mètode alternatiu: buscar entre el moment i el proper moment
+  const moments_tots = ['Desayuno','Almuerzo 1','Almuerzo 2','Comida','Merienda 1','Merienda 2','Cena','Recena'];
+  const idx = moments_tots.indexOf(moment);
+  const next_moment = moments_tots[idx+1] || 'OBSERVACIONES';
+
+  const pattern = new RegExp(
+    moment + '[\\s\\n]+(?:\\d{2}:\\d{2})?[\\s\\n]+([\\w\\s,áéíóúÁÉÍÓÚñÑüÜ\\/\\(\\)]+?)(?=INGREDIENTES|' + next_moment + '|\\d{2}:\\d{2})',
+    'i'
+  );
+
+  const m = text.match(pattern);
+  if(m) {
+    const nom = m[1].replace(/\s+/g,' ').trim();
+    if(nom.length > 3 && nom.length < 200) {
+      return { nom, kcal:0, prot:0, hc:0, gras:0, ingredients: extreure_ingredients(text, nom) };
+    }
+  }
+  return null;
+}
+
+function parsejar_taula_p2(text, moments, planificacio) {
+  // Parsejar la taula visual de la pàgina 2
+  const dies = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+
+  moments.forEach((moment, mi) => {
+    // Buscar blocs de text associats a cada moment
+    const pattern = new RegExp(`${moment}[\s\S]{0,20}?([\w\s,áéíóúÁÉÍÓÚñÑ\/\(\)]{5,150})`, 'gi');
+    let match;
+    let count = 0;
+    while((match = pattern.exec(text)) !== null && count < 7) {
+      const nom = match[1].replace(/\s+/g,' ').trim();
+      if(nom.length > 3 && !['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'].some(d => nom.includes(d))) {
+        planificacio[moment+'_'+count] = { nom, kcal:0, prot:0, hc:0, gras:0 };
+        count++;
+      }
+    }
+  });
+}
+
+function extreure_ingredients(text, nom_plat) {
+  const pattern = new RegExp(
+    `INGREDIENTES[^:]*:([\s\S]{10,500}?)(?:RECETA:|${['Desayuno','Almuerzo','Comida','Merienda','Cena','Recena'].join('|')})`,
+    'i'
+  );
+  const m = text.match(pattern);
+  return m ? m[1].replace(/\s+/g,' ').trim() : '';
+}
+
+function extreure_tanita(text) {
+  const tanita = {};
+  const match_pes = text.match(/Pes[o]?[:.]?\s*([\d,.]+)\s*[Kk]g/i);
+  if(match_pes) tanita.pes = parseFloat(match_pes[1].replace(',','.'));
+  const match_grassa = text.match(/Gras[sa]+\s+corporal[:.]?\s*([\d,.]+)/i);
+  if(match_grassa) tanita.grassa = parseFloat(match_grassa[1].replace(',','.'));
+  const match_muscul = text.match(/Massa\s+muscular[:.]?\s*([\d,.]+)/i);
+  if(match_muscul) tanita.muscul = parseFloat(match_muscul[1].replace(',','.'));
+  const match_visceral = text.match(/Grassa?\s+visceral[:.]?\s*([\d,.]+)/i);
+  if(match_visceral) tanita.visceral = parseFloat(match_visceral[1].replace(',','.'));
+  const match_aigua = text.match(/Aigua\s+corporal[:.]?\s*([\d,.]+)\s*%/i);
+  if(match_aigua) tanita.aigua = parseFloat(match_aigua[1].replace(',','.'));
+  const match_ossi = text.match(/Massa\s+[òo]ssi[a]?[:.]?\s*([\d,.]+)/i);
+  if(match_ossi) tanita.ossi = parseFloat(match_ossi[1].replace(',','.'));
+  return Object.keys(tanita).length ? tanita : null;
+}
+
+function extreure_tensio(text) {
+  const m = text.match(/[Tt]ensi[oó]\s+arterial[:.]?\s*([\d]+)\s*mmHg\s*(?:i|y|\/)\s*([\d]+)\s*mmHg/i);
+  if(m) return `${m[1]}/${m[2]} mmHg`;
+  return null;
+}
+
+function mostrar_preview_importacio(dades) {
+  const dies = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  let html = `<div class="preview-info-box">
+    <h4>📋 ${dades.titol}</h4>
+    <div class="preview-info-row">
+      <div class="preview-info-item"><span>Fecha</span>${dades.data_planif||'—'}</div>
+      <div class="preview-info-item"><span>Paciente en PDF</span>${dades.nom_pdf||'—'}</div>
+      <div class="preview-info-item"><span>Momentos detectados</span>${dades.moments.length}</div>
+      <div class="preview-info-item"><span>Platos extraídos</span>${Object.keys(dades.planificacio).length}</div>
+    </div>`;
+
+  if(dades.tanita) {
+    html += `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(45,106,79,0.2)">
+      <strong style="font-size:0.75rem;color:var(--verde)">⚖️ Datos Tanita detectados:</strong>
+      <div class="preview-info-row" style="margin-top:4px">
+        ${dades.tanita.pes?`<div class="preview-info-item"><span>Peso</span>${dades.tanita.pes} kg</div>`:''}
+        ${dades.tanita.grassa?`<div class="preview-info-item"><span>Grasa</span>${dades.tanita.grassa} kg</div>`:''}
+        ${dades.tanita.muscul?`<div class="preview-info-item"><span>Músculo</span>${dades.tanita.muscul} kg</div>`:''}
+        ${dades.tensio?`<div class="preview-info-item"><span>Tensión</span>${dades.tensio}</div>`:''}
+      </div>
+    </div>`;
+  }
+  html += '</div>';
+
+  if(Object.keys(dades.planificacio).length > 0) {
+    html += `<table class="preview-taula">
+      <thead><tr><th>Momento</th>${dies.map(d=>`<th>${d}</th>`).join('')}</tr></thead>
+      <tbody>`;
+    dades.moments.forEach(moment => {
+      html += `<tr><td class="preview-moment">${moment}</td>`;
+      [0,1,2,3,4,5,6].forEach(di => {
+        const plat = dades.planificacio[moment+'_'+di];
+        html += `<td class="preview-plat" style="font-size:0.72rem">${plat?plat.nom:'<span style="color:#ccc">—</span>'}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+  } else {
+    html += `<div style="background:#fff3cd;border-radius:8px;padding:12px;font-size:0.82rem;color:#856404;margin-top:12px">
+      ⚠️ No se han podido extraer los platos automáticamente. Se guardará la estructura del PDF sin platos. Puedes añadirlos manualmente desde la planificación.
+    </div>`;
+  }
+
+  document.getElementById('import-preview-body').innerHTML = html;
+  document.getElementById('import-preview-subtitol').textContent = `${dades.moments.length} momentos · ${Object.keys(dades.planificacio).length} platos`;
+}
+
+function confirmar_importacio() {
+  if(!dades_import_temp) return;
+  if(!pacient_actiu.historial) pacient_actiu.historial = [];
+  pacient_actiu.historial.unshift(dades_import_temp);
+  // Si el pacient té dades Tanita, guardar-les
+  if(dades_import_temp.tanita || dades_import_temp.tensio) {
+    if(!pacient_actiu.evolucio) pacient_actiu.evolucio = [];
+    pacient_actiu.evolucio.unshift({
+      data: dades_import_temp.data_planif,
+      tanita: dades_import_temp.tanita,
+      tensio: dades_import_temp.tensio,
+      creat: new Date().toISOString()
+    });
+  }
+  guardar_pacients();
+  document.getElementById('modal-import-preview').classList.remove('visible');
+  dades_import_temp = null;
+  renderitzar_historial();
+  alert('✅ Planificación importada correctamente al historial.');
+}
+
+// ── IMPORTAR TANITA ──
+async function importar_tanita_nou(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  try {
+    const text_raw = await llegir_pdf_text(file);
+    const linies = text_raw.split(/\n|\s{2,}/).map(l => l.trim()).filter(l => l.length > 0);
+    const text = linies.join('\n');
+
+    const tanita = extreure_tanita_complet(text, linies);
+    if (!tanita || !tanita.pes) {
+      mostrar_toast('❌ No se encontraron datos Tanita en este PDF.', 'error');
+      return;
+    }
+
+    if (!pacient_actiu.evolucio) pacient_actiu.evolucio = [];
+
+    // Evitar duplicats per data
+    const ja_existeix = pacient_actiu.evolucio.find(e => e.data === tanita.data);
+    if (ja_existeix) {
+      if (!confirm(`Ya existe una medición del ${tanita.data}. ¿Sobreescribir?`)) return;
+      const idx = pacient_actiu.evolucio.indexOf(ja_existeix);
+      pacient_actiu.evolucio.splice(idx, 1);
+    }
+
+    pacient_actiu.evolucio.unshift({ data: tanita.data, tanita, creat: new Date().toISOString() });
+    // Ordenar per data desc
+    pacient_actiu.evolucio.sort((a,b) => new Date(b.data.split('/').reverse().join('-')) - new Date(a.data.split('/').reverse().join('-')));
+    guardar_pacients();
+    renderitzar_evolucio();
+    mostrar_toast(`✅ Medición del ${tanita.data} guardada · Peso: ${tanita.pes} kg`, 'ok');
+  } catch(e) {
+    mostrar_toast('❌ Error leyendo el PDF: ' + e.message, 'error');
+    console.error(e);
+  }
+}
+
+// Mantenir compatibilitat amb el botó vell del topbar
+async function importar_tanita(input) { await importar_tanita_nou(input); }
+
+function extreure_tanita_per_posicio(words) {
+  // Cerca el valor numèric més proper a una posició (x,y) amb tolerància
+  const atXY = (tx, ty, tol=8) => {
+    const candidats = words.filter(w => Math.abs(w.y - ty) <= tol && Math.abs(w.x - tx) <= 30);
+    if (!candidats.length) return null;
+    // Agafar el més proper
+    candidats.sort((a,b) => Math.abs(a.x-tx)+Math.abs(a.y-ty) - (Math.abs(b.x-tx)+Math.abs(b.y-ty)));
+    const v = parseFloat(candidats[0].text.replace('-','').replace(',','.'));
+    return isNaN(v) ? null : v;
+  };
+  // Cerca el primer valor numèric a una franja Y (entre y1 i y2) i X (entre x1 i x2)
+  const atRange = (x1,x2,y1,y2) => {
+    const c = words.filter(w => w.x>=x1 && w.x<=x2 && w.y>=y1 && w.y<=y2);
+    if (!c.length) return null;
+    c.sort((a,b)=>a.y-b.y);
+    const v = parseFloat(c[0].text.replace('-','').replace(',','.'));
+    return isNaN(v) ? null : v;
+  };
+
+  // Data: primer element que sembla DD/M/YYYY o DD.MM.YYYY
+  let data = '';
+  const wData = words.find(w => /^\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{4}$/.test(w.text));
+  if (wData) {
+    const parts = wData.text.split(/[\/\.\-]/);
+    data = parts[0].padStart(2,'0') + '/' + parts[1].padStart(2,'0') + '/' + parts[2];
+  } else {
+    data = new Date().toLocaleDateString('es-ES');
+  }
+
+  // Valors principals (x~115, files y fixes)
+  // Estructura del PDF Tanita (coordenades en punts PDF, escala 1x):
+  const t = {
+    data,
+    pes:             atRange(100,150, 148,160),
+    grassa_pct:      atRange(100,160, 162,175),
+    massa_grassa:    atRange(100,145, 175,188),
+    massa_lliure:    atRange(100,155, 188,202),
+    massa_muscular:  atRange(100,150, 202,216),
+    imc:             atRange(100,145, 216,230),
+    edat_metabolica: atRange(100,145, 228,242),
+    // Capsalera: Massa grassa / Massa òssia / Proteïna (y~145, x varies)
+    massa_ossia:     atRange(410,445, 138,152),
+    proteina:        atRange(458,488, 138,152),
+    // Agua
+    agua_kg:         atRange(455,500, 228,242),
+    agua_pct:        atRange(110,145, 368,382),
+    // TMB
+    tmb_kj:          atRange(95,140,  274,288),
+    tmb_kcal:        atRange(95,135,  288,302),
+    // Grassa visceral
+    grassa_visceral: atRange(118,148, 326,342),
+    // Anàlisi segmentari Massa muscular
+    seg_tronc_musc:       atRange(90,130,  445,460),
+    seg_brac_esq_musc:    atRange(60,100,  479,492),
+    seg_brac_dret_musc:   atRange(238,275, 479,492),
+    seg_cama_esq_musc:    atRange(70,105,  514,528),
+    seg_cama_dret_musc:   atRange(228,268, 514,528),
+    // Anàlisi segmentari Grassa %
+    seg_tronc_grassa:     atRange(348,392, 445,460),
+    seg_brac_esq_grassa:  atRange(318,365, 479,492),
+    seg_brac_dret_grassa: atRange(492,534, 479,492),
+    seg_cama_esq_grassa:  atRange(328,370, 514,528),
+    seg_cama_dret_grassa: atRange(480,525, 514,528),
+  };
+
+  // Historial intern del PDF (y >= 700, format DD.MM.YYYY x~50)
+  const historial = [];
+  const hWords = words.filter(w => w.y >= 698 && w.y <= 815);
+  // Agrupar per fila Y (±5px)
+  const files = {};
+  hWords.forEach(w => {
+    const ky = Math.round(w.y / 6) * 6;
+    if (!files[ky]) files[ky] = [];
+    files[ky].push(w);
+  });
+  Object.values(files).forEach(fila => {
+    fila.sort((a,b) => a.x - b.x);
+    const dateW = fila.find(w => /^\d{2}[\/.\-]\d{2}[\/.\-]\d{4}$/.test(w.text) || w.text === 'Initial');
+    if (!dateW) return;
+    const nums = fila.filter(w => /^\d+[.,]?\d*$/.test(w.text)).map(w => parseFloat(w.text.replace(',','.')));
+    if (nums.length >= 3) {
+      const d = dateW.text === 'Initial' ? 'Initial' : dateW.text.replace(/\./g,'/');
+      historial.push({ data: d, pes: nums[0], massa_muscular: nums[1], grassa_pct: nums[2] });
+    }
+  });
+  if (historial.length) t.historial_pdf = historial;
+
+  return t;
+}
+
+function extreure_tanita_complet(text, linies) {
+  const num = (patron) => {
+    const m = text.match(patron);
+    return m ? parseFloat(m[1].replace(',','.')) : null;
+  };
+  const numLinies = (cerca) => {
+    for (let i = 0; i < linies.length; i++) {
+      if (linies[i].toLowerCase().includes(cerca.toLowerCase())) {
+        // Buscar el primer número a les següents línies
+        for (let j = i+1; j < Math.min(i+4, linies.length); j++) {
+          const m = linies[j].match(/^(\d+[.,]?\d*)\s*(kg|%|kcal|kJ)?$/i);
+          if (m) return parseFloat(m[1].replace(',','.'));
+        }
+      }
+    }
+    return null;
+  };
+
+  // Data: format "DD/MM/YYYY HH:MM" o "DD.MM.YYYY"
+  let data = '';
+  const mData = text.match(/(\d{1,2}[\/.](\d{2})[\/.](\d{4}))/);
+  if (mData) {
+    const parts = mData[1].split(/[\/\.]/);
+    data = parts[0].padStart(2,'0') + '/' + parts[1] + '/' + parts[2];
+  } else {
+    data = new Date().toLocaleDateString('es-ES');
+  }
+
+  // Dades principals — el PDF té les dades en línies consecutives
+  // Estructura típica del text extret: valor numèric a la línia següent a l'etiqueta
+  const t = {
+    data,
+    pes:           num(/Peso\s*[\n\r]*(\d+[.,]?\d*)\s*kg/i) || num(/(\d+[.,]\d+)\s*kg[\s\n]/),
+    grassa_pct:    num(/(?:%\s*de\s*grasa|Grasa\s*en\s*%)\s*[\n\r]*(\d+[.,]?\d*)\s*%/i),
+    massa_grassa:  num(/Masa\s*de\s*grasa\s*[\n\r]*(\d+[.,]?\d*)\s*kg/i),
+    massa_lliure:  num(/Masa\s*libre\s*de\s*grasa\s*[\n\r]*(\d+[.,]?\d*)\s*kg/i),
+    massa_muscular:num(/Masa\s*muscular\s*[\n\r]*(\d+[.,]?\d*)\s*kg/i),
+    imc:           num(/IMC\s*[\n\r]*(\d+[.,]?\d*)/i),
+    edat_metabolica:num(/Edad\s*metab[oó]lica\s*[\n\r]*(\d+)/i),
+    tmb_kcal:      num(/(\d+)\s*kcal/i),
+    tmb_kj:        num(/(\d+)\s*kJ/i),
+    grassa_visceral:num(/(?:Clasificaci[oó]n\s*de\s*grasa\s*visceral|grasa\s*visceral)[^\d]*(\d+[.,]?\d*)/i),
+    aigua_pct:     num(/Agua\s*total[^\d]*(\d+[.,]?\d*)\s*%/i),
+    aigua_kg:      num(/Agua\s*total[^\d]*\d+[.,]?\d*\s*%[^\d]*(\d+[.,]?\d*)\s*kg/i),
+    massa_ossia:   num(/Masa\s*[oó]sea\s*[\n\r]*(\d+[.,]?\d*)\s*kg/i),
+  };
+
+  // Fallback per valors que no s'han trobat amb regex — buscar per proximitat de línies
+  if (!t.pes) t.pes = numLinies('Peso');
+  if (!t.grassa_pct) t.grassa_pct = numLinies('% de grasa');
+  if (!t.massa_muscular) t.massa_muscular = numLinies('Masa muscular');
+  if (!t.imc) t.imc = numLinies('IMC');
+  if (!t.grassa_visceral) t.grassa_visceral = numLinies('grasa visceral');
+  if (!t.tmb_kcal) t.tmb_kcal = numLinies('kcal');
+
+  // Historial intern del PDF (línies amb format: "DD.MM.YYYY NNN.NN NNN.NN NN.NN")
+  const historial = [];
+  linies.forEach(l => {
+    const m = l.match(/^(\d{2}[\/.](\d{2})[\/.]\d{4})\s+(\d+[.,]?\d*)\s+(\d+[.,]?\d*)\s+(\d+[.,]?\d*)/);
+    if (m) historial.push({
+      data: m[1].replace(/\./g,'/'),
+      pes: parseFloat(m[3].replace(',','.')),
+      massa_muscular: parseFloat(m[4].replace(',','.')),
+      grassa_pct: parseFloat(m[5].replace(',','.'))
+    });
+  });
+  if (historial.length) t.historial_pdf = historial;
+
+  return t;
+}
+
+// Tancar modals clicant fora
+['modal-plat','modal-nou-pacient','modal-confirmar-borrar','modal-import-preview','modal-composicio-confirm','modal-cuestionari'].forEach(id=>{
+  const el=document.getElementById(id); if(el) el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('visible');});
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// ── IMPORTAR CATÀLEG DE PLATS ──
+let cataleg_plats = JSON.parse(localStorage.getItem('im_cataleg_plats') || '[]');
+
+function guardar_cataleg_plats() {
+  localStorage.setItem('im_cataleg_plats', JSON.stringify(cataleg_plats));
+}
+
+async function importar_cataleg_plats(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+
+    // Validate it's a plate catalog JSON
+    if (data.tipo !== 'catalogo_platos' || !Array.isArray(data.platos)) {
+      mostrar_toast('❌ El archivo no es un catálogo de platos. Usa el JSON generado por Dietopro Extractor (pestaña Platos).', 'error');
+      return;
+    }
+
+    const nous = data.platos.filter(p => p.nombre && p.nombre.length > 1);
+    if (nous.length === 0) {
+      mostrar_toast('⚠️ El catálogo está vacío.', 'error');
+      return;
+    }
+
+    // Merge: update existing or add new
+    let actualitzats = 0, afegits = 0;
+    nous.forEach(plat_nou => {
+      const idx = cataleg_plats.findIndex(p => p.nombre.toLowerCase().trim() === plat_nou.nombre.toLowerCase().trim());
+      if (idx >= 0) {
+        // Update existing (macros, allergens may have improved)
+        cataleg_plats[idx] = { ...cataleg_plats[idx], ...plat_nou };
+        actualitzats++;
+      } else {
+        cataleg_plats.push(plat_nou);
+        afegits++;
+      }
+    });
+
+    guardar_cataleg_plats();
+
+    const msg = `✅ Catálogo actualizado: ${afegits} platos nuevos, ${actualitzats} actualizados. Total: ${cataleg_plats.length} platos.`;
+    mostrar_toast(msg, 'ok');
+    document.getElementById('stat-plats-cataleg').textContent = cataleg_plats.length;
+    actualitzar_stat_cataleg();
+
+  } catch(e) {
+    mostrar_toast('❌ Error al leer el archivo: ' + e.message, 'error');
+  }
+}
+
+function actualitzar_stat_cataleg() {
+  const el = document.getElementById('stat-plats-cataleg');
+  if (el) el.textContent = cataleg_plats.length;
+}
+
+// Search in local catalog (used from meal modal)
+function buscar_en_cataleg(q) {
+  if (!q || q.length < 2) return [];
+  const qLow = q.toLowerCase();
+  return cataleg_plats
+    .filter(p => p.nombre && p.nombre.toLowerCase().includes(qLow))
+    .slice(0, 8);
+}
+
+function mostrar_toast(msg, tipus) {
+  let toast = document.getElementById('toast-global');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast-global';
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1C2B22;color:white;padding:12px 20px;border-radius:12px;font-size:0.85rem;z-index:9999;max-width:420px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.3);transition:opacity 0.3s;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.background = tipus === 'error' ? '#c0392b' : '#2D6A4F';
+  toast.style.opacity = '1';
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(() => { toast.style.opacity = '0'; }, 4000);
+}
+
+
+// ── IMPORTAR COMPOSICIÓ D'UN PLAT ──
+let _composicio_pendent = null;
+
+async function importar_composicio_plat(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+
+    // Validar format: ha de ser catalogo_platos amb exactament 1 plat amb macros
+    if (data.tipo !== 'catalogo_platos' || !Array.isArray(data.platos) || data.platos.length === 0) {
+      mostrar_toast('❌ Archivo no válido. Usa la pestaña "Plato" de la extensión para extraer fichas individuales.', 'error');
+      return;
+    }
+
+    const plat = data.platos[0];
+    if (!plat.nombre) { mostrar_toast('❌ El archivo no contiene nombre de plato.', 'error'); return; }
+
+    // Comprovar si existeix al catàleg
+    const idx = cataleg_plats.findIndex(p => p.nombre.toLowerCase().trim() === plat.nombre.toLowerCase().trim());
+
+    if (idx >= 0) {
+      // Existeix: actualitzar directament
+      cataleg_plats[idx] = { ...cataleg_plats[idx], ...plat };
+      guardar_cataleg_plats();
+      mostrar_toast(`✅ Composición de "${plat.nombre}" actualizada.`, 'ok');
+    } else {
+      // No existeix: preguntar
+      _composicio_pendent = plat;
+      document.getElementById('composicio-confirm-text').innerHTML =
+        `El plato <strong>"${plat.nombre}"</strong> no existe en el catálogo.<br>¿Quieres añadirlo igualmente?`;
+      document.getElementById('modal-composicio-confirm').classList.add('visible');
+    }
+  } catch(e) {
+    mostrar_toast('❌ Error al leer el archivo: ' + e.message, 'error');
+  }
+}
+
+function confirmar_importar_composicio() {
+  if (!_composicio_pendent) return;
+  cataleg_plats.push(_composicio_pendent);
+  guardar_cataleg_plats();
+  actualitzar_stat_cataleg();
+  mostrar_toast(`✅ "${_composicio_pendent.nombre}" añadido al catálogo.`, 'ok');
+  _composicio_pendent = null;
+  tancar_modal_composicio_confirm();
+}
+
+function tancar_modal_composicio_confirm() {
+  document.getElementById('modal-composicio-confirm').classList.remove('visible');
+  _composicio_pendent = null;
+}
+
+
+// ── CATÀLEG DE PLATS — RENDERITZAR ──
+function renderitzar_cataleg() {
+  const q = (document.getElementById('cerca-plats-cataleg')?.value || '').toLowerCase().trim();
+  const grid = document.getElementById('cataleg-grid');
+  if (!grid) return;
+
+  const filtrats = q
+    ? cataleg_plats.filter(p => p.nombre && p.nombre.toLowerCase().includes(q))
+    : cataleg_plats;
+
+  if (filtrats.length === 0) {
+    grid.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-suau)">
+      <div style="font-size:2rem;margin-bottom:8px">🍽️</div>
+      <p>${q ? 'Sin resultados para "'+q+'"' : 'No hay platos importados. Usa los botones de arriba.'}</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">
+    ${filtrats.map((p, i) => {
+      const idx = cataleg_plats.indexOf(p);
+      const alerg = p.alergenos && p.alergenos.length ? `<div style="font-size:0.72rem;color:var(--rosa);margin-top:4px">⚠️ ${p.alergenos.join(', ')}</div>` : '';
+      const macros = p.kcal ? `<div style="font-size:0.75rem;color:var(--text-suau);margin-top:4px">${p.kcal}kcal · P:${p.prot||0}g · HC:${p.hc||0}g · G:${p.gras||0}g</div>` : '';
+      const dif = p.dificultad ? `<div style="font-size:0.72rem;color:var(--text-suau)">${p.dificultad}</div>` : '';
+      return `<div style="background:white;border:1.5px solid var(--vora);border-radius:var(--radi);padding:14px 16px;position:relative;">
+        <button onclick="borrar_plat_cataleg(${idx})" style="position:absolute;top:8px;right:8px;background:transparent;border:none;color:#ccc;cursor:pointer;font-size:0.9rem;line-height:1;" title="Eliminar">✕</button>
+        <div style="font-size:0.88rem;font-weight:600;color:var(--text);padding-right:20px">${p.nombre}</div>
+        ${dif}${macros}${alerg}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function borrar_plat_cataleg(idx) {
+  if (!confirm(`¿Eliminar "${cataleg_plats[idx]?.nombre}" del catálogo?`)) return;
+  cataleg_plats.splice(idx, 1);
+  guardar_cataleg_plats();
+  actualitzar_stat_cataleg();
+  renderitzar_cataleg();
+}
+
+function confirmar_borrar_cataleg() {
+  if (!cataleg_plats.length) { mostrar_toast('El catálogo ya está vacío.', 'error'); return; }
+  if (!confirm(`¿Borrar los ${cataleg_plats.length} platos del catálogo? Esta acción no se puede deshacer.`)) return;
+  cataleg_plats = [];
+  guardar_cataleg_plats();
+  actualitzar_stat_cataleg();
+  renderitzar_cataleg();
+  mostrar_toast('🗑️ Catálogo borrado.', 'ok');
+}
+
+// Renderitzar catàleg quan s'obre la pestanya
+const _canviar_tab_orig = canviar_tab;
+canviar_tab = function(id, btn) {
+  _canviar_tab_orig(id, btn);
+  if (id === 'plats') { actualitzar_stat_cataleg(); renderitzar_cataleg(); }
+};
+
+
+// ── CUESTIONARI INICIAL ──
+const PATOLOGIES_LLISTA = ["Hipercolesterolemia e hipertrigliceridemia (dislipoproteinemia tipo IIb)", "Hipotiroidismo", "Osteoporosis primaria tipo I o posmenopáusica", "Sobrepeso", "Acidosis tubular renal distal (tipo I)", "Acidosis tubular renal hiperpotasémica (tipo IV)", "Acidosis tubular renal proximal (tipo II)", "Agenesia renal unilateral", "Alcoholismo (hepatopatía alcohólica)", "Alergia a Anisakis", "Alergia a la proteína de leche de vaca", "Alergia a proteína LTP", "Alergia al níquel", "Alergia alimentaria a frutos secos", "Amenorrea primaria", "Amenorrea secundaria", "Anemia falciforme", "Anemia ferropénica", "Anemia megaloblástica", "Anemia perniciosa", "Anemia sideroblástica", "Artritis reumatoide", "Artrosis", "Asma bronquial", "Bajo peso o peso insuficiente", "Blanqueamiento dental (Dieta blanca)", "Bocio/Cretinismo", "Calambres musculares", "Cáncer de esófago", "Candidiasis invasiva", "Caries dental", "Cefalea", "Celiaquía o enteropatía sensible al gluten", "Celulitis", "Cistinuria", "Colecistectomía o resección quirúrgica de vesícula biliar", "Colelitiasis o litiasis biliar", "Colitis ulcerosa - fase activa", "Colitis ulcerosa - fase inactiva", "Colon irritable (fase de estreñimiento)", "Colon irritable (fase diarreica)", "Diabetes gestacional", "Diabetes mellitus tipo I", "Diabetes mellitus tipo II", "Diarrea", "Dieta blanda mecánica (tercera edad, ortodoncias)", "Disfagia nivel IV", "Dispepsia funcional (no ulcerosa)", "Diverticulitis en fase aguda", "Diverticulitis en fase no aguda", "Enfermedad de Crohn - fase activa", "Enfermedad de Crohn - fase inactiva", "Enfermedad periodontal/gingivitis/periodontitis", "Enfermedad renal aguda", "Enfermedad renal crónica: diálisis peritoneal", "Enfermedad renal crónica: hemodiálisis", "Enfermedad renal crónica: tratamiento conservador", "Epilepsia", "EPOC (Enfermedad pulmonar obstructiva crónica)", "Esclerosis múltiple", "Esofagitis", "Esteatorrea", "Esteatosis hepática no alcohólica (hígado graso)", "Estenosis esofágica", "Estreñimiento", "Fibromialgia", "Fibrosis quística", "Galactosemia tipo I (clásica)", "Galactosemia tipo II", "Galactosemia tipo III", "Gastritis aguda", "Gastritis crónica asociada a Helicobacter pylori", "Hemocromatosis adquirida o secundaria", "Hemocromatosis hereditaria", "Hepatopatía crónica", "Hernia hiatal", "Hipercalcemia", "Hipercolesterolemia (dislipoproteinemia tipo IIa)", "Hipercolesterolemia e hipertrigliceridemia (tipo III)", "Hiperpotasemia", "Hipertensión esencial sal-sensible", "Hipertiroidismo", "Hipertrigliceridemia (tipo I - quilomicrones)", "Hipertrigliceridemia (tipo IV - VLDL)", "Hipertrigliceridemia (tipo V)", "Hipertrigliceridemia posprandial", "Hiperuricemia con crisis gotosa", "Hiperuricemia sin crisis gotosa", "Hipocalcemia y deficiencia de magnesio", "Hipovitaminosis A", "Hipovitaminosis B2", "Hipovitaminosis B6", "Inmunodepresión", "Insuficiencia cardíaca", "Insuficiencia hepática aguda", "Intolerancia a la fructosa/sorbitol", "Intolerancia a la lactosa (alta sensibilidad)", "Intolerancia a la lactosa (baja sensibilidad)", "Intolerancia al alcohol", "Intolerancia hereditaria a la fructosa", "Lipedema", "Litiasis renal fosfatocálcica", "Litiasis renal oxalocálcica", "Meteorismo o flatulencia", "Miomatosis uterina", "Náuseas y vómitos", "Obesidad", "Obesidad mórbida", "Osteomalacia", "Osteoporosis primaria tipo II o senil", "Osteoporosis secundaria", "Pancreatitis aguda (tras alta hospitalaria)", "Pancreatitis crónica", "Prediabetes", "Problemas de piel, pelo y uñas", "Psoriasis", "Reflujo gastroesofágico", "Sensibilidad al gluten no celiaca (SGNC)", "Síndrome de intestino corto (con colon)", "Síndrome de ovario poliquístico", "Síndrome nefrótico", "Tendinopatías y lesiones ligamentosas", "Trombocitopenia inmune (PTI)", "Úlcera péptica/gástrica/gastroduodenal", "Xerostomía"];
+
+let cues_step_actual = 1;
+const CUES_TOTAL_STEPS = 4;
+
+function obrir_cuestionari() {
+  if (!pacient_actiu) return;
+  document.getElementById('cues-header-pac').textContent = pacient_actiu.nom + ' ' + (pacient_actiu.cognoms||'');
+  cues_step_actual = 1;
+  carregar_cuestionari_dades();
+  construir_patologies_grid();
+  actualitzar_cues_ui();
+  document.getElementById('modal-cuestionari').classList.add('visible');
+}
+
+function tancar_cuestionari() {
+  document.getElementById('modal-cuestionari').classList.remove('visible');
+}
+
+function construir_patologies_grid() {
+  const selected = (pacient_actiu.cuestionari?.patologies) || [];
+  const grid = document.getElementById('cues-patologies-grid');
+  grid.innerHTML = PATOLOGIES_LLISTA.map(p => {
+    const sel = selected.includes(p) ? 'seleccionat' : '';
+    return `<label class="cues-check-item ${sel}" onclick="toggle_patologia(this)">
+      <input type="checkbox" ${sel?'checked':''} style="pointer-events:none"> ${p}
+    </label>`;
+  }).join('');
+}
+
+function filtrar_patologies() {
+  const q = document.getElementById('cues-cerca-patologies').value.toLowerCase();
+  document.querySelectorAll('#cues-patologies-grid .cues-check-item').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function toggle_patologia(el) {
+  el.classList.toggle('seleccionat');
+  el.querySelector('input').checked = el.classList.contains('seleccionat');
+}
+
+function toggle_opcio_unica(btn, hiddenId) {
+  const container = btn.closest('.cues-opcions');
+  container.querySelectorAll('.cues-opcio').forEach(b => b.classList.remove('seleccionat'));
+  btn.classList.add('seleccionat');
+  document.getElementById(hiddenId).value = btn.textContent.trim();
+}
+
+function toggle_opcio_multi(btn, groupId) {
+  btn.classList.toggle('seleccionat');
+}
+
+function get_opcions_multi(containerId) {
+  return Array.from(document.querySelectorAll('#'+containerId+' .cues-opcio.seleccionat')).map(b => b.textContent.trim());
+}
+
+function set_opcio_unica(containerId, hiddenId, valor) {
+  if (!valor) return;
+  document.querySelectorAll('#'+containerId+' .cues-opcio').forEach(b => {
+    if (b.textContent.trim() === valor) { b.classList.add('seleccionat'); document.getElementById(hiddenId).value = valor; }
+    else b.classList.remove('seleccionat');
+  });
+}
+
+function set_opcions_multi(containerId, valors) {
+  if (!valors) return;
+  document.querySelectorAll('#'+containerId+' .cues-opcio').forEach(b => {
+    b.classList.toggle('seleccionat', valors.includes(b.textContent.trim()));
+  });
+}
+
+function carregar_cuestionari_dades() {
+  const c = pacient_actiu.cuestionari || {};
+  document.getElementById('cq-motiu').value = c.motiu || '';
+  set_opcio_unica('cq-pes-opcions','cq-pes', c.pes);
+  set_opcio_unica('cq-estat-opcions','cq-estat', c.estat_fisiologic);
+  document.getElementById('cq-farmacos').value = c.farmacos || '';
+  set_opcio_unica('cq-estil-opcions','cq-estil', c.estil_alimentacio);
+  document.getElementById('cq-estil-altre').value = c.estil_altre || '';
+  set_opcions_multi('cq-cuina-opcions', c.tipus_cuina);
+  document.getElementById('cq-aversions').value = c.aversions || '';
+  set_opcio_unica('cq-activitat-opcions','cq-activitat', c.activitat);
+  document.getElementById('cq-treball').value = c.treball || '';
+  document.getElementById('cq-aigua').value = c.aigua || '';
+  document.getElementById('cq-alcohol').value = c.alcohol || '';
+  document.getElementById('cq-tabac').value = c.tabac || '';
+  set_opcio_unica('cq-motivacio-opcions','cq-motivacio', c.motivacio);
+  set_opcio_unica('cq-suport-opcions','cq-suport', c.suport);
+  set_opcio_unica('cq-depressa-opcions','cq-depressa', c.menja_depressa);
+  set_opcio_unica('cq-pica-opcions','cq-pica', c.pica_hores);
+  set_opcio_unica('cq-recorta-opcions','cq-recorta', c.recorta_quantitats);
+  set_opcio_unica('cq-menstruacio-opcions','cq-menstruacio', c.menstruacio);
+  document.getElementById('cq-intents').value = c.intents_anteriors || '';
+  document.getElementById('cq-trastorns').value = c.trastorns || '';
+  document.getElementById('cq-antecedents').value = c.antecedents || '';
+}
+
+function recollir_dades_cuestionari() {
+  return {
+    motiu: document.getElementById('cq-motiu').value.trim(),
+    pes: document.getElementById('cq-pes').value,
+    estat_fisiologic: document.getElementById('cq-estat').value,
+    patologies: Array.from(document.querySelectorAll('#cues-patologies-grid .cues-check-item.seleccionat')).map(el => el.textContent.trim()),
+    farmacos: document.getElementById('cq-farmacos').value.trim(),
+    estil_alimentacio: document.getElementById('cq-estil').value,
+    estil_altre: document.getElementById('cq-estil-altre').value.trim(),
+    tipus_cuina: get_opcions_multi('cq-cuina-opcions'),
+    aversions: document.getElementById('cq-aversions').value.trim(),
+    activitat: document.getElementById('cq-activitat').value,
+    treball: document.getElementById('cq-treball').value.trim(),
+    aigua: document.getElementById('cq-aigua').value,
+    alcohol: document.getElementById('cq-alcohol').value.trim(),
+    tabac: document.getElementById('cq-tabac').value.trim(),
+    motivacio: document.getElementById('cq-motivacio').value,
+    suport: document.getElementById('cq-suport').value,
+    menja_depressa: document.getElementById('cq-depressa').value,
+    pica_hores: document.getElementById('cq-pica').value,
+    recorta_quantitats: document.getElementById('cq-recorta').value,
+    menstruacio: document.getElementById('cq-menstruacio').value,
+    intents_anteriors: document.getElementById('cq-intents').value.trim(),
+    trastorns: document.getElementById('cq-trastorns').value.trim(),
+    antecedents: document.getElementById('cq-antecedents').value.trim(),
+    data_creacio: pacient_actiu.cuestionari?.data_creacio || new Date().toISOString(),
+    data_actualitzacio: new Date().toISOString()
+  };
+}
+
+function cues_seguent() {
+  if (cues_step_actual < CUES_TOTAL_STEPS) {
+    cues_step_actual++;
+    actualitzar_cues_ui();
+  } else {
+    guardar_cuestionari();
+  }
+}
+
+function cues_anterior() {
+  if (cues_step_actual > 1) { cues_step_actual--; actualitzar_cues_ui(); }
+}
+
+function actualitzar_cues_ui() {
+  for (let i = 1; i <= CUES_TOTAL_STEPS; i++) {
+    document.getElementById('cues-step-'+i)?.classList.toggle('actiu', i === cues_step_actual);
+  }
+  // Progress dots
+  const progress = document.getElementById('cues-progress');
+  progress.innerHTML = Array.from({length: CUES_TOTAL_STEPS}, (_,i) => {
+    const cls = i+1 < cues_step_actual ? 'fet' : i+1 === cues_step_actual ? 'actiu' : '';
+    return `<div class="cues-progress-dot ${cls}"></div>`;
+  }).join('');
+  // Botones nav
+  document.getElementById('cues-btn-anterior').style.display = cues_step_actual > 1 ? 'inline-flex' : 'none';
+  document.getElementById('cues-btn-seguent').textContent = cues_step_actual === CUES_TOTAL_STEPS ? '💾 Guardar' : 'Siguiente →';
+}
+
+function guardar_cuestionari() {
+  pacient_actiu.cuestionari = recollir_dades_cuestionari();
+  guardar_pacients();
+  tancar_cuestionari();
+  renderitzar_cuestionari_resum();
+  mostrar_toast('✅ Cuestionario guardado correctamente.', 'ok');
+}
+
+function borrar_cuestionari() {
+  if (!confirm('¿Eliminar el cuestionario de este paciente?')) return;
+  delete pacient_actiu.cuestionari;
+  guardar_pacients();
+  renderitzar_cuestionari_resum();
+  mostrar_toast('🗑️ Cuestionario eliminado.', 'ok');
+}
+
+function renderitzar_cuestionari_resum() {
+  const c = pacient_actiu?.cuestionari;
+  const badge = document.getElementById('badge-cuestionari');
+  const resum = document.getElementById('cuestionari-resum');
+  const btnBorrar = document.getElementById('btn-borrar-cuestionari');
+  const btnEditar = document.getElementById('btn-editar-cuestionari');
+
+  if (!c || !c.motiu && !c.pes && !c.patologies?.length) {
+    badge.textContent = 'Sin completar';
+    badge.style.background = '#fff3cd'; badge.style.color = '#856404';
+    btnEditar.textContent = '✏️ Completar';
+    btnBorrar.style.display = 'none';
+    resum.innerHTML = '<p style="font-size:0.85rem;color:var(--text-suau);padding:8px 0">Cuestionario inicial no completado.</p>';
+    return;
+  }
+
+  badge.textContent = 'Completado';
+  badge.style.background = 'var(--verde-suau)'; badge.style.color = 'var(--verde)';
+  btnEditar.textContent = '✏️ Editar';
+  btnBorrar.style.display = 'inline-flex';
+
+  const fila = (label, val) => val ? `<div class="resum-item"><span class="resum-label">${label}</span><span class="resum-val">${val}</span></div>` : '';
+
+  resum.innerHTML = `
+    ${fila('Motivo', c.motiu)}
+    ${fila('Objetivo peso', c.pes)}
+    ${fila('Estado fisiológico', c.estat_fisiologic)}
+    ${c.patologies?.length ? fila('Patologías', c.patologies.join(', ')) : ''}
+    ${fila('Fármacos', c.farmacos)}
+    ${fila('Alimentación', c.estil_alimentacio + (c.estil_altre?' · '+c.estil_altre:''))}
+    ${c.tipus_cuina?.length ? fila('Tipo cocina', c.tipus_cuina.join(', ')) : ''}
+    ${fila('Aversiones/alergias', c.aversions)}
+    ${fila('Actividad física', c.activitat)}
+    ${fila('Trabajo', c.treball)}
+    ${fila('Agua/día', c.aigua ? c.aigua+'L' : '')}
+    ${fila('Alcohol', c.alcohol)}
+    ${fila('Tabaco', c.tabac)}
+    ${fila('Motivación', c.motivacio)}
+    ${fila('Apoyo familiar', c.suport)}
+    ${fila('Come deprisa', c.menja_depressa)}
+    ${fila('Pica entre horas', c.pica_hores)}
+    ${fila('Recorta cantidades', c.recorta_quantitats)}
+    ${fila('Menstruación', c.menstruacio)}
+    ${fila('Intentos anteriores', c.intents_anteriors)}
+    ${fila('Trastornos', c.trastorns)}
+    ${fila('Antecedentes familiares', c.antecedents)}
+  `;
+}
+
+
+// ── NAVEGACIÓ PRINCIPAL ──
+function mostrar_pantalla_inici() {
+  document.getElementById('pantalla-inici').style.display = 'block';
+  document.getElementById('pantalla-pacients').style.display = 'none';
+  document.getElementById('pantalla-pacient').style.display = 'none';
+  document.getElementById('pantalla-plats-global').style.display = 'none';
+  // Update stats
+  const actius = pacients.filter(p => p.actiu !== false).length;
+  document.getElementById('inici-stat-pacients').textContent = pacients.length + ' pacientes (' + actius + ' activos)';
+  document.getElementById('inici-stat-plats').textContent = cataleg_plats.length + ' platos en catálogo';
+}
+
+function mostrar_pantalla_pacients() {
+  document.getElementById('pantalla-inici').style.display = 'none';
+  document.getElementById('pantalla-plats-global').style.display = 'none';
+  document.getElementById('pantalla-pacients').style.display = 'block';
+  renderitzar_pacients();
+}
+
+function mostrar_pantalla_plats() {
+  document.getElementById('pantalla-inici').style.display = 'none';
+  document.getElementById('pantalla-pacients').style.display = 'none';
+  document.getElementById('pantalla-pacient').style.display = 'none';
+  document.getElementById('pantalla-plats-global').style.display = 'block';
+  actualitzar_stat_cataleg();
+  renderitzar_cataleg_global();
+}
+
+function renderitzar_cataleg_global() {
+  const q = (document.getElementById('cerca-plats-global')?.value || '').toLowerCase().trim();
+  const grid = document.getElementById('cataleg-grid-global');
+  if (!grid) return;
+  const filtrats = q ? cataleg_plats.filter(p => p.nombre && p.nombre.toLowerCase().includes(q)) : cataleg_plats;
+  if (filtrats.length === 0) {
+    grid.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text-suau)">
+      <div style="font-size:2.5rem;margin-bottom:12px">🍽️</div>
+      <p style="font-size:0.9rem">${q ? 'Sin resultados para "'+q+'"' : 'No hay platos importados todavía.<br>Usa los botones de arriba para importar desde Dietopro Extractor.'}</p>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">
+    ${filtrats.map(p => {
+      const idx = cataleg_plats.indexOf(p);
+      const alerg = p.alergenos?.length ? `<div style="font-size:0.72rem;color:var(--rosa);margin-top:4px">⚠️ ${p.alergenos.join(', ')}</div>` : '';
+      const macros = p.kcal ? `<div style="font-size:0.75rem;color:var(--text-suau);margin-top:4px">${p.kcal}kcal · P:${p.prot||0}g · HC:${p.hc||0}g · G:${p.gras||0}g</div>` : '';
+      const dif = p.dificultad ? `<div style="font-size:0.72rem;color:var(--text-suau)">${p.dificultad}</div>` : '';
+      return `<div style="background:white;border:1.5px solid var(--vora);border-radius:var(--radi);padding:14px 16px;position:relative;">
+        <button onclick="borrar_plat_cataleg(${idx})" style="position:absolute;top:8px;right:8px;background:transparent;border:none;color:#ccc;cursor:pointer;font-size:0.9rem;" title="Eliminar">✕</button>
+        <div style="font-size:0.88rem;font-weight:600;color:var(--text);padding-right:20px">${p.nombre}</div>
+        ${dif}${macros}${alerg}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// Actualitzar stat_plats també a la pantalla global
+const _actualitzar_stat_orig = actualitzar_stat_cataleg;
+actualitzar_stat_cataleg = function() {
+  _actualitzar_stat_orig();
+  const el = document.getElementById('stat-plats-global');
+  if (el) el.textContent = cataleg_plats.length;
+};
+
+
+// ── EVOLUCIÓ TANITA ──
+let grafic_actual = 'pes';
+let _chart_instance = null;
+
+function canviar_grafic(tipus, btn) {
+  grafic_actual = tipus;
+  document.querySelectorAll('#evolucio-grafic-tabs .filtre-btn').forEach(b => b.classList.remove('actiu'));
+  btn.classList.add('actiu');
+  dibuixar_grafic();
+}
+
+function renderitzar_evolucio() {
+  const ev = pacient_actiu?.evolucio || [];
+  const empty = document.getElementById('evolucio-empty');
+  const contingut = document.getElementById('evolucio-contingut');
+  if (!ev.length) {
+    if (empty) empty.style.display = 'block';
+    if (contingut) contingut.style.display = 'none';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  if (contingut) contingut.style.display = 'block';
+
+  // Última medició
+  const ultima = ev[0];
+  const t = ultima.tanita || {};
+  const delta = (camp) => {
+    if (ev.length < 2) return '';
+    const ant = ev[1]?.tanita?.[camp];
+    const act = t[camp];
+    if (ant == null || act == null) return '';
+    const diff = (act - ant).toFixed(1);
+    const color = camp === 'grassa_pct' || camp === 'grassa_visceral'
+      ? (diff > 0 ? '#E53935' : '#2D6A4F')
+      : (diff > 0 ? '#2D6A4F' : '#E53935');
+    return `<span style="font-size:0.75rem;color:${color};margin-left:4px">${diff > 0 ? '+' : ''}${diff}</span>`;
+  };
+  const stat = (label, val, unitat, camp) => val != null
+    ? `<div style="text-align:center;padding:12px 8px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--verde);font-weight:600">${val}${unitat}${delta(camp)}</div>
+        <div style="font-size:0.72rem;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px">${label}</div>
+       </div>` : '';
+
+  const seg = (label, musc, grassa) => (musc || grassa) ? `
+    <div style="text-align:center;padding:8px 6px;background:var(--crema);border-radius:8px;">
+      <div style="font-size:0.7rem;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px">${label}</div>
+      ${musc != null ? `<div style="font-size:0.85rem;font-weight:600;color:var(--verde)">${musc} kg</div>` : ''}
+      ${grassa != null ? `<div style="font-size:0.8rem;color:var(--rosa)">${grassa}%</div>` : ''}
+    </div>` : '';
+
+  document.getElementById('evolucio-ultima').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--vora)">
+      <h4 style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;margin:0;border:none;padding:0">Última medición · ${ultima.data}</h4>
+      <button onclick="borrar_evolucio(0)" style="background:transparent;border:none;color:#ccc;cursor:pointer;font-size:0.85rem;">🗑️ Eliminar</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-bottom:16px;">
+      ${stat('Peso', t.pes, ' kg', 'pes')}
+      ${stat('% Grasa', t.grassa_pct, '%', 'grassa_pct')}
+      ${stat('Masa musc.', t.massa_muscular, ' kg', 'massa_muscular')}
+      ${stat('Masa grasa', t.massa_grassa, ' kg', 'massa_grassa')}
+      ${stat('Masa libre', t.massa_lliure, ' kg', 'massa_lliure')}
+      ${stat('Masa ósea', t.massa_ossia, ' kg', 'massa_ossia')}
+      ${stat('Proteína', t.proteina, ' kg', 'proteina')}
+      ${stat('Agua', t.agua_pct != null ? t.agua_pct : t.aigua_pct, '%', 'agua_pct')}
+      ${stat('Agua', t.agua_kg, ' kg', 'agua_kg')}
+      ${stat('IMC', t.imc, '', 'imc')}
+      ${stat('Ed. metab.', t.edat_metabolica, ' años', 'edat_metabolica')}
+      ${stat('Gr. visceral', t.grassa_visceral, '', 'grassa_visceral')}
+      ${stat('TMB', t.tmb_kcal, ' kcal', 'tmb_kcal')}
+    </div>
+
+    ${(t.seg_tronc_musc || t.seg_tronc_grassa) ? `
+    <div style="border-top:1px solid var(--vora);padding-top:14px;margin-top:4px;">
+      <div style="font-size:0.78rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px">Análisis segmentario</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
+        ${seg('Tronco', t.seg_tronc_musc, t.seg_tronc_grassa)}
+        ${seg('Brazo izq.', t.seg_brac_esq_musc, t.seg_brac_esq_grassa)}
+        ${seg('Brazo der.', t.seg_brac_dret_musc, t.seg_brac_dret_grassa)}
+        ${seg('Pierna izq.', t.seg_cama_esq_musc, t.seg_cama_esq_grassa)}
+        ${seg('Pierna der.', t.seg_cama_dret_musc, t.seg_cama_dret_grassa)}
+      </div>
+    </div>` : ''}
+  `;
+
+  // Taula
+  const tbody = document.getElementById('evolucio-taula-body');
+  tbody.innerHTML = ev.map((e, i) => {
+    const t = e.tanita || {};
+    const estil = i === 0 ? 'font-weight:600;background:#f8fdf9' : '';
+    return `<tr style="${estil}">
+      <td style="padding:9px 12px">${e.data}</td>
+      <td style="padding:9px 12px;text-align:right">${t.pes ?? '—'}</td>
+      <td style="padding:9px 12px;text-align:right">${t.grassa_pct != null ? t.grassa_pct + '%' : '—'}</td>
+      <td style="padding:9px 12px;text-align:right">${t.massa_muscular ?? '—'}</td>
+      <td style="padding:9px 12px;text-align:right">${t.imc ?? '—'}</td>
+      <td style="padding:9px 12px;text-align:right">${t.aigua_pct != null ? t.aigua_pct + '%' : '—'}</td>
+      <td style="padding:9px 12px;text-align:right">${t.grassa_visceral ?? '—'}</td>
+      <td style="padding:9px 12px;text-align:right">${t.tmb_kcal ?? '—'}</td>
+      <td style="padding:9px 12px;text-align:center">
+        <button onclick="borrar_evolucio(${i})" style="background:transparent;border:none;color:#ccc;cursor:pointer;font-size:0.85rem;" title="Eliminar">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  dibuixar_grafic();
+}
+
+function dibuixar_grafic() {
+  const ev = (pacient_actiu?.evolucio || []).filter(e => e.tanita).reverse();
+  if (!ev.length) return;
+
+  const labels = ev.map(e => e.data);
+  const camps = {
+    pes: { key:'pes', label:'Peso (kg)', color:'#2D6A4F' },
+    grassa: { key:'grassa_pct', label:'% Grasa', color:'#E07070' },
+    muscul: { key:'massa_muscular', label:'Masa muscular (kg)', color:'#5b8ac5' },
+    imc: { key:'imc', label:'IMC', color:'#F4A261' }
+  };
+  const cfg = camps[grafic_actual] || camps.pes;
+  const dades = ev.map(e => e.tanita?.[cfg.key] ?? null);
+
+  const canvas = document.getElementById('grafic-evolucio');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  if (_chart_instance) { _chart_instance.destroy(); _chart_instance = null; }
+
+  _chart_instance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: cfg.label,
+        data: dades,
+        borderColor: cfg.color,
+        backgroundColor: cfg.color + '18',
+        borderWidth: 2.5,
+        pointBackgroundColor: cfg.color,
+        pointRadius: 4,
+        tension: 0.3,
+        fill: true,
+        spanGaps: true
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        y: { grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function borrar_evolucio(idx) {
+  const e = pacient_actiu.evolucio[idx];
+  if (!confirm(`¿Eliminar la medición del ${e.data}?`)) return;
+  pacient_actiu.evolucio.splice(idx, 1);
+  guardar_pacients();
+  renderitzar_evolucio();
+}
+
+// Cridar renderitzar_evolucio quan s'obre la pestanya
+const _canviar_tab_orig2 = canviar_tab;
+canviar_tab = function(id, btn) {
+  _canviar_tab_orig2(id, btn);
+  if (id === 'evolucio') renderitzar_evolucio();
+};
+
+</script>
+
+<!-- MODAL COMPOSICIÓ NO TROBADA -->
+<div class="modal-overlay" id="modal-composicio-confirm">
+  <div class="modal-box modal-confirm">
+    <div class="modal-confirm-icon">🔬</div>
+    <h3 style="text-align:center;margin-bottom:8px;font-family:'Cormorant Garamond',serif;font-size:1.3rem" id="composicio-confirm-titol">Plato no encontrado</h3>
+    <p class="modal-confirm-text" id="composicio-confirm-text">—</p>
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:center">
+      <button class="btn btn-secondary" onclick="tancar_modal_composicio_confirm()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmar_importar_composicio()">✅ Añadir igualmente</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL CUESTIONARI INICIAL ══ -->
+<div class="modal-overlay" id="modal-cuestionari">
+  <div class="modal" style="max-width:680px;width:95%">
+    <div class="modal-header">
+      <div>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.3rem">Cuestionario inicial</h3>
+        <p id="cues-header-pac" style="font-size:0.78rem;color:var(--text-suau)">—</p>
+      </div>
+      <button class="modal-close" onclick="tancar_cuestionari()">✕</button>
+    </div>
+    <div class="modal-body" style="max-height:70vh;overflow-y:auto;padding:24px 28px">
+
+      <!-- Progress -->
+      <div class="cues-progress" id="cues-progress"></div>
+
+      <!-- PASO 1: Motivo, peso, estado fisiológico -->
+      <div class="cues-step actiu" id="cues-step-1">
+        <div class="cues-titol">Consulta y objetivos</div>
+        <div class="cues-subtitol">Paso 1 de 4</div>
+
+        <label class="cues-label">1. Motivo de la visita</label>
+        <textarea class="cues-textarea" id="cq-motiu" placeholder="Describe el motivo de la consulta..."></textarea>
+
+        <label class="cues-label" style="margin-top:14px">2. Objetivo respecto al peso</label>
+        <div class="cues-opcions" id="cq-pes-opcions">
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pes')">Reducir grasa</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pes')">Mantener peso</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pes')">Aumentar peso</button>
+        </div>
+        <input type="hidden" id="cq-pes">
+
+        <label class="cues-label" style="margin-top:14px">3. Estado fisiológico</label>
+        <div class="cues-opcions" id="cq-estat-opcions">
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Ninguno</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Premenopausia</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Postmenopausia</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Lactancia</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Embarazo</button>
+        </div>
+        <input type="hidden" id="cq-estat">
+      </div>
+
+      <!-- PASO 2: Patologías -->
+      <div class="cues-step" id="cues-step-2">
+        <div class="cues-titol">Patologías y síntomas</div>
+        <div class="cues-subtitol">Paso 2 de 4</div>
+        <label class="cues-label">4. Selecciona las patologías o tipos de dieta aplicables</label>
+        <input type="text" class="cues-cerca-path" id="cues-cerca-patologies" placeholder="🔍 Filtrar patologías..." oninput="filtrar_patologies()">
+        <div class="cues-check-grid" id="cues-patologies-grid"></div>
+      </div>
+
+      <!-- PASO 3: Fármacos, alimentación, cocina -->
+      <div class="cues-step" id="cues-step-3">
+        <div class="cues-titol">Alimentación y hábitos</div>
+        <div class="cues-subtitol">Paso 3 de 4</div>
+
+        <label class="cues-label">5. Fármacos</label>
+        <textarea class="cues-textarea" id="cq-farmacos" placeholder="Lista los fármacos que toma actualmente..."></textarea>
+
+        <label class="cues-label" style="margin-top:14px">6. Estilo de alimentación</label>
+        <div class="cues-opcions" id="cq-estil-opcions">
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')">Omnívora</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')">Vegetariana</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')">Vegana</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')">Económica</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')">Mediterránea</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')">Sin restricciones</button>
+        </div>
+        <input type="hidden" id="cq-estil">
+        <input class="cues-input" type="text" id="cq-estil-altre" placeholder="Otro estilo de alimentación...">
+
+        <label class="cues-label" style="margin-top:14px">7. Tipo de cocina preferida</label>
+        <div class="cues-opcions" id="cq-cuina-opcions">
+          <button class="cues-opcio" onclick="toggle_opcio_multi(this,'cq-cuina')">Básica</button>
+          <button class="cues-opcio" onclick="toggle_opcio_multi(this,'cq-cuina')">Fácil y rápida</button>
+          <button class="cues-opcio" onclick="toggle_opcio_multi(this,'cq-cuina')">Elaborada</button>
+          <button class="cues-opcio" onclick="toggle_opcio_multi(this,'cq-cuina')">Comercial</button>
+        </div>
+
+        <label class="cues-label" style="margin-top:14px">8. Aversiones, alergias e intolerancias</label>
+        <textarea class="cues-textarea" id="cq-aversions" placeholder="Indica alimentos que no tolera, no le gustan o a los que es alérgico/intolerante..."></textarea>
+
+        <label class="cues-label" style="margin-top:14px">9. Actividad física diaria</label>
+        <div class="cues-opcions" id="cq-activitat-opcions">
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')">Ninguna</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')">Muy ligera</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')">Ligera</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')">Moderada</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')">Intensa</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')">Muy intensa</button>
+        </div>
+        <input type="hidden" id="cq-activitat">
+      </div>
+
+      <!-- PASO 4: Datos complementarios -->
+      <div class="cues-step" id="cues-step-4">
+        <div class="cues-titol">Datos complementarios</div>
+        <div class="cues-subtitol">Paso 4 de 4</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label class="cues-label">Tipo de trabajo</label>
+            <input class="cues-input" type="text" id="cq-treball" placeholder="Sedentario, activo...">
+          </div>
+          <div>
+            <label class="cues-label">Agua al día (L)</label>
+            <input class="cues-input" type="number" id="cq-aigua" placeholder="1.5" step="0.1" min="0" max="10">
+          </div>
+          <div>
+            <label class="cues-label">Consumo de alcohol</label>
+            <input class="cues-input" type="text" id="cq-alcohol" placeholder="Nunca, ocasional, diario...">
+          </div>
+          <div>
+            <label class="cues-label">Consumo de tabaco</label>
+            <input class="cues-input" type="text" id="cq-tabac" placeholder="No fumador, ex-fumador...">
+          </div>
+          <div>
+            <label class="cues-label">Grado de motivación</label>
+            <div class="cues-opcions" style="margin-bottom:0" id="cq-motivacio-opcions">
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-motivacio')" style="font-size:0.75rem;padding:5px 12px">Bajo</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-motivacio')" style="font-size:0.75rem;padding:5px 12px">Medio</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-motivacio')" style="font-size:0.75rem;padding:5px 12px">Alto</button>
+            </div>
+            <input type="hidden" id="cq-motivacio">
+          </div>
+          <div>
+            <label class="cues-label">Grado de apoyo familiar</label>
+            <div class="cues-opcions" style="margin-bottom:0" id="cq-suport-opcions">
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-suport')" style="font-size:0.75rem;padding:5px 12px">Bajo</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-suport')" style="font-size:0.75rem;padding:5px 12px">Medio</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-suport')" style="font-size:0.75rem;padding:5px 12px">Alto</button>
+            </div>
+            <input type="hidden" id="cq-suport">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px">
+          <div>
+            <label class="cues-label">¿Come deprisa?</label>
+            <div class="cues-opcions" style="margin-bottom:0" id="cq-depressa-opcions">
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-depressa')" style="font-size:0.75rem;padding:5px 12px">Sí</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-depressa')" style="font-size:0.75rem;padding:5px 12px">No</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-depressa')" style="font-size:0.75rem;padding:5px 12px">A veces</button>
+            </div>
+            <input type="hidden" id="cq-depressa">
+          </div>
+          <div>
+            <label class="cues-label">¿Pica entre horas?</label>
+            <div class="cues-opcions" style="margin-bottom:0" id="cq-pica-opcions">
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pica')" style="font-size:0.75rem;padding:5px 12px">Sí</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pica')" style="font-size:0.75rem;padding:5px 12px">No</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pica')" style="font-size:0.75rem;padding:5px 12px">A veces</button>
+            </div>
+            <input type="hidden" id="cq-pica">
+          </div>
+          <div>
+            <label class="cues-label">¿Ya recorta cantidades?</label>
+            <div class="cues-opcions" style="margin-bottom:0" id="cq-recorta-opcions">
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-recorta')" style="font-size:0.75rem;padding:5px 12px">Sí</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-recorta')" style="font-size:0.75rem;padding:5px 12px">No</button>
+            </div>
+            <input type="hidden" id="cq-recorta">
+          </div>
+          <div>
+            <label class="cues-label">Menstruación</label>
+            <div class="cues-opcions" style="margin-bottom:0" id="cq-menstruacio-opcions">
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="font-size:0.75rem;padding:5px 12px">Regular</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="font-size:0.75rem;padding:5px 12px">Irregular</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="font-size:0.75rem;padding:5px 12px">Amenorrea</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="font-size:0.75rem;padding:5px 12px">N/A</button>
+            </div>
+            <input type="hidden" id="cq-menstruacio">
+          </div>
+        </div>
+
+        <label class="cues-label" style="margin-top:14px">Intentos previos de pérdida de peso</label>
+        <textarea class="cues-textarea" id="cq-intents" placeholder="Dietas anteriores, motivos de fracaso..."></textarea>
+
+        <label class="cues-label" style="margin-top:14px">Trastornos de la alimentación</label>
+        <textarea class="cues-textarea" id="cq-trastorns" placeholder="Indica si hay o ha habido algún trastorno..."></textarea>
+
+        <label class="cues-label" style="margin-top:14px">Antecedentes familiares</label>
+        <textarea class="cues-textarea" id="cq-antecedents" placeholder="Enfermedades relevantes en la familia..."></textarea>
+      </div>
+
+    </div><!-- end modal-body -->
+
+    <div class="modal-footer" style="display:flex;justify-content:space-between;align-items:center;padding:16px 28px">
+      <button class="btn-cancel" id="cues-btn-anterior" onclick="cues_anterior()" style="display:none">← Anterior</button>
+      <span style="flex:1"></span>
+      <button class="btn-guardar" id="cues-btn-seguent" onclick="cues_seguent()">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
