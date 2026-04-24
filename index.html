@@ -1599,12 +1599,22 @@ function parsejar_pdf_dietopro(text, filename) {
   const moments_presents = moments_possibles.filter(m => new RegExp(m.replace(' ','\\s+'), 'i').test(pagina2));
   const planificacio = {};
 
+  // Identificar pàgines de detall (tenen INGREDIENTES i un sol dia principal)
+  const pagines_detall = pages.filter(p => /INGREDIENTES/i.test(p));
+  // Mapejar cada pàgina de detall al seu dia
+  const paginaPerDia = {};
+  pagines_detall.forEach(p => {
+    dies.forEach((dia, di) => {
+      const diesCount = dies.filter(d => p.toLowerCase().includes(d.toLowerCase())).length;
+      if (p.toLowerCase().includes(dia.toLowerCase()) && diesCount <= 2) {
+        if (!paginaPerDia[di]) paginaPerDia[di] = p;
+      }
+    });
+  });
+
   moments_presents.forEach((moment, mi) => {
     dies.forEach((dia, di) => {
-      const pagina_dia = pages.find(p => {
-        const pl = p.toLowerCase();
-        return pl.includes(dia.toLowerCase()) && pl.includes(moment.toLowerCase());
-      });
+      const pagina_dia = paginaPerDia[di];
       if(pagina_dia) {
         const plats = extreure_plats_pagina(pagina_dia, moment);
         plats.forEach((plat, pi) => { planificacio[moment+'_'+di+(pi>0?'_v'+pi:'')] = plat; });
