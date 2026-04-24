@@ -1802,10 +1802,7 @@ async function importar_tanita_nou(input) {
   input.value = '';
   try {
     const text_raw = await llegir_pdf_text(file);
-    const linies = text_raw.split(/\n|\s{2,}/).map(l => l.trim()).filter(l => l.length > 0);
-    const text = linies.join('\n');
-
-    const tanita = extreure_tanita_complet(text, linies);
+    const tanita = extreure_tanita_text(text_raw);
     if (!tanita || !tanita.pes) {
       mostrar_toast('❌ No se encontraron datos Tanita en este PDF.', 'error');
       return;
