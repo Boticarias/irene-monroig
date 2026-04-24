@@ -1621,48 +1621,65 @@ function parsejar_pdf_dietopro(text, filename) {
   return { titol:`Planificación ${data_planif||'importada'} · ${nom_pdf}`, data_planif, nom_pdf, moments:moments_presents, planificacio, tanita, tensio, tipus:'importat', creat:new Date().toISOString() };
 }
 
-function extreure_plats_pagina(text, moment) {
-  const moments_tots = ['Desayuno','Almuerzo 1','Almuerzo 2','Comida','Merienda 1','Merienda 2','Cena','Recena'];
-  const idx = moments_tots.indexOf(moment);
-  const next = moments_tots[idx+1] || 'OBSERVACIONES';
+function extreure_plats_pagina(text_pagina, moment_filter) {
+  // Algoritme basat en posicions reals del text de PDF.js
+  // El text és una sola línia amb espais. Cada plat apareix com:
+  // "NomPlat  INGREDIENTES ( 1 persona ): ingredients  RECETA: passos  NomSeguent  INGREDIENTES..."
+
+  const MOMENTS_ALL = ['Desayuno','Almuerzo 1','Almuerzo 2','Comida','Merienda 1','Merienda 2','Cena','Recena'];
+  const FRUITES = new Set(['Naranja','Pera','Manzana','Plátano','Kiwi','Piña','Sandía','Pomelo','Mandarina','Uvas','Melocotón','Nectarina','Ciruela','Fresa','Melón','Cerezas','Higo','Granada']);
+  const VERBS = new Set(['lavar','pelar','cocer','asar','saltear','emplatar','hervir','batir','mezclar','verter','servir','cortar','poner','agregar','añadir','triturar','calentar','preparar','montar','tostar','colocar','retirar','picar','reservar','escurrir','distribuir','hornear','volcar','cuajar','escurrir','rehogar']);
+
+  // Trobar el segment del moment demanat
   const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const mIdx = MOMENTS_ALL.indexOf(moment_filter);
+  const nextM = mIdx >= 0 && mIdx < MOMENTS_ALL.length-1 ? MOMENTS_ALL[mIdx+1] : null;
 
-  const re = new RegExp(esc(moment)+'[\\s\\S]+?(?:\\d{2}:\\d{2})?\\s*([\\s\\S]+?)(?='+esc(next)+'|\\d{2}:\\d{2}|$)', 'i');
-  const m = text.match(re);
-  if(!m) return [];
+  const reStart = new RegExp('\\b' + esc(moment_filter) + '\\b\\s*(?:\\d{2}:\\d{2})?\\s*', 'i');
+  const mStart = text_pagina.match(reStart);
+  if (!mStart) return [];
 
-  const bloc = m[1].split(/INGREDIENTES/i)[0];
-  return bloc.split(/\n/).map(l=>l.trim()).filter(l => {
-    if(!l||l.length<3||l.length>200) return false;
-    if(/^\d{1,2}[:\.h]\d{2}$/.test(l)) return false;
-    if(/^\d+$/.test(l)) return false;
-    if(['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo',...moments_tots,'Platos','Recetas e ingredientes'].includes(l)) return false;
-    if(/RECETA|INGREDIENTES|Platos Recetas/i.test(l)) return false;
-    return true;
-  }).map(nom => ({nom, kcal:0, prot:0, hc:0, gras:0}));
-}
-function extreure_plat_pagina(text, moment, dia) {
-  // Buscar el nom del plat associat a aquest moment
-  // regex not used - using pattern below instead
-
-  // Mètode alternatiu: buscar entre el moment i el proper moment
-  const moments_tots = ['Desayuno','Almuerzo 1','Almuerzo 2','Comida','Merienda 1','Merienda 2','Cena','Recena'];
-  const idx = moments_tots.indexOf(moment);
-  const next_moment = moments_tots[idx+1] || 'OBSERVACIONES';
-
-  const pattern = new RegExp(
-    moment + '[\\s\\n]+(?:\\d{2}:\\d{2})?[\\s\\n]+([\\w\\s,áéíóúÁÉÍÓÚñÑüÜ\\/\\(\\)]+?)(?=INGREDIENTES|' + next_moment + '|\\d{2}:\\d{2})',
-    'i'
-  );
-
-  const m = text.match(pattern);
-  if(m) {
-    const nom = m[1].replace(/\s+/g,' ').trim();
-    if(nom.length > 3 && nom.length < 200) {
-      return { nom, kcal:0, prot:0, hc:0, gras:0, ingredients: extreure_ingredients(text, nom) };
-    }
+  let segEnd = text_pagina.length;
+  if (nextM) {
+    const reEnd = new RegExp('\\b' + esc(nextM) + '\\b', 'i');
+    const mEnd = text_pagina.slice(mStart.index + mStart[0].length).match(reEnd);
+    if (mEnd) segEnd = mStart.index + mStart[0].length + mEnd.index;
   }
-  return null;
+
+  const segment = text_pagina.slice(mStart.index + mStart[0].length, segEnd);
+
+  // Dividir per INGREDIENTES
+  const parts = segment.split(/\s+INGREDIENTES\s*\(\s*1\s*persona\s*\)\s*:/i);
+  const plats = [];
+
+  parts.slice(0, -1).forEach(part => {
+    let clean = part.replace(/\s+/g, ' ').trim();
+
+    // Eliminar definicions d'ingredients (Nom: Xg)
+    clean = clean.replace(/[\wáéíóúüñÁÉÍÓÚÜÑ/\s,]+:\s*\d+\s*(?:g|kg|ml|l|unidades?)[^A-ZÁÉÍÓÚÜÑ]*/gi, '');
+    clean = clean.replace(/\s+/g, ' ').trim();
+
+    // Trobar l'últim nom de plat: buscar la frase capitalitzada DESPRÉS dels verbs de recepta
+    const words = clean.split(' ');
+    let lastVerbIdx = -1;
+    words.forEach((w, wi) => {
+      if (VERBS.has(w.toLowerCase().replace(/[.,]/g,''))) lastVerbIdx = wi;
+    });
+
+    const candidate = lastVerbIdx >= 0
+      ? words.slice(lastVerbIdx + 1).join(' ').trim()
+      : clean;
+
+    const nomM = candidate.match(/([A-ZÁÉÍÓÚÜÑ][a-záéíóúüñA-ZÁÉÍÓÚÜÑ,/(.)\s]{0,150}?)\s*$/);
+    if (nomM) {
+      const nom = nomM[1].replace(/\s+/g,' ').trim();
+      if (nom.length >= 2 && nom.length <= 180) {
+        plats.push({ nom, kcal:0, prot:0, hc:0, gras:0 });
+      }
+    }
+  });
+
+  return plats;
 }
 
 function parsejar_taula_p2(text, moments, planificacio) {
