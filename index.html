@@ -555,6 +555,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
   <div id="pantalla-pacient" style="display:none;">
     <div class="pacient-topbar">
       <button class="btn-tornar" onclick="tornar_a_llista()">← Volver</button>
+      <button class="btn btn-primary" onclick="generar_pdf_planificacio()" style="font-size:0.8rem;padding:8px 16px;margin-left:auto">📄 Generar PDF</button>
       <div class="pacient-topbar-info">
         <h2 id="pac-nom-header">—</h2>
         <p id="pac-meta-header">—</p>
@@ -2838,7 +2839,455 @@ const _canviar_tab_orig2 = canviar_tab;
 canviar_tab = function(id, btn) {
   _canviar_tab_orig2(id, btn);
   if (id === 'evolucio') renderitzar_evolucio();
+  if (id === 'ficha') setTimeout(carregar_observacions, 50);
 };
+
+
+// ════════════════════════════════════════════════════════
+// OBSERVACIONS — guardar/carregar
+// ════════════════════════════════════════════════════════
+function guardar_observacions() {
+  if (!pacient_actiu) return;
+  if (!pacient_actiu.observacions) pacient_actiu.observacions = {};
+  pacient_actiu.observacions.objectiu_esportiu = document.getElementById('obs-objectiu').value.trim();
+  pacient_actiu.observacions.a_tenir_en_compte = document.getElementById('obs-compte').value.trim();
+  pacient_actiu.observacions.tensio            = document.getElementById('obs-tensio').value.trim();
+  pacient_actiu.observacions.pulsacions        = document.getElementById('obs-pulsacions').value.trim();
+  pacient_actiu.observacions.proxima_visita    = document.getElementById('obs-proxima-visita').value.trim();
+  guardar_pacients();
+  mostrar_toast('✅ Observaciones guardadas.', 'ok');
+}
+
+function carregar_observacions() {
+  const o = pacient_actiu?.observacions || {};
+  const set = (id, val) => { const el=document.getElementById(id); if(el) el.value = val||''; };
+  set('obs-objectiu', o.objectiu_esportiu);
+  set('obs-compte',   o.a_tenir_en_compte);
+  set('obs-tensio',   o.tensio);
+  set('obs-pulsacions', o.pulsacions);
+  set('obs-proxima-visita', o.proxima_visita);
+}
+
+// ════════════════════════════════════════════════════════
+// GENERADOR DE PDF
+// ════════════════════════════════════════════════════════
+const LOGO_B64 = "data:image/jpeg;base64,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";
+
+const DIES_SETMANA = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+
+const CONSELLS_GENERALS = `1. La primera norma és no passar fam excessiva. Si tens molta gana entre hores o et resulta difícil seguir la planificació, posa't en contacte amb mi per ajustar-la.
+2. La planificació setmanal està basada en la dieta mediterrània i consta de 6 dies complets i dos menjars del cap de setmana "lliures", sempre respectant les quantitats. Els menjars lliures no són per a excedir-se, sinó per a gaudir amb equilibri i flexibilitat.
+3. Totes les verdures són intercanviables; és a dir, si posa bajoca, pots usar pimentó. Així també aconseguirem una alimentació variada i rica en vitamines i minerals.
+4. Les fruites també són intercanviables. Prioritza fruites locals i de proximitat, més saboroses, nutritives i sostenibles.
+5. Beu entre 1,5 i 2 L d'aigua al dia.
+6. Busca una rutina activa i intenta moure't cada dia (caminar, pujar escales, etc.) per evitar el sedentarisme.
+7. No cal pesar totes les quantitats. Es pot fer al principi per a fer-te una idea, però no cal obsessionar-se. Si les peses, fes-ho sempre en cru.
+8. Les tècniques culinàries recomanades són: al vapor, bullit, a la planxa, al forn, al microones, al papillota o, fins i tot, utilitzant la fregidora d'aire.
+9. Intenta dormir al voltant de 7 hores cada nit. El descans és tan important com l'alimentació.`;
+
+// Categories per la llista de la compra
+const CATEGORIES_COMPRA = [
+  { nom: 'Leche y derivados', paraules: ['leche','yogur','queso','kéfir','nata','mantequilla','lacteo'] },
+  { nom: 'Bebidas no alcohólicas', paraules: ['café','té','infusión','caldo','zumo','agua','vinagre'] },
+  { nom: 'Cereales, azúcares y derivados', paraules: ['pan','harina','arroz','pasta','fideos','avena','maíz','galleta','cereales'] },
+  { nom: 'Hortalizas y verduras', paraules: ['tomate','lechuga','zanahoria','cebolla','pimiento','calabacín','brócoli','espinaca','judía','berenjena','puerro','champiñón','rúcula','guisante','boniato','patata dulce','apio','coliflor','repollo','acelga','alcachofa'] },
+  { nom: 'Aceites y grasas', paraules: ['aceite','mantequilla','margarina'] },
+  { nom: 'Carnes, pescados y huevos', paraules: ['pollo','pavo','ternera','cerdo','cordero','jamón','pechuga','muslo','atún','salmón','merluza','bacalao','dorada','gambas','huevo','clara'] },
+  { nom: 'Patatas, legumbres y frutos secos', paraules: ['patata','lenteja','garbanzo','alubia','judía','guisante seco','almendra','nuez','avellana','anacardo','cacahuete'] },
+  { nom: 'Frutas', paraules: ['manzana','pera','naranja','plátano','kiwi','fresa','uva','melocotón','ciruela','piña','melón','sandía','mango','papaya','arándano','frambuesa','aguacate','limón'] },
+  { nom: 'Especias y condimentos', paraules: ['sal','pimienta','orégano','romero','tomillo','cúrcuma','comino','pimentón','curry','ajo','perejil'] },
+  { nom: 'Otros', paraules: [] }
+];
+
+function categoritzar_ingredient(nom) {
+  const nomLow = nom.toLowerCase();
+  for (const cat of CATEGORIES_COMPRA) {
+    if (cat.paraules.some(p => nomLow.includes(p))) return cat.nom;
+  }
+  return 'Otros';
+}
+
+function obtenir_plats_dia(planificacio, moments, dia_idx) {
+  const plats = [];
+  moments.forEach((moment, mi) => {
+    for (let pi = 0; pi < 8; pi++) {
+      const clau = mi + '_' + dia_idx;
+      const platKey = Object.keys(planificacio).find(k => {
+        // Support both numeric keys and named keys
+        if (k === mi + '_' + dia_idx) return true;
+        const parts = k.match(/^(.+)_(\d+)$/);
+        if (parts && parts[1] === moment && parseInt(parts[2]) === dia_idx) return true;
+        return false;
+      });
+      // Find all plats for this moment/day
+      break;
+    }
+    // Collect all plats for this moment+day
+    const platsDia = [];
+    Object.keys(planificacio).forEach(k => {
+      const numMatch = k.match(/^(\d+)_(\d+)$/);
+      if (numMatch && parseInt(numMatch[0].split('_')[0]) === mi && parseInt(numMatch[0].split('_')[1]) === dia_idx) {
+        platsDia.push(planificacio[k]);
+      }
+      const nomMatch = k.match(/^(.+)_(\d+)$/);
+      if (nomMatch && nomMatch[1] === moment && parseInt(nomMatch[2]) === dia_idx) {
+        platsDia.push(planificacio[k]);
+      }
+    });
+    if (platsDia.length) plats.push({ moment, plats: platsDia });
+  });
+  return plats;
+}
+
+function obtenir_info_plat(nom_plat) {
+  if (!nom_plat) return null;
+  const nomLow = nom_plat.toLowerCase().trim();
+  return cataleg_plats.find(p => p.nombre && p.nombre.toLowerCase().trim() === nomLow) || null;
+}
+
+function calcular_llista_compra(planificacio, moments) {
+  const ingredients = {}; // nom -> { total, unitat, categoria }
+  const DIES = 7;
+
+  Object.entries(planificacio).forEach(([clau, plat]) => {
+    if (!plat?.nom) return;
+    const info = obtenir_info_plat(plat.nom);
+    if (!info?.ingredientes?.length) return;
+    
+    info.ingredientes.forEach(ing => {
+      // Parse "Nom: Xg (descripció)" or "Nom: X unitats"
+      const m = String(ing).match(/^([^:]+):\s*(\d+[.,]?\d*)\s*(g|kg|ml|l|unidades?|lonchas?|tazas?|vasos?|cucharad[ao]s?[^,)]*)/i);
+      if (m) {
+        const nomIng = m[1].trim();
+        let qty = parseFloat(m[2].replace(',', '.'));
+        const unit = m[3].toLowerCase().trim();
+        // Normalize to grams
+        if (unit.startsWith('kg')) qty *= 1000;
+        if (unit.startsWith('l') && !unit.startsWith('lon')) qty *= 1000;
+        const key = nomIng.toLowerCase();
+        if (!ingredients[key]) ingredients[key] = { nom: nomIng, total: 0, categoria: categoritzar_ingredient(nomIng) };
+        ingredients[key].total += qty;
+      } else {
+        // Just a name, add as count
+        const nomIng = String(ing).split(':')[0].trim();
+        const key = nomIng.toLowerCase();
+        if (!ingredients[key]) ingredients[key] = { nom: nomIng, total: 0, categoria: categoritzar_ingredient(nomIng) };
+        ingredients[key].total += 1;
+      }
+    });
+  });
+
+  // Group by category
+  const perCategoria = {};
+  Object.values(ingredients).forEach(ing => {
+    if (!perCategoria[ing.categoria]) perCategoria[ing.categoria] = [];
+    perCategoria[ing.categoria].push(ing);
+  });
+  return perCategoria;
+}
+
+// ── GENERAR HTML DEL PDF ──
+function generar_html_pdf(pacient, planificacio, moments, observacions, data_planif) {
+  const nom_complet = (pacient.nom + ' ' + (pacient.cognoms||'')).toUpperCase().trim();
+  const titol_planif = `PLAN DIETÉTICO SEMANAL DE ${nom_complet} ${data_planif||''}`;
+
+  const css = `
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap');
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Montserrat', sans-serif; background: white; color: #2D3B34; font-size: 10px; }
+    .page { width: 297mm; min-height: 210mm; padding: 12mm 14mm; page-break-after: always; position: relative; }
+    .page:last-child { page-break-after: auto; }
+    @media print {
+      body { margin:0; }
+      .page { page-break-after: always; padding: 12mm 14mm; }
+    }
+    .header-page { display:flex; align-items:center; justify-content:space-between; margin-bottom: 8mm; padding-bottom: 4mm; border-bottom: 1px solid #ddd; }
+    .header-nom { font-size: 11px; font-weight: 700; color: #2D3B34; }
+    .header-titol { font-size: 8px; font-weight: 400; color: #777; }
+    .header-logo { height: 18mm; }
+    .portada { display:flex; flex-direction:column; justify-content:center; align-items:center; min-height: 200mm; background: white; }
+    .portada-fons { background: #e8e6e1; border-radius: 40px; padding: 30mm 20mm; width: 180mm; text-align: left; position: relative; }
+    .portada-titol { font-size: 28px; font-weight: 300; color: #2D3B34; margin-bottom: 4px; }
+    .portada-titol strong { font-weight: 700; display: block; }
+    .portada-pacient { background: #b8dbb0; color: #2D3B34; font-style: italic; font-size: 14px; padding: 6px 16px; border-radius: 4px; display: inline-block; margin-top: 10px; }
+    .portada-logo { margin-top: 20mm; }
+    .portada-logo img { height: 25mm; }
+    
+    /* Taula resum */
+    .taula-resum { width: 100%; border-collapse: collapse; font-size: 9px; }
+    .taula-resum th { background: #5a9e72; color: white; padding: 5px 4px; text-align: center; font-weight: 600; }
+    .taula-resum td { padding: 4px 3px; border: 1px solid #e0e8e2; vertical-align: top; text-align: center; line-height: 1.3; }
+    .taula-resum .moment-cell { background: #d4edda; color: #2D3B34; font-weight: 600; font-size: 8px; writing-mode: vertical-rl; text-orientation: mixed; text-align: center; padding: 4px 2px; min-width: 18px; }
+    
+    /* Pàgines dia */
+    .dia-titol { background: #b8dbb0; text-align: center; padding: 6px; font-size: 13px; font-weight: 600; border-radius: 4px; margin-bottom: 5mm; }
+    .dia-taula { width: 100%; border-collapse: collapse; font-size: 9px; }
+    .dia-taula th { background: #5a9e72; color: white; padding: 5px 8px; text-align: center; font-weight: 600; }
+    .dia-taula td { padding: 4px 8px; border: 1px solid #e0e8e2; vertical-align: top; line-height: 1.4; }
+    .dia-taula .moment-td { background: #d4edda; color: #2D3B34; font-weight: 600; font-size: 8px; writing-mode: vertical-rl; text-orientation: mixed; text-align: center; padding: 4px 3px; width: 18px; }
+    .dia-taula .plat-nom { font-weight: 600; color: #2D3B34; margin-bottom: 2px; }
+    .dia-taula .ing-label { font-size: 7.5px; color: #5a9e72; font-weight: 700; text-transform: uppercase; }
+    .dia-taula .ing-text { font-size: 8.5px; color: #555; }
+    .dia-taula .receta-label { font-size: 7.5px; color: #5a9e72; font-weight: 700; text-transform: uppercase; margin-top: 2px; }
+    .dia-taula .receta-text { font-size: 8.5px; color: #555; }
+    
+    /* Observacions */
+    .obs-titol { background: #d4edda; text-align: center; padding: 6px; font-size: 13px; font-weight: 700; letter-spacing: 1px; border-radius: 4px; margin-bottom: 6mm; }
+    .obs-seccio-titol { font-size: 10px; font-weight: 700; margin-bottom: 4px; margin-top: 6mm; }
+    .obs-text { font-size: 9px; line-height: 1.6; color: #333; white-space: pre-wrap; }
+    .obs-resultats { font-size: 9px; line-height: 1.8; color: #333; margin-top: 2mm; }
+    
+    /* Llista compra */
+    .compra-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; margin-top: 4mm; }
+    .compra-categoria { background: #f0f7f2; border-radius: 6px; padding: 3mm; }
+    .compra-cat-titol { background: #5a9e72; color: white; font-size: 8px; font-weight: 600; padding: 3px 6px; border-radius: 4px; margin-bottom: 3mm; text-transform: uppercase; }
+    .compra-item { display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px; font-size: 8.5px; }
+    .compra-checkbox { width: 8px; height: 8px; border: 1px solid #5a9e72; border-radius: 2px; flex-shrink: 0; margin-top: 1px; }
+    
+    /* Alèrgens */
+    .alerg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin-top: 4mm; }
+    .alerg-dia { border: 1px solid #e0e8e2; border-radius: 6px; padding: 3mm; }
+    .alerg-dia-titol { background: #5a9e72; color: white; font-size: 9px; font-weight: 600; padding: 3px 8px; border-radius: 4px; margin-bottom: 3mm; }
+    .alerg-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    .alerg-tag { background: #f0f7f2; border: 1px solid #b8dbb0; padding: 2px 8px; border-radius: 10px; font-size: 8px; }
+  `;
+
+  // ── PORTADA ──
+  const pagPortada = `
+    <div class="page portada-page" style="display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:20mm 25mm;">
+      <div style="background:#e8e6e1;border-radius:40px;padding:25mm 20mm;width:175mm;position:relative;">
+        <div style="font-size:26px;font-weight:300;color:#2D3B34;line-height:1.2">PLAN DIETÉTICO<br><strong style="font-weight:700">PERSONALIZADO</strong></div>
+        <div style="background:#b8dbb0;color:#2D3B34;font-style:italic;font-size:13px;padding:5px 14px;border-radius:4px;display:inline-block;margin-top:10mm;">${nom_complet}</div>
+      </div>
+      <div style="margin-top:auto;padding-top:15mm;">
+        <img src="${LOGO_B64}" style="height:22mm;" alt="Logo Irene Monroig">
+      </div>
+    </div>`;
+
+  // ── CAPÇALERA COMÚ ──
+  const capcalera = `
+    <div class="header-page">
+      <div><div class="header-nom">${nom_complet}</div><div class="header-titol">${titol_planif}</div></div>
+      <img src="${LOGO_B64}" class="header-logo" alt="Logo">
+    </div>`;
+
+  // ── TAULA RESUM SETMANAL ──
+  const moments_noms = moments.length ? moments : ['Desayuno','Almuerzo 1','Comida','Merienda 1','Cena'];
+  let htmlResum = `<tr><th style="width:18px"></th>`;
+  DIES_SETMANA.forEach(d => htmlResum += `<th>${d}</th>`);
+  htmlResum += '</tr>';
+
+  moments_noms.forEach((moment, mi) => {
+    htmlResum += `<tr><td class="moment-cell" rowspan="1">${moment}</td>`;
+    for (let di = 0; di < 7; di++) {
+      const platsCell = [];
+      Object.entries(planificacio).forEach(([k, p]) => {
+        if (!p?.nom) return;
+        const nm = k.match(/^(\d+)_(\d+)$/);
+        if (nm && parseInt(nm[1]) === mi && parseInt(nm[2]) === di) platsCell.push(p.nom);
+        const kn = k.match(/^(.+)_(\d+)$/);
+        if (kn && kn[1] === moment && parseInt(kn[2]) === di) platsCell.push(p.nom);
+      });
+      htmlResum += `<td>${[...new Set(platsCell)].join('<br>')}</td>`;
+    }
+    htmlResum += '</tr>';
+  });
+
+  const pagResum = `<div class="page">${capcalera}<table class="taula-resum">${htmlResum}</table></div>`;
+
+  // ── PÀGINES PER DIA ──
+  let paginesDies = '';
+  for (let di = 0; di < 7; di++) {
+    let hiHaPlats = false;
+    let htmlDia = '';
+
+    moments_noms.forEach((moment, mi) => {
+      const plats_moment = [];
+      Object.entries(planificacio).forEach(([k, p]) => {
+        if (!p?.nom) return;
+        const nm = k.match(/^(\d+)_(\d+)$/);
+        if (nm && parseInt(nm[1]) === mi && parseInt(nm[2]) === di) plats_moment.push(p);
+        const kn = k.match(/^(.+)_(\d+)$/);
+        if (kn && kn[1] === moment && parseInt(kn[2]) === di) plats_moment.push(p);
+      });
+      // Deduplicate
+      const unics = [];
+      const seen = new Set();
+      plats_moment.forEach(p => { if (!seen.has(p.nom)) { seen.add(p.nom); unics.push(p); } });
+      if (!unics.length) return;
+
+      hiHaPlats = true;
+      const rowspan = unics.length;
+      unics.forEach((plat, pi) => {
+        const info = obtenir_info_plat(plat.nom);
+        let cellaIngredients = '';
+        if (info) {
+          if (info.ingredientes?.length) {
+            cellaIngredients += `<span class="ing-label">INGREDIENTES (1 persona): </span><span class="ing-text">${Array.isArray(info.ingredientes) ? info.ingredientes.join(', ') : info.ingredientes}</span>`;
+          }
+          if (info.receta) {
+            cellaIngredients += `<br><span class="receta-label">RECETA: </span><span class="receta-text">${info.receta}</span>`;
+          }
+        }
+
+        if (pi === 0) {
+          htmlDia += `<tr>
+            <td class="moment-td" rowspan="${rowspan}">${moment}</td>
+            <td style="width:28%"><div class="plat-nom">${plat.nom}</div></td>
+            <td>${cellaIngredients}</td>
+          </tr>`;
+        } else {
+          htmlDia += `<tr>
+            <td><div class="plat-nom">${plat.nom}</div></td>
+            <td>${cellaIngredients}</td>
+          </tr>`;
+        }
+      });
+    });
+
+    if (!hiHaPlats) continue;
+
+    paginesDies += `<div class="page">
+      ${capcalera}
+      <div class="dia-titol">${DIES_SETMANA[di]}</div>
+      <table class="dia-taula">
+        <tr><th style="width:18px">Platos</th><th style="width:28%">Platos</th><th>Recetas e ingredientes</th></tr>
+        ${htmlDia}
+      </table>
+    </div>`;
+  }
+
+  // ── OBSERVACIONS ──
+  const o = observacions || {};
+  // Últimes dades Tanita
+  let resultats_tanita = '';
+  const ultima_tanita = pacient.evolucio?.find(e => e.tanita);
+  if (ultima_tanita?.tanita) {
+    const t = ultima_tanita.tanita;
+    const data_t = ultima_tanita.data || '';
+    resultats_tanita = `RESULTATS ${data_t}:
+`;
+    if (t.pes)              resultats_tanita += `Pes: ${t.pes} kg
+`;
+    if (t.massa_grassa)     resultats_tanita += `Grassa corporal: ${t.massa_grassa} kg
+`;
+    if (t.massa_muscular)   resultats_tanita += `Massa muscular: ${t.massa_muscular} kg
+`;
+    if (t.massa_ossia)      resultats_tanita += `Massa òssia: ${t.massa_ossia} kg
+`;
+    if (t.grassa_visceral)  resultats_tanita += `Grassa visceral: ${t.grassa_visceral}
+`;
+    if (t.agua_pct)         resultats_tanita += `Aigua corporal: ${t.agua_pct} %
+`;
+  }
+  if (o.tensio)      resultats_tanita += `
+Tensió arterial: ${o.tensio}
+`;
+  if (o.pulsacions)  resultats_tanita += `Pulsacions: ${o.pulsacions} ppm
+`;
+  if (o.proxima_visita) resultats_tanita += `
+Pròxima visita: ${o.proxima_visita}`;
+
+  const pagObs = `<div class="page">
+    ${capcalera}
+    <div class="obs-titol">OBSERVACIONES</div>
+    <div class="obs-seccio-titol">CONSELLS GENERALS:</div>
+    <div class="obs-text">${CONSELLS_GENERALS}</div>
+    ${o.objectiu_esportiu ? `<div class="obs-seccio-titol">OBJECTIU ESPORTIU:</div><div class="obs-text">${o.objectiu_esportiu}</div>` : ''}
+    ${o.a_tenir_en_compte ? `<div class="obs-seccio-titol">A TINDRE EN COMPTE:</div><div class="obs-text">${o.a_tenir_en_compte}</div>` : ''}
+    ${resultats_tanita ? `<div class="obs-seccio-titol"></div><div class="obs-resultats">${resultats_tanita}</div>` : ''}
+  </div>`;
+
+  // ── LLISTA DE LA COMPRA ──
+  const llista = calcular_llista_compra(planificacio, moments_noms);
+  const cats_amb_items = CATEGORIES_COMPRA.map(c => c.nom).filter(nom => llista[nom]?.length);
+  let htmlCompra = '';
+  cats_amb_items.forEach(cat => {
+    const items = (llista[cat] || []).sort((a,b) => a.nom.localeCompare(b.nom));
+    htmlCompra += `<div class="compra-categoria">
+      <div class="compra-cat-titol">${cat}</div>
+      ${items.map(i => `<div class="compra-item"><div class="compra-checkbox"></div><div>${i.total > 1 ? Math.round(i.total)+'g ' : ''}${i.nom}</div></div>`).join('')}
+    </div>`;
+  });
+  const pagCompra = `<div class="page">
+    ${capcalera}
+    <div class="obs-titol">LISTA DE LA COMPRA</div>
+    <div class="compra-grid">${htmlCompra || '<p style="color:#aaa;font-size:9px;padding:4mm">No hay ingredientes importados. Importa las composiciones de los platos para generar la lista.</p>'}</div>
+  </div>`;
+
+  // ── ALÈRGENS ──
+  let htmlAlerg = '';
+  for (let di = 0; di < 7; di++) {
+    const alerg_dia = new Set();
+    Object.entries(planificacio).forEach(([k, p]) => {
+      if (!p?.nom) return;
+      const pertany = (() => {
+        const nm = k.match(/^(\d+)_(\d+)$/);
+        if (nm && parseInt(nm[2]) === di) return true;
+        const kn = k.match(/^(.+)_(\d+)$/);
+        if (kn && parseInt(kn[2]) === di) return true;
+        return false;
+      })();
+      if (!pertany) return;
+      const info = obtenir_info_plat(p.nom);
+      info?.alergenos?.forEach(a => alerg_dia.add(a));
+    });
+    if (!alerg_dia.size) continue;
+    htmlAlerg += `<div class="alerg-dia">
+      <div class="alerg-dia-titol">${DIES_SETMANA[di]}</div>
+      <div class="alerg-tags">${[...alerg_dia].map(a => `<span class="alerg-tag">${a}</span>`).join('')}</div>
+    </div>`;
+  }
+
+  const pagAlerg = htmlAlerg ? `<div class="page">
+    ${capcalera}
+    <div class="obs-titol">RESUMEN DE GRUPOS DE ALÉRGENOS ALIMENTARIOS POR DÍA</div>
+    <div class="alerg-grid">${htmlAlerg}</div>
+  </div>` : '';
+
+  // ── CONTRAPORTADA ──
+  const pagContra = `<div class="page" style="display:flex;flex-direction:column;justify-content:center;align-items:center;background:#e8e6e1;">
+    <img src="${LOGO_B64}" style="height:30mm;" alt="Logo Irene Monroig">
+  </div>`;
+
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${titol_planif}</title>
+    <style>${css}</style></head><body>
+    ${pagPortada}${pagResum}${paginesDies}${pagObs}${pagCompra}${pagAlerg}${pagContra}
+  </body></html>`;
+}
+
+// ── BOTÓ GENERAR PDF ──
+function generar_pdf_planificacio() {
+  if (!pacient_actiu) return;
+
+  // Trobar la planificació activa (setmana actual o la més recent)
+  const planificacions = pacient_actiu.planificacions || {};
+  const claus = Object.keys(planificacions).sort().reverse();
+  if (!claus.length) {
+    mostrar_toast('⚠️ No hay planificación para generar el PDF. Importa o crea una primero.', 'error');
+    return;
+  }
+
+  const clau = clau_setmana(setmana_offset);
+  const planificacio = planificacions[clau] || planificacions[claus[0]];
+  const data_usada = planificacions[clau] ? clau : claus[0];
+
+  // Formatar la data
+  const parts = data_usada.split('-');
+  const data_planif = parts.length === 3 ? parts[2]+'/'+parts[1]+'/'+parts[0] : data_usada;
+
+  const moments = pacient_actiu.moments_dia || ['Desayuno','Almuerzo 1','Comida','Merienda 1','Cena'];
+  const observacions = pacient_actiu.observacions || {};
+
+  const html = generar_html_pdf(pacient_actiu, planificacio, moments, observacions, data_planif);
+
+  // Obrir en nova finestra per imprimir/guardar com PDF
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 800);
+}
 
 </script>
 
