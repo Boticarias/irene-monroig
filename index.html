@@ -1445,8 +1445,17 @@ function renderitzar_historial() {
       <div class="planif-card-accions">
         <button class="btn btn-secondary" onclick="veure_historial(${i})" style="font-size:0.78rem;padding:7px 12px">👁 Ver</button>
         <button class="btn btn-primary" onclick="clonar_historial(${i})" style="font-size:0.78rem;padding:7px 12px">📋 Clonar</button>
+        <button class="btn btn-danger" onclick="borrar_historial(${i})" style="font-size:0.78rem;padding:7px 12px">🗑️</button>
       </div>
     </div>`).join('');
+}
+
+function borrar_historial(idx) {
+  const h = pacient_actiu.historial[idx];
+  if (!confirm(`¿Eliminar la planificación "${h.titol}"?`)) return;
+  pacient_actiu.historial.splice(idx, 1);
+  guardar_pacients();
+  renderitzar_historial();
 }
 
 function veure_historial(idx) {
@@ -3051,6 +3060,16 @@ function calcular_llista_compra(planificacio, moments) {
 }
 
 // ── GENERAR HTML DEL PDF ──
+function pertany_a_cel(clau, mi, di, moment_nom) {
+  // Numeric key: "mi_di" or "mi_di_vN"
+  const nm = clau.match(/^(\d+)_(\d+)(?:_v\d+)?$/);
+  if (nm && parseInt(nm[1]) === mi && parseInt(nm[2]) === di) return true;
+  // Named key: "Moment_di" or "Moment_di_vN"  
+  const kn = clau.match(/^(.+?)_(\d+)(?:_v\d+)?$/);
+  if (kn && kn[1] === moment_nom && parseInt(kn[2]) === di) return true;
+  return false;
+}
+
 function generar_html_pdf(pacient, planificacio, moments, observacions, data_planif) {
   const nom_complet = (pacient.nom + ' ' + (pacient.cognoms||'')).toUpperCase().trim();
   const titol_planif = `PLAN DIETÉTICO SEMANAL DE ${nom_complet} ${data_planif||''}`;
@@ -3147,10 +3166,7 @@ function generar_html_pdf(pacient, planificacio, moments, observacions, data_pla
       const platsCell = [];
       Object.entries(planificacio).forEach(([k, p]) => {
         if (!p?.nom) return;
-        const nm = k.match(/^(\d+)_(\d+)$/);
-        if (nm && parseInt(nm[1]) === mi && parseInt(nm[2]) === di) platsCell.push(p.nom);
-        const kn = k.match(/^(.+)_(\d+)$/);
-        if (kn && kn[1] === moment && parseInt(kn[2]) === di) platsCell.push(p.nom);
+        if (pertany_a_cel(k, mi, di, moment)) platsCell.push(p.nom);
       });
       htmlResum += `<td>${[...new Set(platsCell)].join('<br>')}</td>`;
     }
@@ -3169,10 +3185,7 @@ function generar_html_pdf(pacient, planificacio, moments, observacions, data_pla
       const plats_moment = [];
       Object.entries(planificacio).forEach(([k, p]) => {
         if (!p?.nom) return;
-        const nm = k.match(/^(\d+)_(\d+)$/);
-        if (nm && parseInt(nm[1]) === mi && parseInt(nm[2]) === di) plats_moment.push(p);
-        const kn = k.match(/^(.+)_(\d+)$/);
-        if (kn && kn[1] === moment && parseInt(kn[2]) === di) plats_moment.push(p);
+        if (pertany_a_cel(k, mi, di, moment)) plats_moment.push(p);
       });
       // Deduplicate
       const unics = [];
