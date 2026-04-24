@@ -1583,73 +1583,106 @@ async function llegir_pdf_words(file) {
 }
 
 function parsejar_pdf_dietopro(text, filename) {
-  const dies = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-  const moments_possibles = ['Desayuno','Almuerzo 1','Almuerzo 2','Comida','Merienda 1','Merienda 2','Cena','Recena'];
+  const DIES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  const MOMENTS = ['Desayuno','Almuerzo 1','Almuerzo 2','Comida','Merienda 1','Merienda 2','Cena','Recena'];
 
-  // Extreure data del nom del fitxer (format: NomApellidos-plan-DDMMAA.pdf)
+  // Data: del nom del fitxer (NomApellidos-plan-270226.pdf) o del text
   let data_planif = '';
-  const match_data = filename.match(/(\d{6})\.pdf$/i);
-  if(match_data) {
-    const d = match_data[1];
-    data_planif = `${d.slice(0,2)}/${d.slice(2,4)}/${d.slice(4,6)}`;
+  const mFitxer = filename.match(/(\d{6})\.pdf$/i);
+  if (mFitxer) { const d=mFitxer[1]; data_planif=d.slice(0,2)+'/'+d.slice(2,4)+'/'+d.slice(4,6); }
+  if (!data_planif) {
+    const mData = text.match(/(\d{2}[\/\.](\d{2})[\/\.](\d{2,4}))/);
+    if (mData) data_planif = mData[1].replace(/\./g,'/');
   }
 
-  // Extreure nom del pacient de la primera pàgina
-  const match_nom = text.match(/PLAN DIETÉTICO SEMANAL DE ([A-ZÁÉÍÓÚÜÑ\s]+?)(?:\s+\d|---)/i);
-  const nom_pdf = match_nom ? match_nom[1].trim() : '';
+  // Nom del pacient
+  const mNom = text.match(/PLAN DIET[EÉ]TICO SEMANAL DE ([A-ZÁÉÍÓÚÜÑ\s]+?)(?=\s+\d{2}[\/\.\s]|---PAGINA|$)/i);
+  const nom_pdf = mNom ? mNom[1].trim() : '';
 
-  // Extreure data de les observacions (format: dd/mm/yyyy o dd/mm/yyyy)
-  const match_data2 = text.match(/(?:RESULTATS?|RESULTADOS?)\s+(\d{1,2}[\/\.]\d{2}[\/\.]\d{2,4})/i);
-  if(match_data2 && !data_planif) data_planif = match_data2[1];
+  // Partir el text per pàgines
+  const pages = text.split('---PAGINA---').map(p => p.trim()).filter(p => p.length > 10);
 
-  // Detectar moments del dia presents
-  const pagina2 = text.split('---PAGINA---')[1] || text;
-  const moments_presents = moments_possibles.filter(m => {
-    const regex = new RegExp(m.replace(' ','\\s+'), 'i');
-    return regex.test(pagina2);
-  });
+  // Detectar moments presents (mirar totes les pàgines)
+  const moments_presents = MOMENTS.filter(m => new RegExp(m.replace(' ','\\s+'), 'i').test(text));
 
-  // Parsejar planificació de la pàgina 2 (taula resum)
   const planificacio = {};
-  const dies_lower = dies.map(d => d.toLowerCase());
 
-  // Buscar plats per cada moment i dia
-  moments_presents.forEach((moment, mi) => {
-    dies.forEach((dia, di) => {
-      // Buscar el plat en les pàgines de detall (pàg 3 en endavant)
-      const pages = text.split('---PAGINA---');
-      // Buscar la pàgina del dia corresponent
-      const pagina_dia = pages.find(p => {
-        const p_lower = p.toLowerCase();
-        return p_lower.includes(dia.toLowerCase()) && p_lower.includes(moment.toLowerCase());
+  // ── Estratègia 1: pàgines de detall per dia (pàg 3+) ──
+  // Cada pàgina de dia comença amb el nom del dia i té estructura:
+  // Desayuno
+09:30
+Nom plat1
+Nom plat2
+INGREDIENTES...
+  // Comida
+13:00
+Nom plat
+INGREDIENTES...
+  pages.forEach(pagina => {
+    // Identificar quin dia és aquesta pàgina
+    const dia_idx = DIES.findIndex(d => {
+      const pos = pagina.indexOf(d);
+      return pos >= 0 && pos < 200; // El dia ha d'estar al principi
+    });
+    if (dia_idx < 0) return;
+
+    // Dividir la pàgina per moments
+    MOMENTS.forEach((moment, mi) => {
+      if (!moments_presents.includes(moment)) return;
+
+      // Trobar el bloc del moment
+      const escapat = moment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const nextMoments = MOMENTS.slice(MOMENTS.indexOf(moment)+1).map(m => m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      const nextPattern = nextMoments.length ? `(?=${nextMoments.join('|')}|INGREDIENTES.*?\n|OBSERVA|$)` : '';
+      const bloqRe = new RegExp(escapat + '\\s*(?:\\d{2}:\\d{2})?\\s*([\\s\\S]+?)' + (nextPattern || '$'), 'i');
+      const bloqM = pagina.match(bloqRe);
+      if (!bloqM) return;
+
+      const bloc = bloqM[1].trim();
+
+      // Extreure noms de plats del bloc:
+      // Els plats apareixen ABANS de "INGREDIENTES"
+      const antesIngredients = bloc.split(/INGREDIENTES/i)[0];
+      const linies = antesIngredients.split(/\n/).map(l => l.trim()).filter(l => {
+        if (!l || l.length < 3 || l.length > 150) return false;
+        if (/^\d{2}:\d{2}$/.test(l)) return false; // hores
+        if (/^\d+$/.test(l)) return false; // números
+        if (DIES.includes(l) || MOMENTS.includes(l)) return false;
+        if (/RECETA|INGREDIENTES|Platos|Recetas/i.test(l)) return false;
+        return true;
       });
 
-      if(pagina_dia) {
-        const plat = extreure_plat_pagina(pagina_dia, moment, dia);
-        if(plat) planificacio[moment+'_'+di] = plat;
-      }
+      linies.forEach((nom, pi) => {
+        const clau = mi + '_' + dia_idx;
+        // Si ja existeix la clau, usar una variant
+        let clau_final = clau;
+        let counter = 0;
+        while (planificacio[clau_final] && counter < 5) {
+          counter++;
+          clau_final = mi + '_' + dia_idx + '_' + counter;
+        }
+        if (!planificacio[clau_final]) {
+          planificacio[clau_final] = { nom, kcal:0, prot:0, hc:0, gras:0 };
+        }
+      });
     });
   });
 
-  // Si la planificació està buida, intentar parsejar la taula de la pàgina 2
-  if(Object.keys(planificacio).length === 0) {
+  // ── Estratègia 2: si no s'han trobat plats, usar la taula de la pàg 2 ──
+  if (Object.keys(planificacio).length === 0) {
+    const pagina2 = pages[1] || pages[0] || text;
     parsejar_taula_p2(pagina2, moments_presents, planificacio);
   }
 
-  // Extreure dades Tanita de les observacions
+  // Tanita i tensió de les observacions
   const tanita = extreure_tanita(text);
   const tensio = extreure_tensio(text);
 
   return {
     titol: `Planificación ${data_planif||'importada'} · ${nom_pdf}`,
-    data_planif,
-    nom_pdf,
-    moments: moments_presents,
-    planificacio,
-    tanita,
-    tensio,
-    tipus: 'importat',
-    creat: new Date().toISOString()
+    data_planif, nom_pdf, moments: moments_presents,
+    planificacio, tanita, tensio,
+    tipus: 'importat', creat: new Date().toISOString()
   };
 }
 
