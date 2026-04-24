@@ -1844,7 +1844,7 @@ function extreure_tanita_text(text) {
   else data = new Date().toLocaleDateString('es-ES');
 
   // CLAU: eliminar rangs (53-72 kg, 21-33%, 18.5-25) abans d'extreure valors
-  const textNet = text.replace(/\d+[.,]?\d*-\d+[.,]?\d*\s*(?:kg|%)?/g, '');
+  const textNet = text.replace(/\d+[.,]?\d*-\d+[.,]?\d*\s*(?:kg|%)?/g, '').replace(/\d+\.\d+-\d+[.,]?\d*/g,'').replace(/\d+:\d+/g,'');
 
   // Extreure kg i % en ordre d'aparició (ja sense rangs)
   const kgs  = [...textNet.matchAll(/(\d+\.?\d*)\s*kg/g)]
