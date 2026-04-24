@@ -1645,11 +1645,11 @@ function parsejar_pdf_dietopro(text, filename) {
 
   const pages = text.split('---PAGINA---');
   const pagina2 = pages[1] || text;
-  const moments_presents = moments_possibles.filter(m => new RegExp(m.replace(' ','\\s+'), 'i').test(pagina2));
+  const moments_presents = moments_possibles.filter(m => new RegExp(m.replace(' ','\\s+'), 'i').test(text));
   const planificacio = {};
 
   // Identificar pàgines de detall (tenen INGREDIENTES i un sol dia principal)
-  const pagines_detall = pages.filter(p => /INGREDIENTES/i.test(p));
+  const pagines_detall = pages.filter(p => /INGREDIENTES/i.test(p) && p.trim().length > 50);
   // Mapejar cada pàgina de detall al seu dia
   const paginaPerDia = {};
   pagines_detall.forEach(p => {
@@ -1708,7 +1708,7 @@ function extreure_plats_pagina(text_pagina, moment_filter) {
   const segment = text_pagina.slice(mStart.index + mStart[0].length, segEnd);
 
   // Dividir per INGREDIENTES
-  const parts = segment.split(/\s+INGREDIENTES\s*\(\s*1\s*persona\s*\)\s*:/i);
+  const parts = segment.split(/\s+INGREDIENTES(?:\s*\(\s*1\s*persona\s*\))?\s*:/i);
   const plats = [];
 
   parts.slice(0, -1).forEach(part => {
