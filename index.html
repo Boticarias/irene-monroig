@@ -1837,72 +1837,65 @@ async function importar_tanita_nou(input) {
 async function importar_tanita(input) { await importar_tanita_nou(input); }
 
 function extreure_tanita_text(text) {
-  // Ordre dels valors en el text pla de PDF.js (confirmat experimentalment):
-  // [0,1]=pes(x2) [2,3]=massaMuscular(x2) [4]=segTroncMusc [5,6,7,8]=segBraçosCamesMusc
-  // scores(-2)... [9]=grassa% [10]=segTroncGrassa [11,12]=segBraçosGrassa [13,14]=segCamesGrassa
-  // [15,16]=massaGrassa(x2) scores... [17]=massaOssia [18]=aigua% [19,20]=aiguaKg(x2)
-  // [21]=proteina [22,23]=massaLliure(x2) [24]=imc [25]=edatMetab [26]=tmbKJ [27]=tmbKcal [28]=grassaVisceral
-
   // Data
   let data = '';
   const mD = text.match(/(\d{1,2})[\/\.](\d{1,2})[\/\.](\d{4})/);
   if (mD) data = mD[1].padStart(2,'0')+'/'+mD[2].padStart(2,'0')+'/'+mD[3];
   else data = new Date().toLocaleDateString('es-ES');
 
-  // Extreure tots els números significatius en ordre (ignorar IDs, rangs, scores negatius)
-  // Buscar números que van seguits de kg, %, kJ, kcal o son decimals
-  const nums = [];
-  const re = /(\d+\.\d+|\d+)\s*(kg|%|kJ|kcal)/g;
-  let m;
-  while ((m = re.exec(text)) !== null) {
-    nums.push({ val: parseFloat(m[1]), unit: m[2], pos: m.index });
-  }
+  // CLAU: eliminar rangs (53-72 kg, 21-33%, 18.5-25) abans d'extreure valors
+  const textNet = text.replace(/\d+[.,]?\d*-\d+[.,]?\d*\s*(?:kg|%)?/g, '');
 
-  // Filtrar rangs (53-72, 21-33%) i IDs grans
-  const kgs  = nums.filter(n => n.unit === 'kg'   && n.val > 0.5 && n.val < 300);
-  const pcts  = nums.filter(n => n.unit === '%'    && n.val > 0 && n.val < 100);
-  const kcals = nums.filter(n => n.unit === 'kcal' && n.val > 500);
-  const kjs   = nums.filter(n => n.unit === 'kJ'   && n.val > 1000);
+  // Extreure kg i % en ordre d'aparició (ja sense rangs)
+  const kgs  = [...textNet.matchAll(/(\d+\.?\d*)\s*kg/g)]
+    .map(m => parseFloat(m[1])).filter(v => v > 0.5 && v < 300);
+  const pcts = [...textNet.matchAll(/(\d+\.?\d*)\s*%/g)]
+    .map(m => parseFloat(m[1])).filter(v => v > 0 && v < 100);
 
-  // Ordre dels kg: pes pes muscMuscular massaMuscular segTronc segBraçEsq segCamaEsq segBraçDret segCamaDret
-  //               massaGrassa massaGrassa massaOssia aiguaKg aiguaKg proteina massaLliure massaLliure
+  // Ordre confirmat amb PDF real:
+  // kgs:  [0,1]=pes [2,3]=massaMuscular [4]=segTroncMusc [5]=segBraçEsqMusc [6]=segCamaEsqMusc
+  //       [7]=segBraçDretMusc [8]=segCamaDretMusc [9,10]=massaGrassa [11]=massaOssia
+  //       [12,13]=aiguaKg [14]=proteina [15,16]=massaLliure
+  // pcts: [0]=grassa% [1]=segTroncGrassa [2]=segBraçEsqGrassa [3]=segBraçDretGrassa
+  //       [4]=segCamaEsqGrassa [5]=segCamaDretGrassa [6]=agua%
   const t = { data };
-  if (kgs[0])  t.pes             = kgs[0].val;   // 69.9 (primera)
-  if (kgs[2])  t.massa_muscular  = kgs[2].val;   // 48.15
-  if (kgs[4])  t.seg_tronc_musc  = kgs[4].val;   // 28.4
-  if (kgs[5])  t.seg_brac_esq_musc  = kgs[5].val; // 2.3
-  if (kgs[6])  t.seg_cama_esq_musc  = kgs[6].val; // 7.6
-  if (kgs[7])  t.seg_brac_dret_musc = kgs[7].val; // 2.3
-  if (kgs[8])  t.seg_cama_dret_musc = kgs[8].val; // 7.6
-  if (kgs[9])  t.massa_grassa    = kgs[9].val;   // 19.22
-  if (kgs[11]) t.massa_ossia     = kgs[11].val;  // 2.60
-  if (kgs[12]) t.agua_kg         = kgs[12].val;  // 36.35
-  if (kgs[14]) t.proteina        = kgs[14].val;  // 11.8
-  if (kgs[15]) t.massa_lliure    = kgs[15].val;  // 50.68
+  const kg = (i) => kgs[i] ?? null;
+  const pc = (i) => pcts[i] ?? null;
 
-  // Percentatges: [0]=grassa% [1]=segTronc [2,3]=segBraços [4,5]=segCames [6]=aigua%
-  if (pcts[0])  t.grassa_pct         = pcts[0].val;  // 27.50
-  if (pcts[1])  t.seg_tronc_grassa   = pcts[1].val;  // 22.5
-  if (pcts[2])  t.seg_brac_esq_grassa= pcts[2].val;  // 30.3
-  if (pcts[3])  t.seg_brac_dret_grassa=pcts[3].val;  // 30.2
-  if (pcts[4])  t.seg_cama_esq_grassa= pcts[4].val;  // 33.9
-  if (pcts[5])  t.seg_cama_dret_grassa=pcts[5].val;  // 35
-  if (pcts[6])  t.agua_pct           = pcts[6].val;  // 52.00
+  t.pes              = kg(0);
+  t.massa_muscular   = kg(2);
+  t.seg_tronc_musc   = kg(4);
+  t.seg_brac_esq_musc  = kg(5);
+  t.seg_cama_esq_musc  = kg(6);
+  t.seg_brac_dret_musc = kg(7);
+  t.seg_cama_dret_musc = kg(8);
+  t.massa_grassa     = kg(9);
+  t.massa_ossia      = kg(11);
+  t.agua_kg          = kg(12);
+  t.proteina         = kg(14);
+  t.massa_lliure     = kg(15);
+
+  t.grassa_pct          = pc(0);
+  t.seg_tronc_grassa    = pc(1);
+  t.seg_brac_esq_grassa = pc(2);
+  t.seg_brac_dret_grassa= pc(3);
+  t.seg_cama_esq_grassa = pc(4);
+  t.seg_cama_dret_grassa= pc(5);
+  t.agua_pct            = pc(6);
 
   // TMB
-  if (kjs[0])   t.tmb_kj   = kjs[0].val;
-  if (kcals[0]) t.tmb_kcal = kcals[0].val;
+  const mKJ   = text.match(/(\d{4,5})\s*kJ/i);   if (mKJ)   t.tmb_kj   = parseFloat(mKJ[1]);
+  const mKcal = text.match(/(\d{3,4})\s*kcal/i); if (mKcal) t.tmb_kcal = parseFloat(mKcal[1]);
 
-  // IMC i edat metabòlica: números sense unitat entre massa lliure i TMB
-  // Buscar "XX.XX YY.YY" just before kJ
-  const mIMC = text.match(/(\d+\.\d+)\s+(\d+\.\d+)\s+\d+\s*kJ/i);
+  // IMC i edat metabòlica: just abans de kJ
+  const mIMC = text.match(/(\d+\.\d+)\s+(\d+\.\d+)\s+\d{4,5}\s*kJ/i);
   if (mIMC) { t.imc = parseFloat(mIMC[1]); t.edat_metabolica = parseFloat(mIMC[2]); }
 
   // Grassa visceral: número just after kcal
-  const mGV = text.match(/kcal\s+(\d+\.?\d*)/i);
+  const mGV = text.match(/\d{3,4}\s*kcal\s+(\d+\.?\d*)/i);
   if (mGV) t.grassa_visceral = parseFloat(mGV[1]);
 
-  // Historial: DD.MM.YYYY pes muscul grassa
+  // Historial intern del PDF
   const rH = /(\d{2}\.\d{2}\.\d{4}|Initial)\s+(\d+\.?\d*)\s+(\d+\.?\d*)\s+(\d+\.?\d*)/g;
   const historial = [];
   let mH;
