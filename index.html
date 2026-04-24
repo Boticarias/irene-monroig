@@ -1176,20 +1176,24 @@ function renderitzar_setmana(){
     <tr>
       <td><div class="moment-label"><span>${['☀️','🍎','🍽️','☕','🌙','🌟'][mi]}</span>${moment}</div></td>
       ${DIES.map((dia,di)=>{
-        const plat=planif[mi+'_'+di];
+        // Recollir TOTS els plats d'aquest moment+dia (claus: mi_di, mi_di_v1, mi_di_v2...)
+        const plats_cel = obtenir_plats_cel(planif, mi, di);
         const cap=di>=5;
         return `<td><div class="celda ${cap?'cap':''}">
-          ${plat?`<div class="plat-card ${cap?'cap-de-setmana':''}">
-            <button class="plat-delete" onclick="event.stopPropagation();eliminar_plat(${mi},${di})">✕</button>
-            <div class="plat-nom">${plat.nom}</div>
-            <div class="plat-macros">
-              ${plat.kcal?`<span class="macro-badge macro-kcal">${plat.kcal}kcal</span>`:''}
-              ${plat.prot?`<span class="macro-badge macro-prot">P:${plat.prot}g</span>`:''}
-              ${plat.hc?`<span class="macro-badge macro-hc">HC:${plat.hc}g</span>`:''}
-              ${plat.gras?`<span class="macro-badge macro-gras">G:${plat.gras}g</span>`:''}
-            </div>
-          </div>`
-          :`<div class="celda-inner"><button class="btn-add" onclick="obrir_modal_plat(${mi},${di})">+</button></div>`}
+          ${plats_cel.map((plat,pi)=>`
+            <div class="plat-card ${cap?'cap-de-setmana':''}" onclick="obrir_modal_editar_plat(${mi},${di},'${plat._clau}')">
+              <button class="plat-delete" onclick="event.stopPropagation();eliminar_plat_clau('${plat._clau}')">✕</button>
+              <div class="plat-nom">${plat.nom}</div>
+              <div class="plat-macros">
+                ${plat.kcal?`<span class="macro-badge macro-kcal">${plat.kcal}kcal</span>`:''}
+                ${plat.prot?`<span class="macro-badge macro-prot">P:${plat.prot}g</span>`:''}
+                ${plat.hc?`<span class="macro-badge macro-hc">HC:${plat.hc}g</span>`:''}
+                ${plat.gras?`<span class="macro-badge macro-gras">G:${plat.gras}g</span>`:''}
+              </div>
+            </div>`).join('')}
+          <div class="celda-inner" style="margin-top:${plats_cel.length?'4px':'0'}">
+            <button class="btn-add" onclick="obrir_modal_plat(${mi},${di})">+</button>
+          </div>
         </div></td>`;
       }).join('')}
     </tr>`).join('');
@@ -1232,7 +1236,7 @@ function copiar_setmana_anterior(){
 
 // ── MODAL PLAT ──
 function obrir_modal_plat(mi,di){
-  celda_activa={mi,di};
+  celda_activa={mi,di,clau_edicio:null};
   document.getElementById('modal-plat-titol').textContent=`Añadir plato — ${MOMENTS[mi]}`;
   document.getElementById('modal-plat-subtitol').textContent=DIES[di];
   document.getElementById('cerca-plat-input').value='';
@@ -1328,7 +1332,19 @@ function guardar_plat(){
   };
   const clau=clau_setmana(setmana_offset);
   if(!pacient_actiu.planificacions[clau]) pacient_actiu.planificacions[clau]={};
-  pacient_actiu.planificacions[clau][celda_activa.mi+'_'+celda_activa.di]=plat;
+  // Si estem editant un plat existent, actualitzar-lo; si no, afegir nou
+  if (celda_activa.clau_edicio) {
+    pacient_actiu.planificacions[clau][celda_activa.clau_edicio] = plat;
+  } else {
+    // Trobar una clau lliure per a aquest moment+dia
+    const base = celda_activa.mi+'_'+celda_activa.di;
+    let nova_clau = base;
+    let counter = 1;
+    while (pacient_actiu.planificacions[clau][nova_clau]) {
+      nova_clau = base + '_v' + counter++;
+    }
+    pacient_actiu.planificacions[clau][nova_clau] = plat;
+  }
   guardar_pacients();
   tancar_modal_plat();
   renderitzar_setmana();
@@ -1339,6 +1355,39 @@ function eliminar_plat(mi,di){
   delete pacient_actiu.planificacions[clau][mi+'_'+di];
   guardar_pacients();
   renderitzar_setmana();
+}
+
+function eliminar_plat_clau(plat_clau){
+  const clau=clau_setmana(setmana_offset);
+  delete pacient_actiu.planificacions[clau][plat_clau];
+  guardar_pacients();
+  renderitzar_setmana();
+}
+
+function obrir_modal_editar_plat(mi, di, plat_clau) {
+  const clau = clau_setmana(setmana_offset);
+  const plat = pacient_actiu.planificacions[clau]?.[plat_clau];
+  if (!plat) return;
+  celda_activa = { mi, di, clau_edicio: plat_clau };
+  document.getElementById('modal-plat-titol').textContent = `Editar plato — ${MOMENTS[mi]}`;
+  document.getElementById('modal-plat-subtitol').textContent = DIES[di];
+  document.getElementById('plat-nom-input').value = plat.nom || '';
+  document.getElementById('plat-kcal').value = plat.kcal || '';
+  document.getElementById('plat-prot').value = plat.prot || '';
+  document.getElementById('plat-hc').value = plat.hc || '';
+  document.getElementById('plat-gras').value = plat.gras || '';
+  document.getElementById('plats-resultats').style.display = 'none';
+  document.getElementById('cerca-plat-input').value = '';
+  document.getElementById('modal-plat').classList.add('visible');
+}
+
+function obtenir_plats_cel(planif, mi, di) {
+  const base = mi + '_' + di;
+  return Object.entries(planif)
+    .filter(([k]) => k === base || k.startsWith(base + '_v') || k.startsWith(base + '_'))
+    .filter(([k]) => /^\d+_\d+(_v\d+)?$/.test(k))
+    .map(([k, v]) => ({ ...v, _clau: k }))
+    .filter(p => p.nom);
 }
 
 // ── MODAL NOU PACIENT ──
