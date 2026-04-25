@@ -630,6 +630,36 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <tbody id="tabla-body"></tbody>
         </table>
       </div>
+
+      <!-- OBJECTIUS PLANIFICACIÓ -->
+      <div style="margin-top:20px;background:white;border-radius:var(--radi);padding:18px 22px;box-shadow:var(--ombra);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <h4 style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--text);margin:0;border:none;padding:0">Objetivos y notas para el PDF</h4>
+          <button class="btn btn-primary" onclick="guardar_objectius()" style="font-size:0.78rem;padding:6px 14px;">💾 Guardar</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div>
+            <label class="cues-label">Objectiu esportiu</label>
+            <textarea class="cues-textarea" id="obj-esportiu" placeholder="Describe el objetivo deportivo personalizado..." style="min-height:80px;"></textarea>
+          </div>
+          <div>
+            <label class="cues-label">A tenir en compte</label>
+            <textarea class="cues-textarea" id="obj-compte" placeholder="Notas personalizadas, consejos específicos..." style="min-height:80px;"></textarea>
+          </div>
+          <div>
+            <label class="cues-label">Tensión arterial</label>
+            <input class="cues-input" type="text" id="obj-tensio" placeholder="Ej: 120 mmHg i 80 mmHg" style="margin-bottom:0;">
+          </div>
+          <div>
+            <label class="cues-label">Pulsaciones (ppm)</label>
+            <input class="cues-input" type="number" id="obj-pulsacions" placeholder="Ej: 72" style="margin-bottom:0;">
+          </div>
+          <div>
+            <label class="cues-label">Próxima visita</label>
+            <input class="cues-input" type="text" id="obj-proxima" placeholder="Ej: 15/05/26 a les 17:00 h" style="margin-bottom:0;">
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- TAB: FICHA -->
@@ -1109,6 +1139,7 @@ function obrir_pacient(id){
   document.getElementById('pantalla-pacient').style.display='block';
   canviar_tab('planificacio', document.querySelector('.tab-btn[onclick*="planificacio"]'));
   renderitzar_cuestionari_resum();
+  setTimeout(carregar_objectius_planificacio, 100);
 }
 function tornar_a_llista(){
   document.getElementById('pantalla-pacient').style.display='none';
@@ -2997,6 +3028,7 @@ canviar_tab = function(id, btn) {
   _canviar_tab_orig2(id, btn);
   if (id === 'evolucio') renderitzar_evolucio();
   if (id === 'ficha') setTimeout(carregar_observacions, 50);
+  if (id === 'planificacio') setTimeout(carregar_objectius_planificacio, 50);
 };
 
 
@@ -3176,11 +3208,15 @@ function generar_html_pdf(pacient, planificacio, moments, observacions, data_pla
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap');
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family: 'Montserrat', sans-serif; background: white; color: #2D3B34; font-size: 10px; }
-    .page { width: 297mm; min-height: 210mm; padding: 12mm 14mm; page-break-after: always; position: relative; }
+    .page { width: 277mm; min-height: 190mm; padding: 10mm 12mm; page-break-after: always; position: relative; }
     .page:last-child { page-break-after: auto; }
+    .print-btn { position: fixed; bottom: 20px; right: 20px; background: #2D6A4F; color: white; border: none; padding: 12px 24px; border-radius: 10px; font-family: "Montserrat", sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 999; }
+    .print-btn:hover { background: #40916C; }
     @media print {
-      body { margin:0; }
-      .page { page-break-after: always; padding: 12mm 14mm; }
+      body { margin: 0; }
+      .page { page-break-after: always; padding: 10mm 12mm; }
+      .print-btn { display: none; }
+      @page { size: A4 landscape; margin: 8mm; }
     }
     .header-page { display:flex; align-items:center; justify-content:space-between; margin-bottom: 8mm; padding-bottom: 4mm; border-bottom: 1px solid #ddd; }
     .header-nom { font-size: 11px; font-weight: 700; color: #2D3B34; }
@@ -3499,6 +3535,7 @@ Pròxima visita: ${o.proxima_visita}`;
   </div>
 </div>
 
+<button class="print-btn" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
 </body></html>`;
 }
 
@@ -3620,6 +3657,32 @@ function guardar_editar_cataleg() {
   tancar_editar_cataleg();
   renderitzar_cataleg_global();
   mostrar_toast(`✅ "${p.nombre}" actualizado.`, 'ok');
+}
+
+
+// ── OBJECTIUS DE PLANIFICACIÓ ──
+function carregar_objectius_planificacio() {
+  const o = pacient_actiu?.observacions || {};
+  const set = (id, val) => { const el=document.getElementById(id); if(el) el.value=val||''; };
+  set('obj-esportiu', o.objectiu_esportiu);
+  set('obj-compte',   o.a_tenir_en_compte);
+  set('obj-tensio',   o.tensio);
+  set('obj-pulsacions', o.pulsacions);
+  set('obj-proxima',  o.proxima_visita);
+}
+
+function guardar_objectius() {
+  if (!pacient_actiu) return;
+  if (!pacient_actiu.observacions) pacient_actiu.observacions = {};
+  pacient_actiu.observacions.objectiu_esportiu = document.getElementById('obj-esportiu').value.trim();
+  pacient_actiu.observacions.a_tenir_en_compte = document.getElementById('obj-compte').value.trim();
+  pacient_actiu.observacions.tensio             = document.getElementById('obj-tensio').value.trim();
+  pacient_actiu.observacions.pulsacions         = document.getElementById('obj-pulsacions').value.trim();
+  pacient_actiu.observacions.proxima_visita     = document.getElementById('obj-proxima').value.trim();
+  guardar_pacients();
+  // Sync amb els camps de la ficha
+  carregar_observacions();
+  mostrar_toast('✅ Objetivos guardados.', 'ok');
 }
 
 </script>
