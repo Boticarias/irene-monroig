@@ -3200,7 +3200,17 @@ function generar_html_pdf(pacient, planificacio, moments, observacions, data_pla
         let cellaIngredients = '';
         if (info) {
           if (info.ingredientes?.length) {
-            cellaIngredients += `<span class="ing-label">INGREDIENTES (1 persona): </span><span class="ing-text">${Array.isArray(info.ingredientes) ? info.ingredientes.join(', ') : info.ingredientes}</span>`;
+            // ingredientes pot ser: string, array de strings, o array d'objectes {nom, quantitat}
+            const ing_text = (() => {
+              const ing = info.ingredientes;
+              if (!ing) return '';
+              if (typeof ing === 'string') return ing;
+              if (Array.isArray(ing)) {
+                return ing.map(i => typeof i === 'string' ? i : (i.nom || JSON.stringify(i))).join(', ');
+              }
+              return String(ing);
+            })();
+            cellaIngredients += `<span class="ing-label">INGREDIENTES (1 persona): </span><span class="ing-text">${ing_text}</span>`;
           }
           if (info.receta) {
             cellaIngredients += `<br><span class="receta-label">RECETA: </span><span class="receta-text">${info.receta}</span>`;
