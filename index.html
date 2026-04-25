@@ -1224,12 +1224,16 @@ function renderitzar_setmana(){
   if(!pacient_actiu.planificacions[clau]) pacient_actiu.planificacions[clau]={};
   const planif=pacient_actiu.planificacions[clau];
 
+  // Usar els moments del pacient si en té, sinó els per defecte
+  const MOMENTS_PAC = (pacient_actiu.moments_dia && pacient_actiu.moments_dia.length)
+    ? pacient_actiu.moments_dia : MOMENTS;
+
   const tbody=document.getElementById('tabla-body');
   const caps=[5,6]; // dissabte=5, diumenge=6 (0-indexed)
 
-  tbody.innerHTML=MOMENTS.map((moment,mi)=>`
+  tbody.innerHTML=MOMENTS_PAC.map((moment,mi)=>`
     <tr>
-      <td><div class="moment-label"><span>${['☀️','🍎','🍽️','☕','🌙','🌟'][mi]}</span>${moment}</div></td>
+      <td><div class="moment-label"><span>${({'Desayuno':'☀️','Almuerzo 1':'🍎','Almuerzo 2':'🍎','Comida':'🍽️','Merienda 1':'☕','Merienda 2':'☕','Cena':'🌙','Recena':'🌟','Media mañana':'🍎','Merienda':'☕'}[moment]||'🍽️')}</span>${moment}</div></td>
       ${DIES.map((dia,di)=>{
         // Recollir TOTS els plats d'aquest moment+dia (claus: mi_di, mi_di_v1, mi_di_v2...)
         const plats_cel = obtenir_plats_cel(planif, mi, di);
@@ -1259,14 +1263,29 @@ function renderitzar_setmana(){
 function actualitzar_macros(planif){
   let kcal=0,prot=0,hc=0,gras=0,dies_amb_dades=0;
   for(let di=0;di<7;di++){
-    let te=false;
-    for(let mi=0;mi<MOMENTS.length;mi++){
-      const pl=planif[mi+'_'+di];
-      if(pl){te=true;kcal+=pl.kcal||0;prot+=pl.prot||0;hc+=pl.hc||0;gras+=pl.gras||0;}
-    }
+    let die_kcal=0,die_prot=0,die_hc=0,die_gras=0,te=false;
+    // Sumar TOTS els plats del dia (totes les claus: mi_di, mi_di_vN, Moment_di...)
+    const MOMENTS_PAC2 = (pacient_actiu.moments_dia && pacient_actiu.moments_dia.length) ? pacient_actiu.moments_dia : MOMENTS;
+    Object.entries(planif).forEach(([k,pl])=>{
+      if(!pl?.nom) return;
+      // Detectar si pertany a aquest dia
+      const nmatch = k.match(/^(\d+)_(\d+)(?:_v\d+)?$/);
+      const tmatch = k.match(/^(.+)_(\d+)(?:_v\d+)?$/);
+      const pertany = (nmatch && parseInt(nmatch[2])===di) || (tmatch && parseInt(tmatch[2])===di);
+      if(!pertany) return;
+      // Obtenir macros del plat (directes o del catàleg)
+      const info = obtenir_info_plat_complet(pl);
+      const pk = info?.kcal||pl.kcal||0;
+      const pp = info?.prot||pl.prot||0;
+      const ph = info?.hc||pl.hc||0;
+      const pg = info?.gras||pl.gras||0;
+      if(pk||pp||ph||pg){te=true;}
+      die_kcal+=pk; die_prot+=pp; die_hc+=ph; die_gras+=pg;
+    });
     if(te) dies_amb_dades++;
+    kcal+=die_kcal; prot+=die_prot; hc+=die_hc; gras+=die_gras;
   }
-  const d=dies_amb_dades||1;
+  const d=7; // Sempre dividir per 7 dies
   document.getElementById('val-kcal').textContent=Math.round(kcal/d)+' kcal';
   document.getElementById('val-prot').textContent=Math.round(prot/d)+' g';
   document.getElementById('val-hc').textContent=Math.round(hc/d)+' g';
