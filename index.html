@@ -1310,48 +1310,53 @@ function buscar_plat(){
 async function _fer_cerca(q){
   const res=document.getElementById('plats-resultats');
   res.style.display='block';
-  res.innerHTML='<div class="plat-resultat-item"><div class="plat-resultat-nom" style="color:var(--text-suau)">🔍 Buscando...</div></div>';
 
-  // 1. Search local Dietopro catalog first
+  // 1. Catàleg local (instantani)
   const locals = buscar_en_cataleg(q);
   let html = '';
 
   if(locals.length > 0){
-    html += `<div style="font-size:0.7rem;font-weight:700;color:var(--verde);padding:6px 10px 2px;text-transform:uppercase;letter-spacing:0.5px">🍽️ Catálogo Dietopro (${locals.length})</div>`;
+    const label = filtre_plat_actiu==='propi' ? '⭐ Platos propios' : filtre_plat_actiu==='dietopro' ? '📋 Catálogo Dietopro' : '🍽️ Catálogo';
+    html += `<div style="font-size:0.7rem;font-weight:700;color:var(--verde);padding:6px 10px 2px;text-transform:uppercase;letter-spacing:0.5px">${label} (${locals.length})</div>`;
     html += locals.map(p=>{
-      const macros = [
-        p.kcal?p.kcal+'kcal':'',
-        p.prot?'P:'+p.prot+'g':'',
-        p.hc?'HC:'+p.hc+'g':'',
-        p.gras?'G:'+p.gras+'g':''
-      ].filter(Boolean).join(' · ');
+      const macros = [p.kcal?p.kcal+'kcal':'',p.prot?'P:'+p.prot+'g':'',p.hc?'HC:'+p.hc+'g':'',p.gras?'G:'+p.gras+'g':''].filter(Boolean).join(' · ');
       const alerg = p.alergenos&&p.alergenos.length?'<span style="color:#E07070;font-size:0.7rem"> ⚠️ '+p.alergenos.slice(0,3).join(', ')+(p.alergenos.length>3?'...':'')+'</span>':'';
+      const propiTag = p.propio?'<span style="background:var(--verde-suau);color:var(--verde);font-size:0.68rem;padding:1px 6px;border-radius:8px;margin-left:4px;">⭐</span>':'';
       return `<div class="plat-resultat-item" onclick="seleccionar_plat_off(${JSON.stringify(p.nombre).replace(/"/g,'&quot;')},${p.kcal||0},${p.prot||0},${p.hc||0},${p.gras||0})" style="border-left:3px solid var(--verde-clar)">
-        <div class="plat-resultat-nom">${p.nombre}${propi_tag}${alerg}</div>
+        <div class="plat-resultat-nom">${p.nombre}${propiTag}${alerg}</div>
         ${macros?`<div class="plat-resultat-macros">${macros}${p.dificultad?' · '+p.dificultad:''}</div>`:''}
       </div>`;
     }).join('');
   }
 
-  // 2. Also search OpenFoodFacts
-  try{
-    const url=`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=6&lc=es`;
-    const r=await fetch(url);
-    const d=await r.json();
-    if(d.products&&d.products.length){
-      if(html) html += `<div style="font-size:0.7rem;font-weight:700;color:var(--text-suau);padding:6px 10px 2px;text-transform:uppercase;letter-spacing:0.5px">🌐 OpenFoodFacts</div>`;
-      html += d.products.slice(0,6).map(p=>{
-        const kcal=Math.round(p.nutriments?.['energy-kcal_100g']||p.nutriments?.['energy-kcal']||0);
-        const prot=Math.round(p.nutriments?.proteins_100g||0);
-        const hc=Math.round(p.nutriments?.carbohydrates_100g||0);
-        const gras=Math.round(p.nutriments?.fat_100g||0);
-        return `<div class="plat-resultat-item" onclick="seleccionar_plat_off(${JSON.stringify(p.product_name||p.product_name_es||'').replace(/"/g,'&quot;')},${kcal},${prot},${hc},${gras})">
-          <div class="plat-resultat-nom">${p.product_name_es||p.product_name||'Sin nombre'}</div>
-          <div class="plat-resultat-macros">${kcal?kcal+'kcal':''} ${prot?'· P:'+prot+'g':''} ${hc?'· HC:'+hc+'g':''} ${gras?'· G:'+gras+'g':''}</div>
-        </div>`;
-      }).join('');
-    }
-  }catch(e){console.error(e);}
+  // Mostrar resultats locals de seguida
+  if(html){
+    res.innerHTML=html;
+  } else {
+    res.innerHTML='<div class="plat-resultat-item"><div class="plat-resultat-nom" style="color:var(--text-suau)">🔍 Buscando...</div></div>';
+  }
+
+  // 2. OpenFoodFacts (asíncron, només si filtre és "tots")
+  if(filtre_plat_actiu === 'tots') {
+    try{
+      const url=`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=6&lc=es`;
+      const r=await fetch(url);
+      const d=await r.json();
+      if(d.products&&d.products.length){
+        if(html) html += `<div style="font-size:0.7rem;font-weight:700;color:var(--text-suau);padding:6px 10px 2px;text-transform:uppercase;letter-spacing:0.5px">🌐 OpenFoodFacts</div>`;
+        html += d.products.slice(0,6).map(p=>{
+          const kcal=Math.round(p.nutriments?.['energy-kcal_100g']||p.nutriments?.['energy-kcal']||0);
+          const prot=Math.round(p.nutriments?.proteins_100g||0);
+          const hc=Math.round(p.nutriments?.carbohydrates_100g||0);
+          const gras=Math.round(p.nutriments?.fat_100g||0);
+          return `<div class="plat-resultat-item" onclick="seleccionar_plat_off(${JSON.stringify(p.product_name||p.product_name_es||'').replace(/"/g,'&quot;')},${kcal},${prot},${hc},${gras})">
+            <div class="plat-resultat-nom">${p.product_name_es||p.product_name||'Sin nombre'}</div>
+            <div class="plat-resultat-macros">${kcal?kcal+'kcal':''} ${prot?'· P:'+prot+'g':''} ${hc?'· HC:'+hc+'g':''} ${gras?'· G:'+gras+'g':''}</div>
+          </div>`;
+        }).join('');
+      }
+    }catch(e){ /* OpenFoodFacts no disponible */ }
+  }
 
   if(!html){
     html='<div class="plat-resultat-item"><div class="plat-resultat-nom">Sin resultados. Introduce los datos manualmente.</div></div>';
@@ -3095,6 +3100,15 @@ function obtenir_info_plat(nom_plat) {
   return cataleg_plats.find(p => p.nombre && p.nombre.toLowerCase().trim() === nomLow) || null;
 }
 
+// Versió que també busca pel camp 'nom' (plats a la planificació)
+function obtenir_info_plat_complet(plat) {
+  if (!plat) return null;
+  // Si el plat ja té receta/ingredientes, retornar-lo directament
+  if (plat.receta || plat.ingredientes) return plat;
+  // Buscar al catàleg
+  return obtenir_info_plat(plat.nom || plat.nombre) || plat;
+}
+
 function calcular_llista_compra(planificacio, moments) {
   const ingredients = {}; // nom -> { total, unitat, categoria }
   const DIES = 7;
@@ -3273,24 +3287,21 @@ function generar_html_pdf(pacient, planificacio, moments, observacions, data_pla
       hiHaPlats = true;
       const rowspan = unics.length;
       unics.forEach((plat, pi) => {
-        const info = obtenir_info_plat(plat.nom);
+        const info = obtenir_info_plat_complet(plat);
         let cellaIngredients = '';
         if (info) {
           if (info.ingredientes?.length) {
             // ingredientes pot ser: string, array de strings, o array d'objectes {nom, quantitat}
-            const ing_text = (() => {
-              const ing = info.ingredientes;
-              if (!ing) return '';
-              if (typeof ing === 'string') return ing;
-              if (Array.isArray(ing)) {
-                return ing.map(i => typeof i === 'string' ? i : (i.nom || JSON.stringify(i))).join(', ');
-              }
-              return String(ing);
-            })();
-            cellaIngredients += `<span class="ing-label">INGREDIENTES (1 persona): </span><span class="ing-text">${ing_text}</span>`;
+            // Llegir ingredients del catàleg (pot ser string o array)
+            const ing_raw = info.ingredientes || info.ingredientes_text;
+            const ing_text = !ing_raw ? '' :
+              typeof ing_raw === 'string' ? ing_raw :
+              Array.isArray(ing_raw) ? ing_raw.map(i => typeof i === 'string' ? i : (i.nom||'')).filter(Boolean).join(', ') : '';
+            if(ing_text) cellaIngredients += `<span class="ing-label">INGREDIENTES (1 persona): </span><span class="ing-text">${ing_text}</span>`;
           }
-          if (info.receta) {
-            cellaIngredients += `<br><span class="receta-label">RECETA: </span><span class="receta-text">${info.receta}</span>`;
+          const receta_text = info.receta || '';
+          if (receta_text) {
+            cellaIngredients += `<br><span class="receta-label">RECETA: </span><span class="receta-text">${receta_text}</span>`;
           }
         }
 
