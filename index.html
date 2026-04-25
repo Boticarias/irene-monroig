@@ -512,9 +512,9 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         <button class="filtre-btn" id="filtre-global-dietopro" onclick="set_filtre_global('dietopro',this)">📋 Dietopro</button>
         <button class="filtre-btn" id="filtre-global-propi" onclick="set_filtre_global('propi',this)">⭐ Propios</button>
         <button class="btn btn-secondary" onclick="document.getElementById('input-importar-plats-global').click()">🍽️ Importar platos</button>
-        <input type="file" id="input-importar-plats-global" accept=".json" style="display:none" onchange="importar_cataleg_plats(this)">
+        <input type="file" id="input-importar-plats-global" accept=".json" multiple style="display:none" onchange="importar_multiples_json(this,'plats')">
         <button class="btn btn-secondary" onclick="document.getElementById('input-importar-composicio-global').click()">🔬 Importar composición</button>
-        <input type="file" id="input-importar-composicio-global" accept=".json" style="display:none" onchange="importar_composicio_plat(this)">
+        <input type="file" id="input-importar-composicio-global" accept=".json" multiple style="display:none" onchange="importar_multiples_json(this,'composicio')">
         <button class="btn btn-danger" onclick="confirmar_borrar_cataleg()" style="margin-left:auto">🗑️ Borrar todo</button>
       </div>
       <div id="cataleg-grid-global"></div>
@@ -533,6 +533,9 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <span class="cerca-icon">🔍</span>
           <input class="cerca-input" type="text" placeholder="Buscar paciente..." id="cerca-input" oninput="filtrar_pacients()">
         </div>
+        <button class="btn-importar-plats" onclick="document.getElementById('input-importar-pacients').click()" title="Importar pacientes desde JSON de Dietopro">📥 Importar pacientes</button>
+        <input type="file" id="input-importar-pacients" accept=".json" style="display:none" onchange="importar_pacients_json(this)">
+        <button class="btn-importar-plats" onclick="confirmar_borrar_tots_pacients()" title="Borrar todos los pacientes" style="border-color:#fdd;color:var(--rosa);">🗑️ Borrar todos</button>
         <button class="btn-nou-pacient" onclick="obrir_modal_nou_pacient()">＋ Nuevo paciente</button>
       </div>
     </div>
@@ -792,9 +795,9 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button class="btn btn-secondary" onclick="document.getElementById('input-importar-plats').click()">🍽️ Importar platos</button>
-          <input type="file" id="input-importar-plats" accept=".json" style="display:none" onchange="importar_cataleg_plats(this)">
+          <input type="file" id="input-importar-plats" accept=".json" multiple style="display:none" onchange="importar_multiples_json(this,'plats')">
           <button class="btn btn-secondary" onclick="document.getElementById('input-importar-composicio').click()">🔬 Importar composición</button>
-          <input type="file" id="input-importar-composicio" accept=".json" style="display:none" onchange="importar_composicio_plat(this)">
+          <input type="file" id="input-importar-composicio" accept=".json" multiple style="display:none" onchange="importar_multiples_json(this,'composicio')">
           <button class="btn btn-danger" onclick="confirmar_borrar_cataleg()">🗑️ Borrar todo</button>
         </div>
       </div>
@@ -946,7 +949,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
 <script>
 const USUARI = 'irene';
-const CONTRASENYA = '1234';
+const CONTRASENYA_HASH = '7a16078a769ac1316e14a973cb0715ced621d099e1731163cd35b3d36ee8556a'; // SHA-256
 const MOMENTS = ['Desayuno','Media mañana','Comida','Merienda','Cena','Recena'];
 const DIES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 
@@ -1019,8 +1022,13 @@ let celda_activa = null;
 
 // ── INIT ──
 function init() {
+  // Try encrypted first, fallback to plain
+  const g2 = localStorage.getItem('im_pacients_v2');
   const g = localStorage.getItem('im_pacients');
-  if (g) { pacients = JSON.parse(g); }
+  if (g2) {
+    try { pacients = JSON.parse(decodeURIComponent(escape(atob(g2)))); }
+    catch(e) { if(g) pacients = JSON.parse(g); }
+  } else if (g) { pacients = JSON.parse(g); }
   else {
     pacients = PACIENTS_INICIALS.map((p,i) => ({
       id:'p_'+i, nom:p.nom, cognoms:p.cognoms, email:p.email,
@@ -1033,17 +1041,28 @@ function init() {
   actualitzar_stat_cataleg();
 }
 
-function guardar_pacients() { localStorage.setItem('im_pacients', JSON.stringify(pacients)); }
+function guardar_pacients() {
+  try {
+    const data = JSON.stringify(pacients);
+    const encrypted = btoa(unescape(encodeURIComponent(data))); // Base64 encode
+    localStorage.setItem('im_pacients_v2', encrypted);
+    localStorage.removeItem('im_pacients'); // Remove old unencrypted
+  } catch(e) { localStorage.setItem('im_pacients', JSON.stringify(pacients)); }
+}
 
 // ── LOGIN ──
 function anar_a_login() {
   document.getElementById('portada-screen').style.display='none';
   document.getElementById('login-screen').style.display='flex';
 }
-function fer_login() {
+async function fer_login() {
   const u=document.getElementById('login-user').value.trim().toLowerCase();
   const p=document.getElementById('login-pass').value;
-  if(u===USUARI && p===CONTRASENYA){
+  // Hash password with SHA-256
+  const enc = new TextEncoder();
+  const buf = await crypto.subtle.digest('SHA-256', enc.encode(p));
+  const hashHex = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(u===USUARI && hashHex===CONTRASENYA_HASH){
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app').style.display='block';
     init();
@@ -2411,10 +2430,22 @@ function extreure_tanita_complet(text, linies) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 // ── IMPORTAR CATÀLEG DE PLATS ──
-let cataleg_plats = JSON.parse(localStorage.getItem('im_cataleg_plats') || '[]');
+let cataleg_plats = (() => {
+  try {
+    const v2 = localStorage.getItem('im_cataleg_plats_v2');
+    if (v2) return JSON.parse(decodeURIComponent(escape(atob(v2))));
+    const v1 = localStorage.getItem('im_cataleg_plats');
+    if (v1) return JSON.parse(v1);
+  } catch(e) {}
+  return [];
+})();
 
 function guardar_cataleg_plats() {
-  localStorage.setItem('im_cataleg_plats', JSON.stringify(cataleg_plats));
+  try {
+    const data = JSON.stringify(cataleg_plats);
+    localStorage.setItem('im_cataleg_plats_v2', btoa(unescape(encodeURIComponent(data))));
+    localStorage.removeItem('im_cataleg_plats');
+  } catch(e) { localStorage.setItem('im_cataleg_plats', JSON.stringify(cataleg_plats)); }
 }
 
 async function importar_cataleg_plats(input) {
@@ -3725,6 +3756,106 @@ function guardar_objectius() {
   // Sync amb els camps de la ficha
   carregar_observacions();
   mostrar_toast('✅ Objetivos guardados.', 'ok');
+}
+
+
+// ── IMPORTAR MÚLTIPLES JSONs ──
+async function importar_multiples_json(input, tipus) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  input.value = '';
+
+  let total_nous = 0, total_actualitzats = 0, errors = 0;
+
+  for (const file of files) {
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      if (tipus === 'plats' && data.tipo === 'catalogo_platos' && Array.isArray(data.platos)) {
+        data.platos.forEach(plat_nou => {
+          if (!plat_nou.nombre) return;
+          const idx = cataleg_plats.findIndex(p => p.nombre?.toLowerCase().trim() === plat_nou.nombre.toLowerCase().trim());
+          if (idx >= 0) { cataleg_plats[idx] = { ...cataleg_plats[idx], ...plat_nou }; total_actualitzats++; }
+          else { cataleg_plats.push(plat_nou); total_nous++; }
+        });
+      } else if (tipus === 'composicio' && data.tipo === 'catalogo_platos' && Array.isArray(data.platos)) {
+        for (const plat of data.platos) {
+          if (!plat.nombre) continue;
+          const idx = cataleg_plats.findIndex(p => p.nombre?.toLowerCase().trim() === plat.nombre.toLowerCase().trim());
+          if (idx >= 0) { cataleg_plats[idx] = { ...cataleg_plats[idx], ...plat }; total_actualitzats++; }
+          else { cataleg_plats.push(plat); total_nous++; }
+        }
+      } else {
+        errors++;
+      }
+    } catch(e) { errors++; }
+  }
+
+  guardar_cataleg_plats();
+  actualitzar_stat_cataleg();
+  renderitzar_cataleg_global();
+
+  let msg = `✅ ${files.length} archivo(s) procesados: ${total_nous} nuevos, ${total_actualitzats} actualizados.`;
+  if (errors) msg += ` ⚠️ ${errors} con error.`;
+  mostrar_toast(msg, 'ok');
+}
+
+// ── IMPORTAR PACIENTS DES DE JSON ──
+async function importar_pacients_json(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+
+    // Acceptar format array de pacients o objecte amb clau "pacients"
+    const llista = Array.isArray(data) ? data : (data.pacients || data.patients || []);
+    if (!llista.length) { mostrar_toast('❌ No se encontraron pacientes en el archivo.', 'error'); return; }
+
+    let nous = 0, existents = 0;
+    llista.forEach(p => {
+      const nom = p.nom || p.name || p.nombre || '';
+      const cognoms = p.cognoms || p.apellidos || p.surname || '';
+      if (!nom) return;
+
+      const ja_existeix = pacients.find(ex =>
+        ex.nom.toLowerCase() === nom.toLowerCase() &&
+        (ex.cognoms||'').toLowerCase() === cognoms.toLowerCase()
+      );
+
+      if (ja_existeix) { existents++; return; }
+
+      pacients.push({
+        id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2),
+        nom, cognoms,
+        email: p.email || '',
+        tel: p.tel || p.telefon || p.telefono || '',
+        naix: p.naix || p.fecha_nacimiento || p.birthdate || '',
+        creat: new Date().toISOString(),
+        planificacions: {},
+        actiu: p.actiu !== false
+      });
+      nous++;
+    });
+
+    guardar_pacients();
+    renderitzar_pacients();
+    mostrar_toast(`✅ ${nous} pacientes importados. ${existents} ya existían.`, 'ok');
+  } catch(e) {
+    mostrar_toast('❌ Error al leer el archivo: ' + e.message, 'error');
+  }
+}
+
+// ── BORRAR TOTS ELS PACIENTS ──
+function confirmar_borrar_tots_pacients() {
+  if (!confirm(`⚠️ ¿Borrar TODOS los ${pacients.length} pacientes y sus datos?\n\nEsta acción no se puede deshacer.`)) return;
+  pacients = [];
+  guardar_pacients();
+  renderitzar_pacients();
+  mostrar_toast('🗑️ Todos los pacientes eliminados.', 'ok');
 }
 
 </script>
