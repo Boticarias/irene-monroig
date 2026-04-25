@@ -1280,7 +1280,30 @@ let cerca_timeout=null;
 function buscar_plat(){
   clearTimeout(cerca_timeout);
   const q=document.getElementById('cerca-plat-input').value.trim();
-  if(q.length<2){ document.getElementById('plats-resultats').style.display='none'; return; }
+  if(q.length<2){
+    // Si hi ha filtre actiu (propi/dietopro), mostrar tots els plats filtrats
+    if(filtre_plat_actiu !== 'tots') {
+      const filtrats = aplicar_filtre_plats(cataleg_plats, filtre_plat_actiu).slice(0,12);
+      const res = document.getElementById('plats-resultats');
+      if(filtrats.length) {
+        res.style.display='block';
+        const label = filtre_plat_actiu==='propi' ? '⭐ Platos propios' : '📋 Catálogo Dietopro';
+        res.innerHTML = `<div style="font-size:0.7rem;font-weight:700;color:var(--verde);padding:6px 10px 2px;text-transform:uppercase;letter-spacing:0.5px">${label} (${filtrats.length})</div>`
+          + filtrats.map(p => {
+            const macros = [p.kcal?p.kcal+'kcal':'',p.prot?'P:'+p.prot+'g':'',p.hc?'HC:'+p.hc+'g':'',p.gras?'G:'+p.gras+'g':''].filter(Boolean).join(' · ');
+            return `<div class="plat-resultat-item" onclick="seleccionar_plat_off(${JSON.stringify(p.nombre).replace(/"/g,'&quot;')},${p.kcal||0},${p.prot||0},${p.hc||0},${p.gras||0})" style="border-left:3px solid var(--verde-clar)">
+              <div class="plat-resultat-nom">${p.nombre}${p.propio?'<span style="background:var(--verde-suau);color:var(--verde);font-size:0.68rem;padding:1px 6px;border-radius:8px;margin-left:4px;">⭐</span>':''}</div>
+              ${macros?`<div class="plat-resultat-macros">${macros}</div>`:''}
+            </div>`;
+          }).join('');
+      } else {
+        res.style.display='none';
+      }
+    } else {
+      document.getElementById('plats-resultats').style.display='none';
+    }
+    return;
+  }
   cerca_timeout=setTimeout(()=>_fer_cerca(q),400);
 }
 
@@ -3486,12 +3509,15 @@ function generar_pdf_planificacio() {
 
   const html = generar_html_pdf(pacient_actiu, planificacio, moments, observacions, data_planif);
 
-  // Obrir en nova finestra per imprimir/guardar com PDF
-  const win = window.open('', '_blank');
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  setTimeout(() => win.print(), 800);
+  // Crear blob i obrir en nova pestanya
+  const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  mostrar_toast('✅ PDF generat. A la nova pestanya prem Ctrl+P per imprimir o guardar com PDF.', 'ok');
 }
 
 
