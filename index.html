@@ -599,6 +599,21 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         </div>
         <button class="btn btn-primary" onclick="generar_pdf_planificacio()" style="font-size:0.8rem;padding:7px 16px;">📄 Generar PDF</button>
       </div>
+      <div class="macros-bar" id="macros-bar-total" style="margin-bottom:8px;background:#f0f7f2;border:1px solid var(--verde-clar);">
+        <div class="macros-title" style="color:var(--verde)">Total semanal</div>
+        <div class="macro-item">
+          <div class="macro-nom"><span>Energía</span><span id="val-kcal-total">— kcal</span></div>
+        </div>
+        <div class="macro-item">
+          <div class="macro-nom"><span>Proteínas</span><span id="val-prot-total">— g</span></div>
+        </div>
+        <div class="macro-item">
+          <div class="macro-nom"><span>Hidratos</span><span id="val-hc-total">— g</span></div>
+        </div>
+        <div class="macro-item">
+          <div class="macro-nom"><span>Grasas</span><span id="val-gras-total">— g</span></div>
+        </div>
+      </div>
       <div class="macros-bar" id="macros-bar">
         <div class="macros-title">Media diaria</div>
         <div class="macro-item">
@@ -1290,6 +1305,14 @@ function actualitzar_macros(planif){
   document.getElementById('val-prot').textContent=Math.round(prot/d)+' g';
   document.getElementById('val-hc').textContent=Math.round(hc/d)+' g';
   document.getElementById('val-gras').textContent=Math.round(gras/d)+' g';
+  // Total semanal
+  const te = document.getElementById('val-kcal-total');
+  if(te) {
+    document.getElementById('val-kcal-total').textContent=Math.round(kcal)+' kcal';
+    document.getElementById('val-prot-total').textContent=Math.round(prot)+' g';
+    document.getElementById('val-hc-total').textContent=Math.round(hc)+' g';
+    document.getElementById('val-gras-total').textContent=Math.round(gras)+' g';
+  }
   const maxK=2500;
   document.getElementById('bar-kcal').style.width=Math.min(100,Math.round(kcal/d/maxK*100))+'%';
   document.getElementById('bar-prot').style.width=Math.min(100,Math.round(prot/d/200*100))+'%';
