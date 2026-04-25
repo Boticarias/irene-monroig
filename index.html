@@ -3520,15 +3520,25 @@ function generar_pdf_planificacio() {
 
   const html = generar_html_pdf(pacient_actiu, planificacio, moments, observacions, data_planif);
 
-  // Crear blob i obrir en nova pestanya
-  const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.target = '_blank';
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 10000);
-  mostrar_toast('✅ PDF generat. A la nova pestanya prem Ctrl+P per imprimir o guardar com PDF.', 'ok');
+  // Obrir en nova finestra via about:blank per evitar bloqueig de popups
+  const win = window.open('about:blank', '_blank');
+  if (!win) {
+    // Popup bloquejat — descarregar com HTML
+    const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (pacient_actiu.nom + '_' + pacient_actiu.cognoms + '_planificacio.html').replace(/\s+/g,'_');
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    mostrar_toast('⚠️ Popup bloqueado. Se ha descargado el PDF como archivo HTML. Ábrelo y pulsa Ctrl+P para imprimir.', 'ok');
+    return;
+  }
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => { try { win.focus(); win.print(); } catch(e){} }, 1000);
+  mostrar_toast('✅ PDF abierto. Pulsa Ctrl+P para imprimir o guardar como PDF.', 'ok');
 }
 
 
