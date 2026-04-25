@@ -558,7 +558,6 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
   <div id="pantalla-pacient" style="display:none;">
     <div class="pacient-topbar">
       <button class="btn-tornar" onclick="tornar_a_llista()">← Volver</button>
-      <button class="btn btn-primary" onclick="generar_pdf_planificacio()" style="font-size:0.8rem;padding:8px 16px;margin-left:auto">📄 Generar PDF</button>
       <div class="pacient-topbar-info">
         <h2 id="pac-nom-header">—</h2>
         <p id="pac-meta-header">—</p>
@@ -592,10 +591,13 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
     <!-- TAB: PLANIFICACIÓ -->
     <div id="tab-planificacio" class="tab-content actiu">
-      <div class="planif-controls">
-        <button class="semana-nav-btn" onclick="canviar_setmana(-1)">←</button>
-        <h3 id="setmana-titol">—</h3>
-        <button class="semana-nav-btn" onclick="canviar_setmana(1)">→</button>
+      <div class="planif-controls" style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="semana-nav-btn" onclick="canviar_setmana(-1)">←</button>
+          <h3 id="setmana-titol">—</h3>
+          <button class="semana-nav-btn" onclick="canviar_setmana(1)">→</button>
+        </div>
+        <button class="btn btn-primary" onclick="generar_pdf_planificacio()" style="font-size:0.8rem;padding:7px 16px;">📄 Generar PDF</button>
       </div>
       <div class="macros-bar" id="macros-bar">
         <div class="macros-title">Media diaria</div>
@@ -3116,9 +3118,14 @@ function calcular_llista_compra(planificacio, moments) {
   Object.entries(planificacio).forEach(([clau, plat]) => {
     if (!plat?.nom) return;
     const info = obtenir_info_plat(plat.nom);
-    if (!info?.ingredientes?.length) return;
-    
-    info.ingredientes.forEach(ing => {
+    if (!info?.ingredientes) return;
+    // Normalitzar: pot ser string o array
+    const ing_list = typeof info.ingredientes === 'string'
+      ? info.ingredientes.split(',').map(s => s.trim()).filter(Boolean)
+      : Array.isArray(info.ingredientes) ? info.ingredientes : [];
+    if (!ing_list.length) return;
+
+    ing_list.forEach(ing => {
       // Parse "Nom: Xg (descripció)" or "Nom: X unitats"
       const m = String(ing).match(/^([^:]+):\s*(\d+[.,]?\d*)\s*(g|kg|ml|l|unidades?|lonchas?|tazas?|vasos?|cucharad[ao]s?[^,)]*)/i);
       if (m) {
