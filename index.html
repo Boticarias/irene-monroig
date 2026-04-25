@@ -508,6 +508,9 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
     <div style="max-width:1100px;margin:0 auto;padding:28px 24px;">
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center;">
         <input class="cerca-input" type="text" id="cerca-plats-global" placeholder="🔍 Buscar plato..." oninput="renderitzar_cataleg_global()" style="flex:1;min-width:200px;max-width:360px;">
+        <button class="filtre-btn actiu" id="filtre-global-tots" onclick="set_filtre_global('tots',this)">Todos</button>
+        <button class="filtre-btn" id="filtre-global-dietopro" onclick="set_filtre_global('dietopro',this)">📋 Dietopro</button>
+        <button class="filtre-btn" id="filtre-global-propi" onclick="set_filtre_global('propi',this)">⭐ Propios</button>
         <button class="btn btn-secondary" onclick="document.getElementById('input-importar-plats-global').click()">🍽️ Importar platos</button>
         <input type="file" id="input-importar-plats-global" accept=".json" style="display:none" onchange="importar_cataleg_plats(this)">
         <button class="btn btn-secondary" onclick="document.getElementById('input-importar-composicio-global').click()">🔬 Importar composición</button>
@@ -774,6 +777,11 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <span class="cerca-plats-icon">🔍</span>
           <input class="cerca-plats-input" type="text" id="cerca-plat-input" placeholder="Escribe el nombre del plato..." oninput="buscar_plat()">
         </div>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <button class="filtre-btn actiu" id="filtre-plat-tots" onclick="set_filtre_plat('tots',this)">Todos</button>
+          <button class="filtre-btn" id="filtre-plat-dietopro" onclick="set_filtre_plat('dietopro',this)">📋 Dietopro</button>
+          <button class="filtre-btn" id="filtre-plat-propi" onclick="set_filtre_plat('propi',this)">⭐ Propios</button>
+        </div>
         <div class="plats-resultats" id="plats-resultats" style="display:none;"></div>
       </div>
       <div class="separador-modal">
@@ -800,6 +808,20 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <label class="form-label">Grasas (g)</label>
           <input class="form-input" type="number" id="plat-gras" placeholder="0">
         </div>
+      </div>
+      <div class="form-grup" id="grup-receta-manual" style="margin-top:10px;">
+        <label class="form-label">Ingredientes <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(opcional — saldrá en el PDF)</span></label>
+        <textarea class="form-input" id="plat-ingredientes" placeholder="Ej: Pechuga de pollo: 150g, Champiñones: 100g, Aceite de oliva: 5g" style="min-height:60px;resize:vertical;font-family:inherit;font-size:0.85rem;"></textarea>
+      </div>
+      <div class="form-grup" style="margin-top:8px;">
+        <label class="form-label">Receta <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(opcional — saldrá en el PDF)</span></label>
+        <textarea class="form-input" id="plat-receta" placeholder="Ej: 1. Asar la pechuga a la plancha. 2. Saltear los champiñones..." style="min-height:80px;resize:vertical;font-family:inherit;font-size:0.85rem;"></textarea>
+      </div>
+      <div class="form-grup" style="margin-top:8px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.85rem;color:var(--text);">
+          <input type="checkbox" id="plat-guardar-cataleg" style="accent-color:var(--verde);width:16px;height:16px;" checked>
+          Guardar en el catálogo como <strong style="color:var(--verde);margin-left:4px">Plato propio</strong>
+        </label>
       </div>
     </div>
     <div class="modal-footer">
@@ -1245,6 +1267,9 @@ function obrir_modal_plat(mi,di){
   document.getElementById('plat-prot').value='';
   document.getElementById('plat-hc').value='';
   document.getElementById('plat-gras').value='';
+  document.getElementById('plat-ingredientes').value='';
+  document.getElementById('plat-receta').value='';
+  document.getElementById('plat-guardar-cataleg').checked=true;
   document.getElementById('plats-resultats').style.display='none';
   document.getElementById('modal-plat').classList.add('visible');
   setTimeout(()=>document.getElementById('cerca-plat-input').focus(),100);
@@ -1279,7 +1304,7 @@ async function _fer_cerca(q){
       ].filter(Boolean).join(' · ');
       const alerg = p.alergenos&&p.alergenos.length?'<span style="color:#E07070;font-size:0.7rem"> ⚠️ '+p.alergenos.slice(0,3).join(', ')+(p.alergenos.length>3?'...':'')+'</span>':'';
       return `<div class="plat-resultat-item" onclick="seleccionar_plat_off(${JSON.stringify(p.nombre).replace(/"/g,'&quot;')},${p.kcal||0},${p.prot||0},${p.hc||0},${p.gras||0})" style="border-left:3px solid var(--verde-clar)">
-        <div class="plat-resultat-nom">${p.nombre}${alerg}</div>
+        <div class="plat-resultat-nom">${p.nombre}${propi_tag}${alerg}</div>
         ${macros?`<div class="plat-resultat-macros">${macros}${p.dificultad?' · '+p.dificultad:''}</div>`:''}
       </div>`;
     }).join('');
@@ -1323,13 +1348,35 @@ function seleccionar_plat_off(nom,kcal,prot,hc,gras){
 function guardar_plat(){
   const nom=document.getElementById('plat-nom-input').value.trim();
   if(!nom){alert('Introduce el nombre del plato.');return;}
+  const ingredientes_text = document.getElementById('plat-ingredientes').value.trim();
+  const receta_text = document.getElementById('plat-receta').value.trim();
   const plat={
     nom,
     kcal:parseFloat(document.getElementById('plat-kcal').value)||0,
     prot:parseFloat(document.getElementById('plat-prot').value)||0,
     hc:parseFloat(document.getElementById('plat-hc').value)||0,
     gras:parseFloat(document.getElementById('plat-gras').value)||0,
+    ingredientes: ingredientes_text || null,
+    receta: receta_text || null,
+    propio: true,
   };
+  // Guardar al catàleg si checkbox marcat
+  const guardar_cat = document.getElementById('plat-guardar-cataleg').checked;
+  if (guardar_cat && !celda_activa.clau_edicio) {
+    const idx = cataleg_plats.findIndex(p => p.nombre?.toLowerCase().trim() === nom.toLowerCase().trim());
+    const plat_cat = {
+      nombre: nom,
+      kcal: plat.kcal, prot: plat.prot, hc: plat.hc, gras: plat.gras,
+      ingredientes: ingredientes_text || '',
+      receta: receta_text || '',
+      alergenos: [], dificultad: '', propio: true,
+    };
+    if (idx >= 0) { cataleg_plats[idx] = { ...cataleg_plats[idx], ...plat_cat }; }
+    else { cataleg_plats.push(plat_cat); }
+    guardar_cataleg_plats();
+    actualitzar_stat_cataleg();
+    mostrar_toast(`✅ "${nom}" guardado en el catálogo como Plato propio.`, 'ok');
+  }
   const clau=clau_setmana(setmana_offset);
   if(!pacient_actiu.planificacions[clau]) pacient_actiu.planificacions[clau]={};
   // Si estem editant un plat existent, actualitzar-lo; si no, afegir nou
@@ -1376,6 +1423,9 @@ function obrir_modal_editar_plat(mi, di, plat_clau) {
   document.getElementById('plat-prot').value = plat.prot || '';
   document.getElementById('plat-hc').value = plat.hc || '';
   document.getElementById('plat-gras').value = plat.gras || '';
+  document.getElementById('plat-ingredientes').value = Array.isArray(plat.ingredientes) ? plat.ingredientes.join(', ') : (plat.ingredientes||'');
+  document.getElementById('plat-receta').value = plat.receta || '';
+  document.getElementById('plat-guardar-cataleg').checked = false;
   document.getElementById('plats-resultats').style.display = 'none';
   document.getElementById('cerca-plat-input').value = '';
   document.getElementById('modal-plat').classList.add('visible');
@@ -2250,7 +2300,7 @@ function extreure_tanita_complet(text, linies) {
 }
 
 // Tancar modals clicant fora
-['modal-plat','modal-nou-pacient','modal-confirmar-borrar','modal-import-preview','modal-composicio-confirm','modal-cuestionari'].forEach(id=>{
+['modal-plat','modal-nou-pacient','modal-confirmar-borrar','modal-import-preview','modal-composicio-confirm','modal-cuestionari','modal-editar-cataleg'].forEach(id=>{
   const el=document.getElementById(id); if(el) el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('visible');});
 });
 </script>
@@ -2320,7 +2370,7 @@ function actualitzar_stat_cataleg() {
 function buscar_en_cataleg(q) {
   if (!q || q.length < 2) return [];
   const qLow = q.toLowerCase();
-  return cataleg_plats
+  return aplicar_filtre_plats(cataleg_plats, filtre_plat_actiu)
     .filter(p => p.nombre && p.nombre.toLowerCase().includes(qLow))
     .slice(0, 8);
 }
@@ -2421,9 +2471,10 @@ function renderitzar_cataleg() {
       const alerg = p.alergenos && p.alergenos.length ? `<div style="font-size:0.72rem;color:var(--rosa);margin-top:4px">⚠️ ${p.alergenos.join(', ')}</div>` : '';
       const macros = p.kcal ? `<div style="font-size:0.75rem;color:var(--text-suau);margin-top:4px">${p.kcal}kcal · P:${p.prot||0}g · HC:${p.hc||0}g · G:${p.gras||0}g</div>` : '';
       const dif = p.dificultad ? `<div style="font-size:0.72rem;color:var(--text-suau)">${p.dificultad}</div>` : '';
-      return `<div style="background:white;border:1.5px solid var(--vora);border-radius:var(--radi);padding:14px 16px;position:relative;">
+      const badge_propi = p.propio ? '<span style="background:var(--verde-suau);color:var(--verde);font-size:0.68rem;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:6px;">⭐ Propio</span>' : '';
+      return `<div style="background:white;border:1.5px solid ${p.propio?'var(--verde-clar)':'var(--vora)'};border-radius:var(--radi);padding:14px 16px;position:relative;">
         <button onclick="borrar_plat_cataleg(${idx})" style="position:absolute;top:8px;right:8px;background:transparent;border:none;color:#ccc;cursor:pointer;font-size:0.9rem;line-height:1;" title="Eliminar">✕</button>
-        <div style="font-size:0.88rem;font-weight:600;color:var(--text);padding-right:20px">${p.nombre}</div>
+        <div style="font-size:0.88rem;font-weight:600;color:var(--text);padding-right:20px">${p.nombre}${badge_propi}</div>
         ${dif}${macros}${alerg}
       </div>`;
     }).join('')}
@@ -2711,7 +2762,8 @@ function renderitzar_cataleg_global() {
   const q = (document.getElementById('cerca-plats-global')?.value || '').toLowerCase().trim();
   const grid = document.getElementById('cataleg-grid-global');
   if (!grid) return;
-  const filtrats = q ? cataleg_plats.filter(p => p.nombre && p.nombre.toLowerCase().includes(q)) : cataleg_plats;
+  const base = aplicar_filtre_plats(cataleg_plats, filtre_global_actiu);
+  const filtrats = q ? base.filter(p => p.nombre && p.nombre.toLowerCase().includes(q)) : base;
   if (filtrats.length === 0) {
     grid.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text-suau)">
       <div style="font-size:2.5rem;margin-bottom:12px">🍽️</div>
@@ -2725,9 +2777,11 @@ function renderitzar_cataleg_global() {
       const alerg = p.alergenos?.length ? `<div style="font-size:0.72rem;color:var(--rosa);margin-top:4px">⚠️ ${p.alergenos.join(', ')}</div>` : '';
       const macros = p.kcal ? `<div style="font-size:0.75rem;color:var(--text-suau);margin-top:4px">${p.kcal}kcal · P:${p.prot||0}g · HC:${p.hc||0}g · G:${p.gras||0}g</div>` : '';
       const dif = p.dificultad ? `<div style="font-size:0.72rem;color:var(--text-suau)">${p.dificultad}</div>` : '';
-      return `<div style="background:white;border:1.5px solid var(--vora);border-radius:var(--radi);padding:14px 16px;position:relative;">
+      const badge_propi = p.propio ? '<span style="background:var(--verde-suau);color:var(--verde);font-size:0.68rem;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:6px;">⭐ Propio</span>' : '';
+      return `<div style="background:white;border:1.5px solid ${p.propio?'var(--verde-clar)':'var(--vora)'};border-radius:var(--radi);padding:14px 16px;position:relative;">
         <button onclick="borrar_plat_cataleg(${idx})" style="position:absolute;top:8px;right:8px;background:transparent;border:none;color:#ccc;cursor:pointer;font-size:0.9rem;" title="Eliminar">✕</button>
-        <div style="font-size:0.88rem;font-weight:600;color:var(--text);padding-right:20px">${p.nombre}</div>
+        <button onclick="editar_plat_cataleg(${idx})" style="position:absolute;top:8px;right:28px;background:transparent;border:none;color:#aaa;cursor:pointer;font-size:0.85rem;" title="Editar">✏️</button>
+        <div style="font-size:0.88rem;font-weight:600;color:var(--text);padding-right:44px">${p.nombre}${badge_propi}</div>
         ${dif}${macros}${alerg}
       </div>`;
     }).join('')}
@@ -3340,7 +3394,71 @@ Pròxima visita: ${o.proxima_visita}`;
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${titol_planif}</title>
     <style>${css}</style></head><body>
     ${pagPortada}${pagResum}${paginesDies}${pagObs}${pagCompra}${pagAlerg}${pagContra}
-  </body></html>`;
+  
+<!-- MODAL EDITAR PLAT CATÀLEG -->
+<div class="modal-overlay" id="modal-editar-cataleg">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <div>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.2rem">Editar plato</h3>
+        <p id="editar-cataleg-subtitol" style="font-size:0.78rem;color:var(--text-suau)">—</p>
+      </div>
+      <button class="modal-close" onclick="tancar_editar_cataleg()">✕</button>
+    </div>
+    <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
+      <div class="form-grup">
+        <label class="form-label">Nombre</label>
+        <input class="form-input" type="text" id="edit-cat-nom">
+      </div>
+      <div class="form-fila-4" style="margin-top:10px;">
+        <div class="form-grup">
+          <label class="form-label">Kcal</label>
+          <input class="form-input" type="number" id="edit-cat-kcal" placeholder="0">
+        </div>
+        <div class="form-grup">
+          <label class="form-label">Prot (g)</label>
+          <input class="form-input" type="number" id="edit-cat-prot" placeholder="0">
+        </div>
+        <div class="form-grup">
+          <label class="form-label">HC (g)</label>
+          <input class="form-input" type="number" id="edit-cat-hc" placeholder="0">
+        </div>
+        <div class="form-grup">
+          <label class="form-label">Grasas (g)</label>
+          <input class="form-input" type="number" id="edit-cat-gras" placeholder="0">
+        </div>
+      </div>
+      <div class="form-grup" style="margin-top:10px;">
+        <label class="form-label">Alérgenos <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(separados por coma)</span></label>
+        <input class="form-input" type="text" id="edit-cat-alergenos" placeholder="Gluten, Lácteos, Huevos...">
+      </div>
+      <div class="form-grup" style="margin-top:10px;">
+        <label class="form-label">Dificultad</label>
+        <input class="form-input" type="text" id="edit-cat-dificultad" placeholder="Ej: Platos fáciles y rápidos (FR)">
+      </div>
+      <div class="form-grup" style="margin-top:10px;">
+        <label class="form-label">Ingredientes <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(saldrá en el PDF)</span></label>
+        <textarea class="form-input" id="edit-cat-ingredientes" placeholder="Ej: Pechuga de pollo: 150g, Champiñones: 100g..." style="min-height:70px;resize:vertical;font-family:inherit;font-size:0.85rem;"></textarea>
+      </div>
+      <div class="form-grup" style="margin-top:10px;">
+        <label class="form-label">Receta <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(saldrá en el PDF)</span></label>
+        <textarea class="form-input" id="edit-cat-receta" placeholder="Ej: 1. Asar a la plancha..." style="min-height:90px;resize:vertical;font-family:inherit;font-size:0.85rem;"></textarea>
+      </div>
+      <div class="form-grup" style="margin-top:10px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.85rem;">
+          <input type="checkbox" id="edit-cat-propio" style="accent-color:var(--verde);width:16px;height:16px;">
+          Marcar como <strong style="color:var(--verde);margin-left:4px">⭐ Plato propio</strong>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="tancar_editar_cataleg()">Cancelar</button>
+      <button class="btn-guardar" onclick="guardar_editar_cataleg()">💾 Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+</body></html>`;
 }
 
 // ── BOTÓ GENERAR PDF ──
@@ -3374,6 +3492,80 @@ function generar_pdf_planificacio() {
   win.document.close();
   win.focus();
   setTimeout(() => win.print(), 800);
+}
+
+
+// ── FILTRES DE PLATS ──
+let filtre_plat_actiu = 'tots';
+let filtre_global_actiu = 'tots';
+
+function set_filtre_plat(filtre, btn) {
+  filtre_plat_actiu = filtre;
+  document.querySelectorAll('#filtre-plat-tots, #filtre-plat-dietopro, #filtre-plat-propi').forEach(b => b.classList.remove('actiu'));
+  btn.classList.add('actiu');
+  buscar_plat();
+}
+
+function set_filtre_global(filtre, btn) {
+  filtre_global_actiu = filtre;
+  document.querySelectorAll('#filtre-global-tots, #filtre-global-dietopro, #filtre-global-propi').forEach(b => b.classList.remove('actiu'));
+  btn.classList.add('actiu');
+  renderitzar_cataleg_global();
+}
+
+function aplicar_filtre_plats(plats, filtre) {
+  if (filtre === 'propi') return plats.filter(p => p.propio);
+  if (filtre === 'dietopro') return plats.filter(p => !p.propio);
+  return plats;
+}
+
+
+// ── EDITAR PLAT DEL CATÀLEG ──
+let _idx_editar_cataleg = null;
+
+function editar_plat_cataleg(idx) {
+  const p = cataleg_plats[idx];
+  if (!p) return;
+  _idx_editar_cataleg = idx;
+  document.getElementById('editar-cataleg-subtitol').textContent = p.nombre || '—';
+  document.getElementById('edit-cat-nom').value = p.nombre || '';
+  document.getElementById('edit-cat-kcal').value = p.kcal || '';
+  document.getElementById('edit-cat-prot').value = p.prot || '';
+  document.getElementById('edit-cat-hc').value = p.hc || '';
+  document.getElementById('edit-cat-gras').value = p.gras || '';
+  document.getElementById('edit-cat-alergenos').value = Array.isArray(p.alergenos) ? p.alergenos.join(', ') : (p.alergenos || '');
+  document.getElementById('edit-cat-dificultad').value = p.dificultad || '';
+  const ing = p.ingredientes;
+  document.getElementById('edit-cat-ingredientes').value = Array.isArray(ing) ? ing.join(', ') : (ing || '');
+  document.getElementById('edit-cat-receta').value = p.receta || '';
+  document.getElementById('edit-cat-propio').checked = !!p.propio;
+  document.getElementById('modal-editar-cataleg').classList.add('visible');
+}
+
+function tancar_editar_cataleg() {
+  document.getElementById('modal-editar-cataleg').classList.remove('visible');
+  _idx_editar_cataleg = null;
+}
+
+function guardar_editar_cataleg() {
+  if (_idx_editar_cataleg === null) return;
+  const p = cataleg_plats[_idx_editar_cataleg];
+  p.nombre     = document.getElementById('edit-cat-nom').value.trim() || p.nombre;
+  p.kcal       = parseFloat(document.getElementById('edit-cat-kcal').value) || 0;
+  p.prot       = parseFloat(document.getElementById('edit-cat-prot').value) || 0;
+  p.hc         = parseFloat(document.getElementById('edit-cat-hc').value) || 0;
+  p.gras       = parseFloat(document.getElementById('edit-cat-gras').value) || 0;
+  const alerg  = document.getElementById('edit-cat-alergenos').value.trim();
+  p.alergenos  = alerg ? alerg.split(',').map(a => a.trim()).filter(a => a) : [];
+  p.dificultad = document.getElementById('edit-cat-dificultad').value.trim();
+  p.ingredientes = document.getElementById('edit-cat-ingredientes').value.trim();
+  p.receta     = document.getElementById('edit-cat-receta').value.trim();
+  p.propio     = document.getElementById('edit-cat-propio').checked;
+  guardar_cataleg_plats();
+  actualitzar_stat_cataleg();
+  tancar_editar_cataleg();
+  renderitzar_cataleg_global();
+  mostrar_toast(`✅ "${p.nombre}" actualizado.`, 'ok');
 }
 
 </script>
@@ -3582,6 +3774,70 @@ function generar_pdf_planificacio() {
       <button class="btn-cancel" id="cues-btn-anterior" onclick="cues_anterior()" style="display:none">← Anterior</button>
       <span style="flex:1"></span>
       <button class="btn-guardar" id="cues-btn-seguent" onclick="cues_seguent()">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL EDITAR PLAT CATÀLEG -->
+<div class="modal-overlay" id="modal-editar-cataleg">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <div>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.2rem">Editar plato</h3>
+        <p id="editar-cataleg-subtitol" style="font-size:0.78rem;color:var(--text-suau)">—</p>
+      </div>
+      <button class="modal-close" onclick="tancar_editar_cataleg()">✕</button>
+    </div>
+    <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
+      <div class="form-grup">
+        <label class="form-label">Nombre</label>
+        <input class="form-input" type="text" id="edit-cat-nom">
+      </div>
+      <div class="form-fila-4" style="margin-top:10px;">
+        <div class="form-grup">
+          <label class="form-label">Kcal</label>
+          <input class="form-input" type="number" id="edit-cat-kcal" placeholder="0">
+        </div>
+        <div class="form-grup">
+          <label class="form-label">Prot (g)</label>
+          <input class="form-input" type="number" id="edit-cat-prot" placeholder="0">
+        </div>
+        <div class="form-grup">
+          <label class="form-label">HC (g)</label>
+          <input class="form-input" type="number" id="edit-cat-hc" placeholder="0">
+        </div>
+        <div class="form-grup">
+          <label class="form-label">Grasas (g)</label>
+          <input class="form-input" type="number" id="edit-cat-gras" placeholder="0">
+        </div>
+      </div>
+      <div class="form-grup" style="margin-top:10px;">
+        <label class="form-label">Alérgenos <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(separados por coma)</span></label>
+        <input class="form-input" type="text" id="edit-cat-alergenos" placeholder="Gluten, Lácteos, Huevos...">
+      </div>
+      <div class="form-grup" style="margin-top:10px;">
+        <label class="form-label">Dificultad</label>
+        <input class="form-input" type="text" id="edit-cat-dificultad" placeholder="Ej: Platos fáciles y rápidos (FR)">
+      </div>
+      <div class="form-grup" style="margin-top:10px;">
+        <label class="form-label">Ingredientes <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(saldrá en el PDF)</span></label>
+        <textarea class="form-input" id="edit-cat-ingredientes" placeholder="Ej: Pechuga de pollo: 150g, Champiñones: 100g..." style="min-height:70px;resize:vertical;font-family:inherit;font-size:0.85rem;"></textarea>
+      </div>
+      <div class="form-grup" style="margin-top:10px;">
+        <label class="form-label">Receta <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(saldrá en el PDF)</span></label>
+        <textarea class="form-input" id="edit-cat-receta" placeholder="Ej: 1. Asar a la plancha..." style="min-height:90px;resize:vertical;font-family:inherit;font-size:0.85rem;"></textarea>
+      </div>
+      <div class="form-grup" style="margin-top:10px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.85rem;">
+          <input type="checkbox" id="edit-cat-propio" style="accent-color:var(--verde);width:16px;height:16px;">
+          Marcar como <strong style="color:var(--verde);margin-left:4px">⭐ Plato propio</strong>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="tancar_editar_cataleg()">Cancelar</button>
+      <button class="btn-guardar" onclick="guardar_editar_cataleg()">💾 Guardar cambios</button>
     </div>
   </div>
 </div>
