@@ -3218,6 +3218,8 @@ function generar_html_pdf(pacient, planificacio, moments, observacions, data_pla
       .print-btn { display: none; }
       @page { size: A4 landscape; margin: 8mm; }
     }
+    /* Ocultar qualsevol cosa que no sigui una pàgina del PDF */
+    body > *:not(.page):not(.print-btn) { display: none !important; }
     .header-page { display:flex; align-items:center; justify-content:space-between; margin-bottom: 8mm; padding-bottom: 4mm; border-bottom: 1px solid #ddd; }
     .header-nom { font-size: 11px; font-weight: 700; color: #2D3B34; }
     .header-titol { font-size: 8px; font-weight: 400; color: #777; }
@@ -3463,10 +3465,8 @@ Pròxima visita: ${o.proxima_visita}`;
     <div class="alerg-grid">${htmlAlerg}</div>
   </div>` : '';
 
-  // ── CONTRAPORTADA ──
-  const pagContra = `<div class="page" style="display:flex;flex-direction:column;justify-content:center;align-items:center;background:#e8e6e1;">
-    <img src="${LOGO_B64}" style="height:30mm;" alt="Logo Irene Monroig">
-  </div>`;
+  // ── CONTRAPORTADA — integrada a l'última pàgina ──
+  const pagContra = ''; // Sense contraportada separada
 
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${titol_planif}</title>
     <style>${css}</style></head><body>
