@@ -1931,19 +1931,20 @@ function extreure_plats_pagina(text_pagina, moment_filter) {
 
   parts.slice(0, -1).forEach(part => {
     let clean = part.replace(/\s+/g, ' ').trim();
-    // Eliminar passos numerats de recepta ("1. Text lliure")
-    clean = clean.replace(/\d+\.\s+[^A-ZÁÉÍÓÚÜÑ][^.]*\./g, ' ');
-    clean = clean.replace(/RECETA:\s*/gi, '');
-    // Eliminar definicions d'ingredients (Nom: Xg o Xml)
-    clean = clean.replace(/[\wáéíóúüñÁÉÍÓÚÜÑ/\s,()]+:\s*\d+[\d.,]*\s*(?:g|kg|ml|l|unidades?|vainas?|lonchas?|tazas?|cucharad[ao]s?)[^A-ZÁÉÍÓÚÜÑ]*/gi, ' ');
-    // Eliminar hores
+    // Eliminar hores (06:30)
     clean = clean.replace(/\d{2}:\d{2}/g, '');
-    clean = clean.replace(/\s+/g, ' ').trim();
+    // Eliminar definicions d'ingredients (Nom: Xg)
+    clean = clean.replace(/[\wáéíóúüñÁÉÍÓÚÜÑ/\s,()]+:\s*\d+[\d.,]*\s*(?:g|kg|ml|l|unidades?|vainas?|lonchas?|tazas?|cucharad[ao]s?)[^A-ZÁÉÍÓÚÜÑ]*/gi, ' ');
     // Eliminar moments del principi
     MOMENTS_ALL.forEach(m => { clean = clean.replace(new RegExp('^\\s*' + esc(m) + '\\s*', 'i'), ''); });
+    clean = clean.replace(/\s+/g, ' ').trim();
 
-    // El nom és l'últim text capitalitzat
-    const nomM = clean.match(/([A-ZÁÉÍÓÚÜÑ][a-záéíóúüñA-ZÁÉÍÓÚÜÑ,/(.)\s]{1,150}?)\s*$/);
+    // El nom del plat és l'últim fragment DESPRÉS de l'últim punt de recepta
+    // Dividir per ". " i agafar el darrer tros
+    const fragments = clean.split(/\.\s+/);
+    const candidate = fragments[fragments.length - 1].trim();
+
+    const nomM = candidate.match(/([A-ZÁÉÍÓÚÜÑ][a-záéíóúüñA-ZÁÉÍÓÚÜÑ,/(.)\s]{1,150}?)\s*$/);
     if (nomM) {
       const nom = nomM[1].replace(/\s+/g,' ').trim();
       if (nom.length >= 2 && nom.length <= 180) {
