@@ -1861,14 +1861,19 @@ function parsejar_pdf_dietopro(text, filename) {
   const planificacio = {};
 
   // Identificar pàgines de detall (tenen INGREDIENTES i un sol dia principal)
-  const pagines_detall = pages.filter(p => /INGREDIENTES/i.test(p) && p.trim().length > 50);
-  // Mapejar cada pàgina de detall al seu dia
+  // Mapejar pàgines de detall per dia
+  // Cada pàgina de detall té el nom del dia a la capçalera (just després del títol del pacient)
+  // Estructura: "N  NOM PACIENT  DATA  DIA  Platos  Recetas..."
   const paginaPerDia = {};
-  pagines_detall.forEach(p => {
+  pages.forEach(p => {
+    if (!/INGREDIENTES/i.test(p) || p.trim().length < 50) return;
     dies.forEach((dia, di) => {
-      const diesCount = dies.filter(d => p.toLowerCase().includes(d.toLowerCase())).length;
-      if (p.toLowerCase().includes(dia.toLowerCase()) && diesCount <= 2) {
-        if (!paginaPerDia[di]) paginaPerDia[di] = p;
+      if (paginaPerDia[di]) return; // ja tenim pàgina per aquest dia
+      // El dia ha d'aparèixer com a paraula sola a la capçalera (primers 300 chars)
+      const header = p.slice(0, 300);
+      const reDay = new RegExp('\\b' + dia + '\\b(?!\\s+(?:' + dies.filter((_,i)=>i!==di).join('|') + '))', 'i');
+      if (reDay.test(header)) {
+        paginaPerDia[di] = p;
       }
     });
   });
@@ -1876,10 +1881,12 @@ function parsejar_pdf_dietopro(text, filename) {
   moments_presents.forEach((moment, mi) => {
     dies.forEach((dia, di) => {
       const pagina_dia = paginaPerDia[di];
-      if(pagina_dia) {
-        const plats = extreure_plats_pagina(pagina_dia, moment);
-        plats.forEach((plat, pi) => { planificacio[moment+'_'+di+(pi>0?'_v'+pi:'')] = plat; });
-      }
+      if (!pagina_dia) return;
+      const plats = extreure_plats_pagina(pagina_dia, moment);
+      plats.forEach((plat, pi) => {
+        const clau = moment + '_' + di + (pi > 0 ? '_v' + pi : '');
+        planificacio[clau] = plat;
+      });
     });
   });
 
