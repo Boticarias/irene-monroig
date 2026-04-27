@@ -397,6 +397,8 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 .btn-cancel:hover { border-color: var(--rosa); color: var(--rosa); }
 .btn-guardar { padding: 9px 22px; border-radius: 10px; border: none; background: var(--verde); color: white; font-family: "Jost", sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
 .btn-guardar:hover { background: var(--verde-mig); }
+
+  .talla-btn.actiu { background: var(--verde) !important; color: white !important; border-color: var(--verde) !important; }
 </style>
 </head>
 <body>
@@ -840,6 +842,15 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       <div class="form-grup">
         <label class="form-label">Nombre del plato</label>
         <input class="form-input" type="text" id="plat-nom-input" placeholder="Nombre del plato">
+      </div>
+      <div id="grup-talla-selector" style="display:none;margin-bottom:10px;padding:10px 12px;background:#f0f7f2;border-radius:8px;border:1px solid var(--verde-clar);">
+        <label class="form-label" style="margin-bottom:6px;">Talla / Ración</label>
+        <div style="display:flex;gap:8px;">
+          <button type="button" onclick="canviar_talla('S');document.querySelectorAll('.talla-btn').forEach(b=>b.classList.remove('actiu'));this.classList.add('actiu')" class="talla-btn" style="flex:1;padding:6px;border:1.5px solid var(--verde-clar);border-radius:6px;background:white;cursor:pointer;font-weight:600;font-size:0.8rem;">S</button>
+          <button type="button" onclick="canviar_talla('M');document.querySelectorAll('.talla-btn').forEach(b=>b.classList.remove('actiu'));this.classList.add('actiu')" class="talla-btn actiu" style="flex:1;padding:6px;border:1.5px solid var(--verde);border-radius:6px;background:var(--verde);color:white;cursor:pointer;font-weight:600;font-size:0.8rem;" id="talla-select">M</button>
+          <button type="button" onclick="canviar_talla('L');document.querySelectorAll('.talla-btn').forEach(b=>b.classList.remove('actiu'));this.classList.add('actiu')" class="talla-btn" style="flex:1;padding:6px;border:1.5px solid var(--verde-clar);border-radius:6px;background:white;cursor:pointer;font-weight:600;font-size:0.8rem;">L</button>
+          <button type="button" onclick="canviar_talla('XL');document.querySelectorAll('.talla-btn').forEach(b=>b.classList.remove('actiu'));this.classList.add('actiu')" class="talla-btn" style="flex:1;padding:6px;border:1.5px solid var(--verde-clar);border-radius:6px;background:white;cursor:pointer;font-weight:600;font-size:0.8rem;">XL</button>
+        </div>
       </div>
       <div class="form-fila-4">
         <div class="form-grup">
@@ -1367,6 +1378,7 @@ function obrir_modal_plat(mi,di){
   document.getElementById('plat-guardar-cataleg').checked=true;
   document.getElementById('plats-resultats').style.display='none';
   const bc=document.getElementById('btn-copiar-setmana'); if(bc) bc.style.display='none';
+  const ts=document.getElementById('grup-talla-selector'); if(ts) ts.style.display='none';
   document.getElementById('modal-plat').classList.add('visible');
   setTimeout(()=>document.getElementById('cerca-plat-input').focus(),100);
 }
@@ -1462,14 +1474,41 @@ async function _fer_cerca(q){
 
 function seleccionar_plat_off(nom,kcal,prot,hc,gras){
   document.getElementById('plat-nom-input').value=nom;
-  document.getElementById('plat-kcal').value=kcal||'';
-  document.getElementById('plat-prot').value=prot||'';
-  document.getElementById('plat-hc').value=hc||'';
-  document.getElementById('plat-gras').value=gras||'';
   document.getElementById('plats-resultats').style.display='none';
-  // Mostrar botó copiar al resto de la setmana (només si no estem editant)
   const btnCopiar = document.getElementById('btn-copiar-setmana');
   if(btnCopiar && !celda_activa?.clau_edicio) btnCopiar.style.display='inline-flex';
+
+  // Comprovar si el plat té tallas al catàleg
+  const info = obtenir_info_plat(nom);
+  const talla_sel = document.getElementById('grup-talla-selector');
+  if (info && (info.kcal_S || info.kcal_M || info.kcal_L || info.kcal_XL)) {
+    // Mostrar selector de talla
+    if (talla_sel) {
+      talla_sel.style.display = 'block';
+      document.getElementById('talla-select').value = 'M';
+    }
+    aplicar_talla_plat(info, 'M');
+  } else {
+    if (talla_sel) talla_sel.style.display = 'none';
+    document.getElementById('plat-kcal').value=kcal||'';
+    document.getElementById('plat-prot').value=prot||'';
+    document.getElementById('plat-hc').value=hc||'';
+    document.getElementById('plat-gras').value=gras||'';
+  }
+}
+
+function aplicar_talla_plat(info, talla) {
+  if (!info) return;
+  document.getElementById('plat-kcal').value = info['kcal_'+talla] || info.kcal || '';
+  document.getElementById('plat-prot').value = info['prot_'+talla] || info.prot || '';
+  document.getElementById('plat-hc').value   = info['hc_'+talla]   || info.hc   || '';
+  document.getElementById('plat-gras').value = info['gras_'+talla] || info.gras || '';
+}
+
+function canviar_talla(talla) {
+  const nom = document.getElementById('plat-nom-input').value.trim();
+  const info = obtenir_info_plat(nom);
+  if (info) aplicar_talla_plat(info, talla);
 }
 
 function guardar_plat(copiar_setmana=false){
