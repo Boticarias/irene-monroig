@@ -1903,26 +1903,25 @@ function extreure_plats_pagina(text_pagina, moment_filter) {
   const MOMENTS_ALL = ['Desayuno','Almuerzo 1','Almuerzo 2','Comida','Merienda 1','Merienda 2','Cena','Recena'];
   const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   const mIdx = MOMENTS_ALL.indexOf(moment_filter);
-  const nextM = mIdx >= 0 && mIdx < MOMENTS_ALL.length-1 ? MOMENTS_ALL[mIdx+1] : null;
 
   // Trobar el segment del moment
   const reStart = new RegExp('\\b' + esc(moment_filter) + '\\b\\s*(?:\\d{2}:\\d{2})?\\s*', 'i');
   const mStart = text_pagina.match(reStart);
   if (!mStart) return [];
 
+  // Buscar el PROPER moment que existeix realment al text (saltant els que no hi són)
   let segEnd = text_pagina.length;
-  if (nextM) {
-    // Primer intentar tallar pel moment SEGÜENT amb hora (format "Moment  HH:MM")
-    const reEndHora = new RegExp('\\b' + esc(nextM) + '\\b\\s*\\d{2}:\\d{2}', 'i');
-    const mEndHora = text_pagina.slice(mStart.index + mStart[0].length).match(reEndHora);
-    if (mEndHora) {
-      segEnd = mStart.index + mStart[0].length + mEndHora.index;
-    } else {
-      // Fallback: sense hora
-      const reEnd = new RegExp('\\b' + esc(nextM) + '\\b', 'i');
-      const mEnd = text_pagina.slice(mStart.index + mStart[0].length).match(reEnd);
-      if (mEnd) segEnd = mStart.index + mStart[0].length + mEnd.index;
-    }
+  const afterStart = text_pagina.slice(mStart.index + mStart[0].length);
+  for (let ni = mIdx + 1; ni < MOMENTS_ALL.length; ni++) {
+    const candidat = MOMENTS_ALL[ni];
+    // Buscar amb hora primer
+    const reHora = new RegExp('\\b' + esc(candidat) + '\\b\\s*\\d{2}:\\d{2}', 'i');
+    const mHora = afterStart.match(reHora);
+    if (mHora) { segEnd = mStart.index + mStart[0].length + mHora.index; break; }
+    // Fallback sense hora
+    const reSense = new RegExp('\\b' + esc(candidat) + '\\b', 'i');
+    const mSense = afterStart.match(reSense);
+    if (mSense) { segEnd = mStart.index + mStart[0].length + mSense.index; break; }
   }
   const segment = text_pagina.slice(mStart.index + mStart[0].length, segEnd);
 
