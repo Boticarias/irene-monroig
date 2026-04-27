@@ -1912,9 +1912,17 @@ function extreure_plats_pagina(text_pagina, moment_filter) {
 
   let segEnd = text_pagina.length;
   if (nextM) {
-    const reEnd = new RegExp('\\b' + esc(nextM) + '\\b', 'i');
-    const mEnd = text_pagina.slice(mStart.index + mStart[0].length).match(reEnd);
-    if (mEnd) segEnd = mStart.index + mStart[0].length + mEnd.index;
+    // Primer intentar tallar pel moment SEGÜENT amb hora (format "Moment  HH:MM")
+    const reEndHora = new RegExp('\\b' + esc(nextM) + '\\b\\s*\\d{2}:\\d{2}', 'i');
+    const mEndHora = text_pagina.slice(mStart.index + mStart[0].length).match(reEndHora);
+    if (mEndHora) {
+      segEnd = mStart.index + mStart[0].length + mEndHora.index;
+    } else {
+      // Fallback: sense hora
+      const reEnd = new RegExp('\\b' + esc(nextM) + '\\b', 'i');
+      const mEnd = text_pagina.slice(mStart.index + mStart[0].length).match(reEnd);
+      if (mEnd) segEnd = mStart.index + mStart[0].length + mEnd.index;
+    }
   }
   const segment = text_pagina.slice(mStart.index + mStart[0].length, segEnd);
 
