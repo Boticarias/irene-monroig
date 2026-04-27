@@ -1715,6 +1715,21 @@ function clonar_historial(idx) {
       if (mi >= 0) planif_dst[mi + '_' + di] = planif_src[clau_orig];
     });
   }
+  // Completar macros des del catàleg per a cada plat
+  Object.keys(planif_dst).forEach(k => {
+    const plat = planif_dst[k];
+    if (!plat?.nom) return;
+    // Si ja té macros, no sobreescribir
+    if (plat.kcal || plat.prot || plat.hc || plat.gras) return;
+    // Buscar al catàleg
+    const info = obtenir_info_plat(plat.nom);
+    if (info) {
+      plat.kcal = info.kcal || 0;
+      plat.prot = info.prot || 0;
+      plat.hc   = info.hc  || 0;
+      plat.gras = info.gras || 0;
+    }
+  });
   pacient_actiu.planificacions[clau] = planif_dst;
 
   // Copiar moments si existeixen
@@ -1878,19 +1893,12 @@ function parsejar_pdf_dietopro(text, filename) {
 }
 
 function extreure_plats_pagina(text_pagina, moment_filter) {
-  // Algoritme basat en posicions reals del text de PDF.js
-  // El text és una sola línia amb espais. Cada plat apareix com:
-  // "NomPlat  INGREDIENTES ( 1 persona ): ingredients  RECETA: passos  NomSeguent  INGREDIENTES..."
-
   const MOMENTS_ALL = ['Desayuno','Almuerzo 1','Almuerzo 2','Comida','Merienda 1','Merienda 2','Cena','Recena'];
-  const FRUITES = new Set(['Naranja','Pera','Manzana','Plátano','Kiwi','Piña','Sandía','Pomelo','Mandarina','Uvas','Melocotón','Nectarina','Ciruela','Fresa','Melón','Cerezas','Higo','Granada']);
-  const VERBS = new Set(['lavar','pelar','cocer','asar','saltear','emplatar','hervir','batir','mezclar','verter','servir','cortar','poner','agregar','añadir','triturar','calentar','preparar','montar','tostar','colocar','retirar','picar','reservar','escurrir','distribuir','hornear','volcar','cuajar','escurrir','rehogar']);
-
-  // Trobar el segment del moment demanat
   const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   const mIdx = MOMENTS_ALL.indexOf(moment_filter);
   const nextM = mIdx >= 0 && mIdx < MOMENTS_ALL.length-1 ? MOMENTS_ALL[mIdx+1] : null;
 
+  // Trobar el segment del moment
   const reStart = new RegExp('\\b' + esc(moment_filter) + '\\b\\s*(?:\\d{2}:\\d{2})?\\s*', 'i');
   const mStart = text_pagina.match(reStart);
   if (!mStart) return [];
@@ -1901,32 +1909,27 @@ function extreure_plats_pagina(text_pagina, moment_filter) {
     const mEnd = text_pagina.slice(mStart.index + mStart[0].length).match(reEnd);
     if (mEnd) segEnd = mStart.index + mStart[0].length + mEnd.index;
   }
-
   const segment = text_pagina.slice(mStart.index + mStart[0].length, segEnd);
 
-  // Dividir per INGREDIENTES
+  // Dividir per INGREDIENTES — cada fragment acaba amb el nom del plat següent
   const parts = segment.split(/\s+INGREDIENTES(?:\s*\(\s*1\s*persona\s*\))?\s*:/i);
   const plats = [];
 
   parts.slice(0, -1).forEach(part => {
     let clean = part.replace(/\s+/g, ' ').trim();
-
-    // Eliminar definicions d'ingredients (Nom: Xg)
-    clean = clean.replace(/[\wáéíóúüñÁÉÍÓÚÜÑ/\s,]+:\s*\d+\s*(?:g|kg|ml|l|unidades?)[^A-ZÁÉÍÓÚÜÑ]*/gi, '');
+    // Eliminar passos numerats de recepta ("1. Text lliure")
+    clean = clean.replace(/\d+\.\s+[^A-ZÁÉÍÓÚÜÑ][^.]*\./g, ' ');
+    clean = clean.replace(/RECETA:\s*/gi, '');
+    // Eliminar definicions d'ingredients (Nom: Xg o Xml)
+    clean = clean.replace(/[\wáéíóúüñÁÉÍÓÚÜÑ/\s,()]+:\s*\d+[\d.,]*\s*(?:g|kg|ml|l|unidades?|vainas?|lonchas?|tazas?|cucharad[ao]s?)[^A-ZÁÉÍÓÚÜÑ]*/gi, ' ');
+    // Eliminar hores
+    clean = clean.replace(/\d{2}:\d{2}/g, '');
     clean = clean.replace(/\s+/g, ' ').trim();
+    // Eliminar moments del principi
+    MOMENTS_ALL.forEach(m => { clean = clean.replace(new RegExp('^\\s*' + esc(m) + '\\s*', 'i'), ''); });
 
-    // Trobar l'últim nom de plat: buscar la frase capitalitzada DESPRÉS dels verbs de recepta
-    const words = clean.split(' ');
-    let lastVerbIdx = -1;
-    words.forEach((w, wi) => {
-      if (VERBS.has(w.toLowerCase().replace(/[.,]/g,''))) lastVerbIdx = wi;
-    });
-
-    const candidate = lastVerbIdx >= 0
-      ? words.slice(lastVerbIdx + 1).join(' ').trim()
-      : clean;
-
-    const nomM = candidate.match(/([A-ZÁÉÍÓÚÜÑ][a-záéíóúüñA-ZÁÉÍÓÚÜÑ,/(.)\s]{0,150}?)\s*$/);
+    // El nom és l'últim text capitalitzat
+    const nomM = clean.match(/([A-ZÁÉÍÓÚÜÑ][a-záéíóúüñA-ZÁÉÍÓÚÜÑ,/(.)\s]{1,150}?)\s*$/);
     if (nomM) {
       const nom = nomM[1].replace(/\s+/g,' ').trim();
       if (nom.length >= 2 && nom.length <= 180) {
