@@ -874,8 +874,9 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         </label>
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-footer" style="flex-wrap:wrap;gap:8px;">
       <button class="btn-cancel" onclick="tancar_modal_plat()">Cancelar</button>
+      <button class="btn-secondary" id="btn-copiar-setmana" onclick="guardar_plat(true)" style="display:none;background:#f0f7f2;color:var(--verde);border:1.5px solid var(--verde-clar);font-family:'Jost',sans-serif;font-size:0.82rem;padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;">📅 Copiar al resto de la semana</button>
       <button class="btn-guardar" onclick="guardar_plat()">Añadir plato</button>
     </div>
   </div>
@@ -1365,6 +1366,7 @@ function obrir_modal_plat(mi,di){
   document.getElementById('plat-receta').value='';
   document.getElementById('plat-guardar-cataleg').checked=true;
   document.getElementById('plats-resultats').style.display='none';
+  const bc=document.getElementById('btn-copiar-setmana'); if(bc) bc.style.display='none';
   document.getElementById('modal-plat').classList.add('visible');
   setTimeout(()=>document.getElementById('cerca-plat-input').focus(),100);
 }
@@ -1465,9 +1467,12 @@ function seleccionar_plat_off(nom,kcal,prot,hc,gras){
   document.getElementById('plat-hc').value=hc||'';
   document.getElementById('plat-gras').value=gras||'';
   document.getElementById('plats-resultats').style.display='none';
+  // Mostrar botó copiar al resto de la setmana (només si no estem editant)
+  const btnCopiar = document.getElementById('btn-copiar-setmana');
+  if(btnCopiar && !celda_activa?.clau_edicio) btnCopiar.style.display='inline-flex';
 }
 
-function guardar_plat(){
+function guardar_plat(copiar_setmana=false){
   const nom=document.getElementById('plat-nom-input').value.trim();
   if(!nom){alert('Introduce el nombre del plato.');return;}
   const ingredientes_text = document.getElementById('plat-ingredientes').value.trim();
@@ -1504,8 +1509,19 @@ function guardar_plat(){
   // Si estem editant un plat existent, actualitzar-lo; si no, afegir nou
   if (celda_activa.clau_edicio) {
     pacient_actiu.planificacions[clau][celda_activa.clau_edicio] = plat;
+  } else if (copiar_setmana) {
+    // Copiar al moment del dia actual en TOTS els dies de la setmana
+    for (let di = 0; di < 7; di++) {
+      const base = celda_activa.mi + '_' + di;
+      let nova_clau = base;
+      let counter = 1;
+      while (pacient_actiu.planificacions[clau][nova_clau]) {
+        nova_clau = base + '_v' + counter++;
+      }
+      pacient_actiu.planificacions[clau][nova_clau] = { ...plat };
+    }
   } else {
-    // Trobar una clau lliure per a aquest moment+dia
+    // Afegir només al dia seleccionat
     const base = celda_activa.mi+'_'+celda_activa.di;
     let nova_clau = base;
     let counter = 1;
