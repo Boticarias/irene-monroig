@@ -1668,9 +1668,16 @@ function mostrar_preview_historial(h) {
   (h.moments||[]).forEach(moment => {
     html += `<tr><td class="preview-moment">${moment}</td>`;
     dies.forEach((dia, di) => {
-      const key = moment+'_'+di;
-      const plat = h.planificacio && h.planificacio[key];
-      html += `<td class="preview-plat">${plat?plat.nom:'<span style="color:#ddd">—</span>'}</td>`;
+      // Recollir TOTS els plats del moment+dia (clau principal + variants _v1, _v2...)
+      const plats_cel = [];
+      if (h.planificacio) {
+        Object.entries(h.planificacio).forEach(([k, p]) => {
+          if (!p?.nom) return;
+          const base = moment + '_' + di;
+          if (k === base || k.startsWith(base + '_v')) plats_cel.push(p.nom);
+        });
+      }
+      html += `<td class="preview-plat">${plats_cel.length ? plats_cel.join('<br>') : '<span style="color:#ddd">—</span>'}</td>`;
     });
     html += '</tr>';
   });
@@ -1700,19 +1707,21 @@ function clonar_historial(idx) {
   const planif_dst = {};
   // Detectar si les claus ja son numeriques (0_0) o son textuals (Desayuno_0)
   const claus = Object.keys(planif_src);
-  const ja_numeric = claus.length > 0 && /^\d+_\d+$/.test(claus[0]);
+  const ja_numeric = claus.length > 0 && /^\d+_\d+/.test(claus[0]);
   if (ja_numeric) {
     // Ja té el format correcte
     Object.assign(planif_dst, planif_src);
   } else {
-    // Convertir Desayuno_0 → mi_di
+    // Convertir Moment_di i Moment_di_vN → mi_di i mi_di_vN
     claus.forEach(clau_orig => {
-      const parts = clau_orig.match(/^(.+)_(\d+)$/);
+      // Format: "Moment_di" o "Moment_di_vN"
+      const parts = clau_orig.match(/^(.+?)_(\d+)(_v\d+)?$/);
       if (!parts) return;
       const nom_moment = parts[1];
       const di = parseInt(parts[2]);
+      const variant = parts[3] || '';
       const mi = MOMENTS_APP.indexOf(nom_moment);
-      if (mi >= 0) planif_dst[mi + '_' + di] = planif_src[clau_orig];
+      if (mi >= 0) planif_dst[mi + '_' + di + variant] = planif_src[clau_orig];
     });
   }
   // Completar macros des del catàleg per a cada plat
