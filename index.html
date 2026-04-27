@@ -1733,10 +1733,11 @@ function clonar_historial(idx) {
     // Buscar al catàleg
     const info = obtenir_info_plat(plat.nom);
     if (info) {
-      plat.kcal = info.kcal || 0;
-      plat.prot = info.prot || 0;
-      plat.hc   = info.hc  || 0;
-      plat.gras = info.gras || 0;
+      // Usar talla M com a valor per defecte (kcal_M, prot_M, hc_M, gras_M)
+      plat.kcal = info.kcal_M || info.kcal || 0;
+      plat.prot = info.prot_M || info.prot || 0;
+      plat.hc   = info.hc_M  || info.hc  || 0;
+      plat.gras = info.gras_M || info.gras || 0;
     }
   });
   pacient_actiu.planificacions[clau] = planif_dst;
