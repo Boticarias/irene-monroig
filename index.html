@@ -616,7 +616,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
     <!-- TAB: PLANIFICACIÓ -->
     <div id="tab-planificacio" class="tab-content actiu">
-      <div class="planif-controls" style="display:flex;align-items:center;justify-content:space-between;">
+      <div id="setmana-nav-row" class="planif-controls" style="display:flex;align-items:center;justify-content:space-between;">
         <div style="display:flex;align-items:center;gap:12px;">
           <button class="semana-nav-btn" onclick="canviar_setmana(-1)">←</button>
           <h3 id="setmana-titol">—</h3>
@@ -824,7 +824,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <h4 style="margin:0;border:none;padding:0">📏 Datos antropométricos</h4>
           <button class="btn btn-primary" onclick="guardar_antropometria()" style="font-size:0.78rem;padding:7px 14px">💾 Guardar</button>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:16px;">
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
           <div>
             <label class="cues-label">Sexo</label>
             <select class="cues-input" id="antrop-sexe" style="margin-bottom:0;cursor:pointer;">
@@ -835,15 +835,15 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           </div>
           <div>
             <label class="cues-label">Altura (cm)</label>
-            <input class="cues-input" type="number" id="antrop-alcada" placeholder="Ej: 165" min="100" max="220" style="margin-bottom:0;">
+            <input class="cues-input" type="number" id="antrop-alcada" placeholder="165" min="100" max="220" style="margin-bottom:0;">
           </div>
           <div>
             <label class="cues-label">Peso actual (kg)</label>
-            <input class="cues-input" type="number" id="antrop-pes" placeholder="Ej: 70.5" min="20" max="300" step="0.1" style="margin-bottom:0;">
+            <input class="cues-input" type="number" id="antrop-pes" placeholder="70.5" min="20" max="300" step="0.1" style="margin-bottom:0;">
           </div>
           <div>
             <label class="cues-label">Peso objetivo (kg)</label>
-            <input class="cues-input" type="number" id="antrop-pes-obj" placeholder="Ej: 63" min="20" max="300" step="0.1" style="margin-bottom:0;">
+            <input class="cues-input" type="number" id="antrop-pes-obj" placeholder="63" min="20" max="300" step="0.1" style="margin-bottom:0;">
           </div>
         </div>
         <!-- Càlcul GMT -->
@@ -3501,11 +3501,11 @@ function actualitzar_banner_aversions() {
   if (!banner) {
     banner = document.createElement('div');
     banner.id = 'banner-aversions';
-    const nc = document.getElementById('nutrientes-criticos');
-    if (nc) nc.parentNode.insertBefore(banner, nc);
+    const row = document.getElementById('setmana-nav-row');
+    if (row) row.insertAdjacentElement('afterend', banner);
   }
-  banner.style.cssText = 'margin-bottom:8px;background:#fdecea;border:1.5px solid #f5c6c6;border-radius:var(--radi);padding:10px 16px;display:flex;align-items:flex-start;gap:10px;';
-  banner.innerHTML = `<span style="font-size:1.1rem;flex-shrink:0;">⚠️</span><div><span style="font-size:0.68rem;font-weight:700;color:#c0392b;text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:2px;">Aversiones, alergias e intolerancias</span><span style="font-size:0.82rem;color:#7b241c;">${aversions}</span></div>`;
+  banner.style.cssText = 'margin-bottom:6px;background:#fdecea;border:1.5px solid #f5c6c6;border-radius:var(--radi);padding:7px 14px;display:flex;align-items:center;gap:8px;';
+  banner.innerHTML = `<span style="font-size:0.95rem;flex-shrink:0;">⚠️</span><div><span style="font-size:0.67rem;font-weight:700;color:#c0392b;text-transform:uppercase;letter-spacing:0.8px;">Aversiones, alergias e intolerancias · </span><span style="font-size:0.8rem;color:#7b241c;">${aversions}</span></div>`;
   banner.style.display = 'flex';
 }
 
