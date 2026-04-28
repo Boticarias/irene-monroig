@@ -540,7 +540,6 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         <input type="file" id="input-importar-plats-global" accept=".json" multiple style="display:none" onchange="importar_multiples_json(this,'plats')">
         <button class="btn btn-secondary" onclick="document.getElementById('input-importar-composicio-global').click()">🔬 Importar composición</button>
         <input type="file" id="input-importar-composicio-global" accept=".json" multiple style="display:none" onchange="importar_multiples_json(this,'composicio')">
-        <button class="btn btn-danger" onclick="confirmar_borrar_cataleg()" style="margin-left:auto">🗑️ Borrar todo</button>
       </div>
       <div id="cataleg-grid-global"></div>
     </div>
@@ -560,7 +559,6 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         </div>
         <button class="btn-importar-plats" onclick="document.getElementById('input-importar-pacients').click()" title="Importar pacientes desde JSON de Dietopro">📥 Importar pacientes</button>
         <input type="file" id="input-importar-pacients" accept=".json" style="display:none" onchange="importar_pacients_json(this)">
-        <button class="btn-importar-plats" onclick="confirmar_borrar_tots_pacients()" title="Borrar todos los pacientes" style="border-color:#fdd;color:var(--rosa);">🗑️ Borrar todos</button>
         <button class="btn-nou-pacient" onclick="obrir_modal_nou_pacient()">＋ Nuevo paciente</button>
       </div>
     </div>
@@ -627,62 +625,110 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         <button class="btn btn-primary" onclick="generar_pdf_planificacio()" style="font-size:0.8rem;padding:7px 16px;">📄 Generar PDF</button>
       </div>
       <!-- FILA: NUTRIENTES CRÍTICOS + HÀBITS -->
-      <div style="display:flex;gap:12px;margin-bottom:8px;align-items:flex-start;">
-        <!-- Nutrientes crítics -->
-        <div id="nutrientes-criticos" style="flex:1;background:white;border:1px solid var(--vora);border-radius:var(--radi);padding:12px 16px;">
-          <div style="font-size:0.7rem;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">⚡ Energía y Nutrientes Críticos · Media diaria</div>
+      <div style="display:flex;gap:12px;margin-bottom:8px;align-items:stretch;">
+
+        <!-- Nutrientes crítics — ample mínim -->
+        <div id="nutrientes-criticos" style="flex-shrink:0;background:white;border:1px solid var(--vora);border-radius:var(--radi);padding:10px 14px;">
+          <div style="font-size:0.65rem;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;white-space:nowrap;">⚡ Energía y Nutrientes Críticos</div>
           <div style="display:flex;gap:8px;align-items:flex-start;">
             <!-- Kcal destacado -->
-            <div style="min-width:100px;background:var(--verde-suau);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">
-              <span id="nc-kcal-val" style="font-size:1.5rem;font-weight:700;color:var(--verde);line-height:1;">—</span>
-              <span style="font-size:0.68rem;color:var(--verde-mig);font-weight:500;">kcal</span>
-              <span id="nc-kcal-desv" style="font-size:0.7rem;color:var(--text-suau);margin-top:2px;">—</span>
+            <div style="background:var(--verde-suau);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;min-width:80px;">
+              <span id="nc-kcal-val" style="font-size:1.4rem;font-weight:700;color:var(--verde);line-height:1;">—</span>
+              <span style="font-size:0.62rem;color:var(--verde-mig);font-weight:500;">kcal</span>
+              <span id="nc-kcal-desv" style="font-size:0.65rem;color:var(--text-suau);margin-top:2px;white-space:nowrap;">—</span>
             </div>
             <!-- Tabla nutrientes -->
-            <div style="flex:1;">
-              <table style="width:100%;border-collapse:collapse;font-size:0.77rem;">
+            <div>
+              <table style="border-collapse:collapse;font-size:0.74rem;white-space:nowrap;">
                 <thead>
                   <tr style="color:var(--text-suau);">
-                    <th style="text-align:left;padding:2px 6px;font-weight:600;font-size:0.67rem;text-transform:uppercase;"></th>
-                    <th style="text-align:right;padding:2px 6px;font-weight:600;font-size:0.67rem;text-transform:uppercase;">Aporte</th>
-                    <th style="text-align:right;padding:2px 6px;font-weight:600;font-size:0.67rem;text-transform:uppercase;">% Desv.</th>
+                    <th style="text-align:left;padding:1px 5px;font-weight:600;font-size:0.63rem;text-transform:uppercase;"></th>
+                    <th style="text-align:right;padding:1px 5px;font-weight:600;font-size:0.63rem;text-transform:uppercase;">Aporte</th>
+                    <th style="text-align:right;padding:1px 5px;font-weight:600;font-size:0.63rem;text-transform:uppercase;">%&nbsp;Desv.</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr style="border-top:1px solid var(--vora);"><td style="padding:3px 6px;color:var(--text);">🧂 Sodio (mg)</td><td style="text-align:right;padding:3px 6px;" id="nc-sodio-val">—</td><td style="text-align:right;padding:3px 6px;" id="nc-sodio-desv">—</td></tr>
-                  <tr style="border-top:1px solid var(--vora);"><td style="padding:3px 6px;color:var(--text);">🧈 Colest. (mg)</td><td style="text-align:right;padding:3px 6px;" id="nc-colest-val">—</td><td style="text-align:right;padding:3px 6px;" id="nc-colest-desv">—</td></tr>
-                  <tr style="border-top:1px solid var(--vora);"><td style="padding:3px 6px;color:var(--text);">💪 Prot/kg día (g)</td><td style="text-align:right;padding:3px 6px;" id="nc-prot-kg-val">—</td><td style="text-align:right;padding:3px 6px;" id="nc-prot-kg-desv">—</td></tr>
-                  <tr style="border-top:1px solid var(--vora);"><td style="padding:3px 6px;color:var(--text);">🫒 AGS (g)</td><td style="text-align:right;padding:3px 6px;" id="nc-ags-val">—</td><td style="text-align:right;padding:3px 6px;" id="nc-ags-desv">—</td></tr>
-                  <tr style="border-top:1px solid var(--vora);"><td style="padding:3px 6px;color:var(--text);">🍞 100g HC/día</td><td style="text-align:right;padding:3px 6px;" id="nc-hc-val">—</td><td style="text-align:right;padding:3px 6px;" id="nc-hc-desv">—</td></tr>
-                  <tr style="border-top:1px solid var(--vora);"><td style="padding:3px 6px;color:var(--text);">🍷 Etanol (g)</td><td style="text-align:right;padding:3px 6px;" id="nc-etanol-val">—</td><td style="text-align:right;padding:3px 6px;" id="nc-etanol-desv">—</td></tr>
+                  <tr style="border-top:1px solid var(--vora);"><td style="padding:2px 5px;color:var(--text);">🧂 Sodio</td><td style="text-align:right;padding:2px 5px;" id="nc-sodio-val">—</td><td style="text-align:right;padding:2px 5px;" id="nc-sodio-desv">—</td></tr>
+                  <tr style="border-top:1px solid var(--vora);"><td style="padding:2px 5px;color:var(--text);">🧈 Colest.</td><td style="text-align:right;padding:2px 5px;" id="nc-colest-val">—</td><td style="text-align:right;padding:2px 5px;" id="nc-colest-desv">—</td></tr>
+                  <tr style="border-top:1px solid var(--vora);"><td style="padding:2px 5px;color:var(--text);">💪 Prot/kg</td><td style="text-align:right;padding:2px 5px;" id="nc-prot-kg-val">—</td><td style="text-align:right;padding:2px 5px;" id="nc-prot-kg-desv">—</td></tr>
+                  <tr style="border-top:1px solid var(--vora);"><td style="padding:2px 5px;color:var(--text);">🫒 AGS</td><td style="text-align:right;padding:2px 5px;" id="nc-ags-val">—</td><td style="text-align:right;padding:2px 5px;" id="nc-ags-desv">—</td></tr>
+                  <tr style="border-top:1px solid var(--vora);"><td style="padding:2px 5px;color:var(--text);">🍞 HC/día</td><td style="text-align:right;padding:2px 5px;" id="nc-hc-val">—</td><td style="text-align:right;padding:2px 5px;" id="nc-hc-desv">—</td></tr>
+                  <tr style="border-top:1px solid var(--vora);"><td style="padding:2px 5px;color:var(--text);">🍷 Etanol</td><td style="text-align:right;padding:2px 5px;" id="nc-etanol-val">—</td><td style="text-align:right;padding:2px 5px;" id="nc-etanol-desv">—</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
         </div>
-        <!-- Hàbits alimentaris (compacte) -->
-        <div style="width:240px;flex-shrink:0;background:white;border:1px solid var(--vora);border-radius:var(--radi);padding:12px 14px;max-height:220px;overflow-y:auto;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--vora);">
-            <div style="font-size:0.68rem;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:0.8px;">🥗 Hábitos</div>
-            <button onclick="guardar_habits()" style="font-size:0.65rem;padding:3px 8px;background:var(--verde);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">💾</button>
+
+        <!-- Hàbits alimentaris — grid 4 columnes, sense scroll -->
+        <div style="flex:1;background:#EEF4F7;border:1px solid #C9DDE6;border-radius:var(--radi);padding:10px 14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #C9DDE6;">
+            <div style="font-size:0.65rem;font-weight:700;color:#2C6E8A;text-transform:uppercase;letter-spacing:0.8px;">🥗 Hábitos alimentarios</div>
+            <button onclick="guardar_habits()" style="font-size:0.65rem;padding:3px 10px;background:#2C6E8A;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">💾 Guardar</button>
           </div>
-          <div style="display:flex;flex-direction:column;gap:7px;">
-            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">Comidas/día</label><input type="text" id="hab-comides" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;"></div>
-            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">Horas</label><input type="text" id="hab-hores" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;"></div>
-            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">Desayuno</label><textarea id="hab-desdejuni" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:36px;resize:none;font-family:inherit;"></textarea></div>
-            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">Almuerzo/merienda</label><textarea id="hab-almuerzo" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:36px;resize:none;font-family:inherit;"></textarea></div>
-            <div style="background:var(--verde-suau);border-radius:6px;padding:7px;">
-              <div style="font-size:0.63rem;font-weight:700;color:var(--verde);margin-bottom:5px;text-transform:uppercase;">🍞 HC</div>
-              <div><label style="font-size:0.62rem;color:var(--text-suau);display:block;margin-bottom:1px;">Legumbres</label><input type="text" id="hab-llegums" class="cues-input" style="margin:0;padding:3px 7px;font-size:0.77rem;"></div>
-              <div style="margin-top:4px;"><label style="font-size:0.62rem;color:var(--text-suau);display:block;margin-bottom:1px;">Otros HC</label><input type="text" id="hab-hc-altres" class="cues-input" style="margin:0;padding:3px 7px;font-size:0.77rem;"></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+            <!-- Col 1 -->
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">Comidas/día</label>
+                <input type="text" id="hab-comides" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:white;">
+              </div>
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">Horas de comida</label>
+                <input type="text" id="hab-hores" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:white;">
+              </div>
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">Desayuno</label>
+                <textarea id="hab-desdejuni" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:52px;resize:none;font-family:inherit;background:white;flex:1;"></textarea>
+              </div>
             </div>
-            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">💪 Proteínas</label><textarea id="hab-proteines" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:36px;resize:none;font-family:inherit;"></textarea></div>
-            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">🥦 Verdura</label><input type="text" id="hab-verdura" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;"></div>
-            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">🍎 Fruta</label><input type="text" id="hab-fruita" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;"></div>
-            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">🌰 Frutos secos</label><input type="text" id="hab-fruits-secs" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;"></div>
-            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">📝 Otros</label><textarea id="hab-altres" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:36px;resize:none;font-family:inherit;"></textarea></div>
+            <!-- Col 2 -->
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">Almuerzo/merienda</label>
+                <textarea id="hab-almuerzo" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:52px;resize:none;font-family:inherit;background:white;"></textarea>
+              </div>
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">💪 Proteínas</label>
+                <textarea id="hab-proteines" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:52px;resize:none;font-family:inherit;background:white;"></textarea>
+              </div>
+            </div>
+            <!-- Col 3 -->
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">🥦 Verdura</label>
+                <input type="text" id="hab-verdura" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:white;">
+              </div>
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">🍎 Fruta</label>
+                <input type="text" id="hab-fruita" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:white;">
+              </div>
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">🌰 Frutos secos</label>
+                <input type="text" id="hab-fruits-secs" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:white;">
+              </div>
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">📝 Otros</label>
+                <textarea id="hab-altres" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:40px;resize:none;font-family:inherit;background:white;"></textarea>
+              </div>
+            </div>
+            <!-- Col 4: HC -->
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="background:#D6EAF2;border-radius:8px;padding:8px 10px;border:1px solid #B0D0DF;">
+                <div style="font-size:0.62rem;font-weight:700;color:#2C6E8A;margin-bottom:6px;text-transform:uppercase;">🍞 Hidratos</div>
+                <div>
+                  <label style="font-size:0.61rem;color:#2C6E8A;display:block;margin-bottom:2px;">Legumbres</label>
+                  <input type="text" id="hab-llegums" class="cues-input" style="margin:0;padding:3px 7px;font-size:0.77rem;background:white;">
+                </div>
+                <div style="margin-top:6px;">
+                  <label style="font-size:0.61rem;color:#2C6E8A;display:block;margin-bottom:2px;">Otros HC</label>
+                  <input type="text" id="hab-hc-altres" class="cues-input" style="margin:0;padding:3px 7px;font-size:0.77rem;background:white;">
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
       </div>
       <div class="macros-bar" id="macros-bar">
         <div class="macros-title">Media diaria</div>
@@ -934,7 +980,6 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <input type="file" id="input-importar-plats" accept=".json" multiple style="display:none" onchange="importar_multiples_json(this,'plats')">
           <button class="btn btn-secondary" onclick="document.getElementById('input-importar-composicio').click()">🔬 Importar composición</button>
           <input type="file" id="input-importar-composicio" accept=".json" multiple style="display:none" onchange="importar_multiples_json(this,'composicio')">
-          <button class="btn btn-danger" onclick="confirmar_borrar_cataleg()">🗑️ Borrar todo</button>
         </div>
       </div>
       <div style="margin-bottom:16px;">
