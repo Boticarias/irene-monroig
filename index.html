@@ -456,10 +456,33 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         <p>Farmàcia i Nutrició</p>
       </div>
     </div>
-    <div class="header-right">
+    <div class="header-right" style="position:relative;">
       <button class="btn-logout" onclick="mostrar_pantalla_inici()" style="border-color:var(--verde-clar);color:var(--verde)">⌂ Inicio</button>
+      <button class="btn-logout" id="btn-config" onclick="toggle_config_panel()" style="border-color:var(--verde-clar);color:var(--verde);display:flex;align-items:center;gap:5px;">⚙️ Configuración</button>
       <div class="header-avatar">IM</div>
       <button class="btn-logout" onclick="fer_logout()">Cerrar sesión</button>
+      <!-- Panel configuració -->
+      <div id="config-panel" style="display:none;position:absolute;top:calc(100% + 10px);right:0;width:300px;background:white;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15);border:1.5px solid var(--vora);z-index:999;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#2D6A4F,#40916C);padding:14px 18px;">
+          <div style="font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.8);text-transform:uppercase;letter-spacing:1px;">⚙️ Configuración</div>
+        </div>
+        <div style="padding:12px;">
+          <!-- Pacients -->
+          <div style="font-size:0.67rem;font-weight:700;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--vora);">👤 Pacientes</div>
+          <button onclick="document.getElementById('import-pacients-config').click()" style="width:100%;text-align:left;padding:9px 12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:0.83rem;color:var(--text);border-radius:8px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='var(--verde-suau)'" onmouseout="this.style.background='none'">
+            📥 Importar pacientes (JSON)
+          </button>
+          <input type="file" id="import-pacients-config" accept=".json" style="display:none" onchange="importar_pacients_json(this)">
+          <button onclick="confirmar_borrar_tots_pacients();toggle_config_panel()" style="width:100%;text-align:left;padding:9px 12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:0.83rem;color:var(--rosa);border-radius:8px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#fdecea'" onmouseout="this.style.background='none'">
+            🗑️ Borrar todos los pacientes
+          </button>
+          <!-- Plats -->
+          <div style="font-size:0.67rem;font-weight:700;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.8px;margin-top:10px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--vora);">🍽️ Platos</div>
+          <button onclick="confirmar_borrar_tots_plats();toggle_config_panel()" style="width:100%;text-align:left;padding:9px 12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:0.83rem;color:var(--rosa);border-radius:8px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#fdecea'" onmouseout="this.style.background='none'">
+            🗑️ Borrar todos los platos
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -591,7 +614,6 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       <button class="tab-btn" onclick="canviar_tab('ficha',this)">👤 Ficha</button>
       <button class="tab-btn" onclick="canviar_tab('evolucio',this)">📊 Evolución</button>
       <button class="tab-btn" onclick="canviar_tab('historial',this)">📁 Historial</button>
-      <button class="tab-btn" onclick="canviar_tab('plats',this)">🍽️ Platos</button>
     </div>
 
     <!-- TAB: PLANIFICACIÓ -->
@@ -604,59 +626,61 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         </div>
         <button class="btn btn-primary" onclick="generar_pdf_planificacio()" style="font-size:0.8rem;padding:7px 16px;">📄 Generar PDF</button>
       </div>
-      <!-- NUTRIENTES CRÍTICOS -->
-      <div id="nutrientes-criticos" style="margin-bottom:8px;background:white;border:1px solid var(--vora);border-radius:var(--radi);padding:12px 16px;">
-        <div style="font-size:0.7rem;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">⚡ Energía y Nutrientes Críticos · Media diaria</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;">
-          <!-- Kcal destacado -->
-          <div style="min-width:110px;background:var(--verde-suau);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-            <span id="nc-kcal-val" style="font-size:1.6rem;font-weight:700;color:var(--verde);line-height:1;">—</span>
-            <span style="font-size:0.68rem;color:var(--verde-mig);font-weight:500;">kcal</span>
-            <span id="nc-kcal-desv" style="font-size:0.72rem;color:var(--text-suau);margin-top:2px;">—</span>
+      <!-- FILA: NUTRIENTES CRÍTICOS + HÀBITS -->
+      <div style="display:flex;gap:12px;margin-bottom:8px;align-items:flex-start;">
+        <!-- Nutrientes crítics -->
+        <div id="nutrientes-criticos" style="flex:1;background:white;border:1px solid var(--vora);border-radius:var(--radi);padding:12px 16px;">
+          <div style="font-size:0.7rem;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">⚡ Energía y Nutrientes Críticos · Media diaria</div>
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <!-- Kcal destacado -->
+            <div style="min-width:100px;background:var(--verde-suau);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">
+              <span id="nc-kcal-val" style="font-size:1.5rem;font-weight:700;color:var(--verde);line-height:1;">—</span>
+              <span style="font-size:0.68rem;color:var(--verde-mig);font-weight:500;">kcal</span>
+              <span id="nc-kcal-desv" style="font-size:0.7rem;color:var(--text-suau);margin-top:2px;">—</span>
+            </div>
+            <!-- Tabla nutrientes -->
+            <div style="flex:1;">
+              <table style="width:100%;border-collapse:collapse;font-size:0.77rem;">
+                <thead>
+                  <tr style="color:var(--text-suau);">
+                    <th style="text-align:left;padding:2px 6px;font-weight:600;font-size:0.67rem;text-transform:uppercase;"></th>
+                    <th style="text-align:right;padding:2px 6px;font-weight:600;font-size:0.67rem;text-transform:uppercase;">Aporte</th>
+                    <th style="text-align:right;padding:2px 6px;font-weight:600;font-size:0.67rem;text-transform:uppercase;">% Desv.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-top:1px solid var(--vora);"><td style="padding:3px 6px;color:var(--text);">🧂 Sodio (mg)</td><td style="text-align:right;padding:3px 6px;" id="nc-sodio-val">—</td><td style="text-align:right;padding:3px 6px;" id="nc-sodio-desv">—</td></tr>
+                  <tr style="border-top:1px solid var(--vora);"><td style="padding:3px 6px;color:var(--text);">🧈 Colest. (mg)</td><td style="text-align:right;padding:3px 6px;" id="nc-colest-val">—</td><td style="text-align:right;padding:3px 6px;" id="nc-colest-desv">—</td></tr>
+                  <tr style="border-top:1px solid var(--vora);"><td style="padding:3px 6px;color:var(--text);">💪 Prot/kg día (g)</td><td style="text-align:right;padding:3px 6px;" id="nc-prot-kg-val">—</td><td style="text-align:right;padding:3px 6px;" id="nc-prot-kg-desv">—</td></tr>
+                  <tr style="border-top:1px solid var(--vora);"><td style="padding:3px 6px;color:var(--text);">🫒 AGS (g)</td><td style="text-align:right;padding:3px 6px;" id="nc-ags-val">—</td><td style="text-align:right;padding:3px 6px;" id="nc-ags-desv">—</td></tr>
+                  <tr style="border-top:1px solid var(--vora);"><td style="padding:3px 6px;color:var(--text);">🍞 100g HC/día</td><td style="text-align:right;padding:3px 6px;" id="nc-hc-val">—</td><td style="text-align:right;padding:3px 6px;" id="nc-hc-desv">—</td></tr>
+                  <tr style="border-top:1px solid var(--vora);"><td style="padding:3px 6px;color:var(--text);">🍷 Etanol (g)</td><td style="text-align:right;padding:3px 6px;" id="nc-etanol-val">—</td><td style="text-align:right;padding:3px 6px;" id="nc-etanol-desv">—</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-          <!-- Tabla nutrientes -->
-          <div style="flex:1;min-width:200px;">
-            <table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
-              <thead>
-                <tr style="color:var(--text-suau);">
-                  <th style="text-align:left;padding:2px 6px;font-weight:600;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.5px;"></th>
-                  <th style="text-align:right;padding:2px 6px;font-weight:600;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.5px;">Aporte</th>
-                  <th style="text-align:right;padding:2px 6px;font-weight:600;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.5px;">% Desv.</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style="border-top:1px solid var(--vora);">
-                  <td style="padding:4px 6px;color:var(--text);">🧂 Sodio (mg)</td>
-                  <td style="text-align:right;padding:4px 6px;" id="nc-sodio-val">—</td>
-                  <td style="text-align:right;padding:4px 6px;" id="nc-sodio-desv">—</td>
-                </tr>
-                <tr style="border-top:1px solid var(--vora);">
-                  <td style="padding:4px 6px;color:var(--text);">🧈 Colest. (mg)</td>
-                  <td style="text-align:right;padding:4px 6px;" id="nc-colest-val">—</td>
-                  <td style="text-align:right;padding:4px 6px;" id="nc-colest-desv">—</td>
-                </tr>
-                <tr style="border-top:1px solid var(--vora);">
-                  <td style="padding:4px 6px;color:var(--text);">💪 Prot/kg día (g)</td>
-                  <td style="text-align:right;padding:4px 6px;" id="nc-prot-kg-val">—</td>
-                  <td style="text-align:right;padding:4px 6px;" id="nc-prot-kg-desv">—</td>
-                </tr>
-                <tr style="border-top:1px solid var(--vora);">
-                  <td style="padding:4px 6px;color:var(--text);">🫒 AGS (g)</td>
-                  <td style="text-align:right;padding:4px 6px;" id="nc-ags-val">—</td>
-                  <td style="text-align:right;padding:4px 6px;" id="nc-ags-desv">—</td>
-                </tr>
-                <tr style="border-top:1px solid var(--vora);">
-                  <td style="padding:4px 6px;color:var(--text);">🍞 100g HC/día</td>
-                  <td style="text-align:right;padding:4px 6px;" id="nc-hc-val">—</td>
-                  <td style="text-align:right;padding:4px 6px;" id="nc-hc-desv">—</td>
-                </tr>
-                <tr style="border-top:1px solid var(--vora);">
-                  <td style="padding:4px 6px;color:var(--text);">🍷 Etanol (g)</td>
-                  <td style="text-align:right;padding:4px 6px;" id="nc-etanol-val">—</td>
-                  <td style="text-align:right;padding:4px 6px;" id="nc-etanol-desv">—</td>
-                </tr>
-              </tbody>
-            </table>
+        </div>
+        <!-- Hàbits alimentaris (compacte) -->
+        <div style="width:240px;flex-shrink:0;background:white;border:1px solid var(--vora);border-radius:var(--radi);padding:12px 14px;max-height:220px;overflow-y:auto;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--vora);">
+            <div style="font-size:0.68rem;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:0.8px;">🥗 Hábitos</div>
+            <button onclick="guardar_habits()" style="font-size:0.65rem;padding:3px 8px;background:var(--verde);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">💾</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">Comidas/día</label><input type="text" id="hab-comides" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;"></div>
+            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">Horas</label><input type="text" id="hab-hores" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;"></div>
+            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">Desayuno</label><textarea id="hab-desdejuni" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:36px;resize:none;font-family:inherit;"></textarea></div>
+            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">Almuerzo/merienda</label><textarea id="hab-almuerzo" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:36px;resize:none;font-family:inherit;"></textarea></div>
+            <div style="background:var(--verde-suau);border-radius:6px;padding:7px;">
+              <div style="font-size:0.63rem;font-weight:700;color:var(--verde);margin-bottom:5px;text-transform:uppercase;">🍞 HC</div>
+              <div><label style="font-size:0.62rem;color:var(--text-suau);display:block;margin-bottom:1px;">Legumbres</label><input type="text" id="hab-llegums" class="cues-input" style="margin:0;padding:3px 7px;font-size:0.77rem;"></div>
+              <div style="margin-top:4px;"><label style="font-size:0.62rem;color:var(--text-suau);display:block;margin-bottom:1px;">Otros HC</label><input type="text" id="hab-hc-altres" class="cues-input" style="margin:0;padding:3px 7px;font-size:0.77rem;"></div>
+            </div>
+            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">💪 Proteínas</label><textarea id="hab-proteines" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:36px;resize:none;font-family:inherit;"></textarea></div>
+            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">🥦 Verdura</label><input type="text" id="hab-verdura" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;"></div>
+            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">🍎 Fruta</label><input type="text" id="hab-fruita" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;"></div>
+            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">🌰 Frutos secos</label><input type="text" id="hab-fruits-secs" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;"></div>
+            <div><label style="font-size:0.63rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;display:block;margin-bottom:2px;">📝 Otros</label><textarea id="hab-altres" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:36px;resize:none;font-family:inherit;"></textarea></div>
           </div>
         </div>
       </div>
@@ -729,84 +753,27 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           </div>
         </div>
 
-        <!-- SIDEBAR: Hàbits del pacient -->
-        <div style="width:260px;flex-shrink:0;position:sticky;top:16px;">
-          <div style="background:white;border-radius:var(--radi);box-shadow:var(--ombra);padding:16px;max-height:calc(100vh - 120px);overflow-y:auto;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--vora);">
-              <div style="font-size:0.72rem;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:0.8px;">🥗 Hábitos alimentarios</div>
-              <button onclick="guardar_habits()" style="font-size:0.68rem;padding:4px 10px;background:var(--verde);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;">💾</button>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:10px;">
-              <div>
-                <label style="font-size:0.68rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px;">Comidas al día</label>
-                <input type="text" id="hab-comides" placeholder="Ej: 4" class="cues-input" style="margin:0;padding:6px 10px;font-size:0.82rem;">
-              </div>
-              <div>
-                <label style="font-size:0.68rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px;">Horas de comida</label>
-                <input type="text" id="hab-hores" placeholder="Ej: 8h, 14h, 17h, 21h" class="cues-input" style="margin:0;padding:6px 10px;font-size:0.82rem;">
-              </div>
-              <div>
-                <label style="font-size:0.68rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px;">¿Qué desayuna?</label>
-                <textarea id="hab-desdejuni" placeholder="Describe el desayuno habitual..." class="cues-input" style="margin:0;padding:6px 10px;font-size:0.82rem;min-height:55px;resize:vertical;font-family:inherit;"></textarea>
-              </div>
-              <div>
-                <label style="font-size:0.68rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px;">Almuerzo y merienda</label>
-                <textarea id="hab-almuerzo" placeholder="Qué suele tomar..." class="cues-input" style="margin:0;padding:6px 10px;font-size:0.82rem;min-height:55px;resize:vertical;font-family:inherit;"></textarea>
-              </div>
-              <div style="background:var(--verde-suau);border-radius:8px;padding:10px;">
-                <div style="font-size:0.68rem;font-weight:700;color:var(--verde);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">🍞 Hidratos</div>
-                <div style="display:flex;flex-direction:column;gap:6px;">
-                  <div>
-                    <label style="font-size:0.67rem;color:var(--text-suau);display:block;margin-bottom:2px;">Legumbres</label>
-                    <input type="text" id="hab-llegums" placeholder="Lentejas, garbanzos..." class="cues-input" style="margin:0;padding:5px 8px;font-size:0.8rem;">
-                  </div>
-                  <div>
-                    <label style="font-size:0.67rem;color:var(--text-suau);display:block;margin-bottom:2px;">Otros HC</label>
-                    <input type="text" id="hab-hc-altres" placeholder="Pan, arroz, pasta..." class="cues-input" style="margin:0;padding:5px 8px;font-size:0.8rem;">
-                  </div>
-                </div>
-              </div>
-              <div>
-                <label style="font-size:0.68rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px;">💪 Proteínas</label>
-                <textarea id="hab-proteines" placeholder="Carne, pescado, huevos..." class="cues-input" style="margin:0;padding:6px 10px;font-size:0.82rem;min-height:50px;resize:vertical;font-family:inherit;"></textarea>
-              </div>
-              <div>
-                <label style="font-size:0.68rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px;">🥦 Verdura</label>
-                <input type="text" id="hab-verdura" placeholder="Ensalada, brócoli..." class="cues-input" style="margin:0;padding:6px 10px;font-size:0.82rem;">
-              </div>
-              <div>
-                <label style="font-size:0.68rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px;">🍎 Fruta</label>
-                <input type="text" id="hab-fruita" placeholder="Manzana, naranja..." class="cues-input" style="margin:0;padding:6px 10px;font-size:0.82rem;">
-              </div>
-              <div>
-                <label style="font-size:0.68rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px;">🌰 Frutos secos</label>
-                <input type="text" id="hab-fruits-secs" placeholder="Nueces, almendras..." class="cues-input" style="margin:0;padding:6px 10px;font-size:0.82rem;">
-              </div>
-              <div>
-                <label style="font-size:0.68rem;font-weight:600;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px;">📝 Otros</label>
-                <textarea id="hab-altres" placeholder="Lácteos, dulces, alcohol..." class="cues-input" style="margin:0;padding:6px 10px;font-size:0.82rem;min-height:50px;resize:vertical;font-family:inherit;"></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
 
     <!-- TAB: FICHA -->
     <div id="tab-ficha" class="tab-content">
-      <div class="ficha-seccio">
-        <h4>Datos personales</h4>
-        <div id="ficha-dades-personals"></div>
-        <div class="toggle-wrap" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--vora)">
-          <label class="toggle">
-            <input type="checkbox" id="toggle-actiu" onchange="canviar_estat_actiu(this.checked)">
-            <span class="toggle-slider"></span>
-          </label>
-          <span class="toggle-label" id="toggle-actiu-label">Paciente activo</span>
+      <!-- FILA: Dades personals + Antropometria -->
+      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:16px;margin-bottom:20px;">
+        <!-- Dades personals -->
+        <div class="ficha-seccio" style="margin-bottom:0;">
+          <h4>Datos personales</h4>
+          <div id="ficha-dades-personals"></div>
+          <div class="toggle-wrap" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--vora)">
+            <label class="toggle">
+              <input type="checkbox" id="toggle-actiu" onchange="canviar_estat_actiu(this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" id="toggle-actiu-label">Paciente activo</span>
+          </div>
         </div>
-      </div>
-      <!-- DADES ANTROPOMÈTRIQUES -->
-      <div class="ficha-seccio" id="seccio-antropometria">
+        <!-- Dades antropomètriques -->
+        <div class="ficha-seccio" id="seccio-antropometria" style="margin-bottom:0;background:linear-gradient(135deg,#f0f9f4,#e8f5ec);border:1.5px solid var(--verde-clar);">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--vora)">
           <h4 style="margin:0;border:none;padding:0">📏 Datos antropométricos</h4>
           <button class="btn btn-primary" onclick="guardar_antropometria()" style="font-size:0.78rem;padding:7px 14px">💾 Guardar</button>
@@ -860,6 +827,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <div id="historial-pesos-llista" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
         </div>
       </div>
+      </div><!-- end grid personals+antropometria -->
 
       <div class="ficha-seccio" id="seccio-cuestionari">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--vora)">
@@ -4620,6 +4588,83 @@ async function importar_pacients_json(input) {
 }
 
 // ── BORRAR TOTS ELS PACIENTS ──
+function toggle_config_panel() {
+  const panel = document.getElementById('config-panel');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    // Close on outside click
+    setTimeout(() => {
+      document.addEventListener('click', function closePanel(e) {
+        if (!document.getElementById('config-panel').contains(e.target) && e.target.id !== 'btn-config') {
+          document.getElementById('config-panel').style.display = 'none';
+          document.removeEventListener('click', closePanel);
+        }
+      });
+    }, 10);
+  }
+}
+
+function importar_pacients_json(input) {
+  document.getElementById('config-panel').style.display = 'none';
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  file.text().then(text => {
+    try {
+      const data = JSON.parse(text);
+      // Accept: array, {pacients:[...]}, or single patient object
+      let llista = [];
+      if (Array.isArray(data)) llista = data;
+      else if (data.pacients) llista = data.pacients;
+      else if (data.nom || data.nombre || data.name) llista = [data];
+      if (!llista.length) { mostrar_toast('❌ No se encontraron pacientes en el archivo.', 'error'); return; }
+      let nous = 0, existents = 0;
+      llista.forEach(p => {
+        // Suportar format Dietopro (claus en espanyol) i format intern
+        const nom = p.nom || p.name || p.nombre || p['Nombre'] || '';
+        const cognoms = p.cognoms || p.apellidos || p.surname || p['Apellidos'] || '';
+        if (!nom) return;
+        const ja_existeix = pacients.find(ex =>
+          ex.nom.toLowerCase() === nom.toLowerCase() &&
+          (ex.cognoms||'').toLowerCase() === cognoms.toLowerCase()
+        );
+        if (ja_existeix) { existents++; return; }
+        // Parsear fecha Dietopro: "Fri, 31 Jan 1958 00:00:00 +0000" → "1958-01-31"
+        const raw_naix = p.naix || p.fecha_nacimiento || p.birthdate || p['Fecha de nacimimiento'] || p['Fecha de nacimiento'] || '';
+        let naix = raw_naix;
+        if (raw_naix && raw_naix.includes(',')) {
+          try { naix = new Date(raw_naix).toISOString().split('T')[0]; } catch(e) { naix = ''; }
+        }
+        pacients.push({
+          id: p.id || 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2),
+          nom, cognoms,
+          email: p.email || p['E-mail'] || '',
+          tel: p.tel || p.telefon || p.telefono || p['Teléfono móvil'] || p['Teléfono'] || '',
+          naix,
+          creat: p.creat || new Date().toISOString(),
+          planificacions: p.planificacions || {},
+          evolucio: p.evolucio || [],
+          cuestionari: p.cuestionari || null,
+          habits: p.habits || null,
+          historial_pes: p.historial_pes || [],
+          pes_actual: p.pes_actual || null,
+          alcada: p.alcada || null,
+          sexe: p.sexe || null,
+          pes_objectiu: p.pes_objectiu || null,
+          actiu: p.actiu !== false
+        });
+        nous++;
+      });
+      guardar_pacients();
+      renderitzar_pacients();
+      mostrar_toast(`✅ ${nous} paciente(s) importado(s). ${existents} ya existían.`);
+    } catch(e) {
+      mostrar_toast('❌ Error al leer el archivo: ' + e.message, 'error');
+    }
+  });
+}
+
 function confirmar_borrar_tots_pacients() {
   if (!confirm(`⚠️ ¿Borrar TODOS los ${pacients.length} pacientes y sus datos?\n\nEsta acción no se puede deshacer.`)) return;
   pacients = [];
