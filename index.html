@@ -1377,8 +1377,10 @@ function obrir_pacient(id){
   document.getElementById('pantalla-pacient').style.display='block';
   canviar_tab('planificacio', document.querySelector('.tab-btn[onclick*="planificacio"]'));
   renderitzar_cuestionari_resum();
+  actualitzar_banner_aversions();
   setTimeout(carregar_objectius_planificacio, 100);
   setTimeout(carregar_habits, 110);
+  setTimeout(actualitzar_banner_aversions, 120);
 }
 function tornar_a_llista(){
   document.getElementById('pantalla-pacient').style.display='none';
@@ -3313,24 +3315,34 @@ function carregar_cuestionari_dades() {
   const c = pacient_actiu.cuestionari || {};
   document.getElementById('cq-motiu').value = c.motiu || '';
   set_opcio_unica('cq-pes-opcions','cq-pes', c.pes);
+  // Estat fisiologic — only show if female
+  const es_dona = pacient_actiu.sexe === 'dona';
+  const bloc_estat = document.getElementById('cq-estat-bloc');
+  if (bloc_estat) bloc_estat.style.display = es_dona ? 'block' : 'none';
   set_opcio_unica('cq-estat-opcions','cq-estat', c.estat_fisiologic);
-  document.getElementById('cq-farmacos').value = c.farmacos || '';
+  set_opcio_unica('cq-menstruacio-opcions','cq-menstruacio', c.menstruacio);
+  const mt = document.getElementById('cq-menstruacio-text'); if(mt) mt.value = c.menstruacio_text || '';
+  // Farmacos multi-select
+  _farmacos_seleccionats = c.farmacos_llista ? [...c.farmacos_llista] : [];
+  renderitzar_farmacos_seleccionats();
+  const fa = document.getElementById('cq-farmacos-altres'); if(fa) fa.value = c.farmacos_altres || '';
   set_opcio_unica('cq-estil-opcions','cq-estil', c.estil_alimentacio);
   document.getElementById('cq-estil-altre').value = c.estil_altre || '';
-  set_opcions_multi('cq-cuina-opcions', c.tipus_cuina);
   document.getElementById('cq-aversions').value = c.aversions || '';
   set_opcio_unica('cq-activitat-opcions','cq-activitat', c.activitat);
+  const at = document.getElementById('cq-activitat-text'); if(at) at.value = c.activitat_text || '';
   document.getElementById('cq-treball').value = c.treball || '';
   document.getElementById('cq-aigua').value = c.aigua || '';
   document.getElementById('cq-alcohol').value = c.alcohol || '';
   document.getElementById('cq-tabac').value = c.tabac || '';
+  const desc = document.getElementById('cq-descans'); if(desc) desc.value = c.descans || '';
   set_opcio_unica('cq-motivacio-opcions','cq-motivacio', c.motivacio);
   set_opcio_unica('cq-suport-opcions','cq-suport', c.suport);
   set_opcio_unica('cq-depressa-opcions','cq-depressa', c.menja_depressa);
   set_opcio_unica('cq-pica-opcions','cq-pica', c.pica_hores);
   set_opcio_unica('cq-recorta-opcions','cq-recorta', c.recorta_quantitats);
-  set_opcio_unica('cq-menstruacio-opcions','cq-menstruacio', c.menstruacio);
-  document.getElementById('cq-intents').value = c.intents_anteriors || '';
+  const anal = document.getElementById('cq-analitica'); if(anal) anal.value = c.analitica || '';
+  const dig = document.getElementById('cq-digestiu'); if(dig) dig.value = c.digestiu || '';
   document.getElementById('cq-trastorns').value = c.trastorns || '';
   document.getElementById('cq-antecedents').value = c.antecedents || '';
 }
@@ -3340,24 +3352,29 @@ function recollir_dades_cuestionari() {
     motiu: document.getElementById('cq-motiu').value.trim(),
     pes: document.getElementById('cq-pes').value,
     estat_fisiologic: document.getElementById('cq-estat').value,
+    menstruacio: document.getElementById('cq-menstruacio')?.value || '',
+    menstruacio_text: document.getElementById('cq-menstruacio-text')?.value.trim() || '',
     patologies: Array.from(document.querySelectorAll('#cues-patologies-grid .cues-check-item.seleccionat')).map(el => el.textContent.trim()),
-    farmacos: document.getElementById('cq-farmacos').value.trim(),
+    farmacos_llista: [..._farmacos_seleccionats],
+    farmacos_altres: document.getElementById('cq-farmacos-altres')?.value.trim() || '',
+    farmacos: [..._farmacos_seleccionats, document.getElementById('cq-farmacos-altres')?.value.trim()].filter(Boolean).join(', '),
     estil_alimentacio: document.getElementById('cq-estil').value,
     estil_altre: document.getElementById('cq-estil-altre').value.trim(),
-    tipus_cuina: get_opcions_multi('cq-cuina-opcions'),
     aversions: document.getElementById('cq-aversions').value.trim(),
     activitat: document.getElementById('cq-activitat').value,
+    activitat_text: document.getElementById('cq-activitat-text')?.value.trim() || '',
     treball: document.getElementById('cq-treball').value.trim(),
     aigua: document.getElementById('cq-aigua').value,
     alcohol: document.getElementById('cq-alcohol').value.trim(),
     tabac: document.getElementById('cq-tabac').value.trim(),
+    descans: document.getElementById('cq-descans')?.value.trim() || '',
     motivacio: document.getElementById('cq-motivacio').value,
     suport: document.getElementById('cq-suport').value,
     menja_depressa: document.getElementById('cq-depressa').value,
     pica_hores: document.getElementById('cq-pica').value,
     recorta_quantitats: document.getElementById('cq-recorta').value,
-    menstruacio: document.getElementById('cq-menstruacio').value,
-    intents_anteriors: document.getElementById('cq-intents').value.trim(),
+    analitica: document.getElementById('cq-analitica')?.value.trim() || '',
+    digestiu: document.getElementById('cq-digestiu')?.value.trim() || '',
     trastorns: document.getElementById('cq-trastorns').value.trim(),
     antecedents: document.getElementById('cq-antecedents').value.trim(),
     data_creacio: pacient_actiu.cuestionari?.data_creacio || new Date().toISOString(),
@@ -3407,6 +3424,74 @@ function borrar_cuestionari() {
   guardar_pacients();
   renderitzar_cuestionari_resum();
   mostrar_toast('🗑️ Cuestionario eliminado.', 'ok');
+}
+
+// ── FÀRMACS MULTI-SELECT ──
+const FARMACOS_LLISTA = [
+  'Ácido fólico','Amlodipino','Antihistamínicos','Apixabán','Atorvastatina',
+  'Bifosfonatos (Alendronato)','Calcio','Corticoides','Diuréticos',
+  'Enalapril','Fluoxetina','Hierro','Ibuprofeno','Insulina',
+  'Laxantes','Levotiroxina','Lorazepam','Losartán','Magnesio',
+  'Melatonina','Metformina','Metimazol','Omega-3','Omeprazol',
+  'Anticoagulantes (Sintrom)','Anticonceptivos orales',
+  'Paracetamol','Sertralina','Simvastatina','Vitamina D'
+];
+let _farmacos_seleccionats = [];
+
+function filtrar_farmacos() {
+  const q = document.getElementById('cq-farmacos-cerca')?.value.trim().toLowerCase() || '';
+  const dropdown = document.getElementById('cq-farmacos-dropdown');
+  if (!dropdown) return;
+  if (!q) { dropdown.style.display='none'; return; }
+  const filtered = FARMACOS_LLISTA.filter(f => f.toLowerCase().includes(q) && !_farmacos_seleccionats.includes(f));
+  if (!filtered.length) { dropdown.style.display='none'; return; }
+  dropdown.innerHTML = filtered.map(f =>
+    `<div onclick="seleccionar_farmac('${f.replace(/'/g,"\'")}')" style="padding:8px 14px;cursor:pointer;font-size:0.82rem;border-bottom:1px solid #f0f0f0;" onmouseover="this.style.background='#f0f7f2'" onmouseout="this.style.background=''">${f}</div>`
+  ).join('');
+  dropdown.style.display = 'block';
+}
+
+function seleccionar_farmac(nom) {
+  if (!_farmacos_seleccionats.includes(nom)) _farmacos_seleccionats.push(nom);
+  renderitzar_farmacos_seleccionats();
+  const cerca = document.getElementById('cq-farmacos-cerca');
+  if (cerca) cerca.value = '';
+  const dropdown = document.getElementById('cq-farmacos-dropdown');
+  if (dropdown) dropdown.style.display = 'none';
+}
+
+function eliminar_farmac(nom) {
+  _farmacos_seleccionats = _farmacos_seleccionats.filter(f => f !== nom);
+  renderitzar_farmacos_seleccionats();
+}
+
+function renderitzar_farmacos_seleccionats() {
+  const cont = document.getElementById('cq-farmacos-seleccionats');
+  if (!cont) return;
+  cont.innerHTML = _farmacos_seleccionats.map(f =>
+    `<span style="background:var(--verde-suau);color:var(--verde);border:1px solid var(--verde-clar);border-radius:20px;padding:3px 10px;font-size:0.78rem;display:flex;align-items:center;gap:5px;">
+      ${f} <span onclick="eliminar_farmac('${f.replace(/'/g,"\'")}')" style="cursor:pointer;font-weight:700;color:var(--rosa);">✕</span>
+    </span>`
+  ).join('');
+}
+
+// ── BANNER AVERSIONS A PLANIFICACIÓ ──
+function actualitzar_banner_aversions() {
+  const aversions = pacient_actiu?.cuestionari?.aversions || '';
+  let banner = document.getElementById('banner-aversions');
+  if (!aversions) {
+    if (banner) banner.style.display = 'none';
+    return;
+  }
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'banner-aversions';
+    const nc = document.getElementById('nutrientes-criticos');
+    if (nc) nc.parentNode.insertBefore(banner, nc);
+  }
+  banner.style.cssText = 'margin-bottom:8px;background:#fdecea;border:1.5px solid #f5c6c6;border-radius:var(--radi);padding:10px 16px;display:flex;align-items:flex-start;gap:10px;';
+  banner.innerHTML = `<span style="font-size:1.1rem;flex-shrink:0;">⚠️</span><div><span style="font-size:0.68rem;font-weight:700;color:#c0392b;text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:2px;">Aversiones, alergias e intolerancias</span><span style="font-size:0.82rem;color:#7b241c;">${aversions}</span></div>`;
+  banner.style.display = 'flex';
 }
 
 function renderitzar_cuestionari_resum() {
@@ -4587,15 +4672,27 @@ function confirmar_borrar_tots_pacients() {
         </div>
         <input type="hidden" id="cq-pes">
 
-        <label class="cues-label" style="margin-top:14px">3. Estado fisiológico</label>
-        <div class="cues-opcions" id="cq-estat-opcions">
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Ninguno</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Premenopausia</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Postmenopausia</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Lactancia</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Embarazo</button>
+        <!-- P3: Estado fisiológico — solo visible si mujer -->
+        <div id="cq-estat-bloc" style="display:none;">
+          <label class="cues-label" style="margin-top:14px">3. Estado fisiológico</label>
+          <div class="cues-opcions" id="cq-estat-opcions">
+            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Ninguno</button>
+            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Embarazo</button>
+            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Lactancia</button>
+            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Menopausia</button>
+            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Posmenopausia</button>
+          </div>
+          <input type="hidden" id="cq-estat">
+          <label class="cues-label" style="margin-top:10px">Menstruación</label>
+          <div class="cues-opcions" id="cq-menstruacio-opcions">
+            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="font-size:0.82rem;padding:6px 14px">Regular</button>
+            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="font-size:0.82rem;padding:6px 14px">Irregular</button>
+            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="font-size:0.82rem;padding:6px 14px">Amenorrea</button>
+            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="font-size:0.82rem;padding:6px 14px">N/A</button>
+          </div>
+          <input type="hidden" id="cq-menstruacio">
+          <input class="cues-input" type="text" id="cq-menstruacio-text" placeholder="Observaciones sobre la menstruación..." style="margin-top:6px;">
         </div>
-        <input type="hidden" id="cq-estat">
       </div>
 
       <!-- PASO 2: Patologías -->
@@ -4607,38 +4704,43 @@ function confirmar_borrar_tots_pacients() {
         <div class="cues-check-grid" id="cues-patologies-grid"></div>
       </div>
 
-      <!-- PASO 3: Fármacos, alimentación, cocina -->
+      <!-- PASO 3: Fármacos, alimentación, hábitos -->
       <div class="cues-step" id="cues-step-3">
         <div class="cues-titol">Alimentación y hábitos</div>
         <div class="cues-subtitol">Paso 3 de 4</div>
 
         <label class="cues-label">5. Fármacos</label>
-        <textarea class="cues-textarea" id="cq-farmacos" placeholder="Lista los fármacos que toma actualmente..."></textarea>
+        <div style="position:relative;margin-bottom:6px;">
+          <input type="text" id="cq-farmacos-cerca" class="cues-input" placeholder="🔍 Buscar fármaco..." oninput="filtrar_farmacos()" style="margin-bottom:4px;">
+          <div id="cq-farmacos-dropdown" style="display:none;position:absolute;z-index:100;background:white;border:1.5px solid var(--verde-clar);border-radius:10px;max-height:180px;overflow-y:auto;width:100%;box-shadow:0 4px 16px rgba(0,0,0,0.1);"></div>
+        </div>
+        <div id="cq-farmacos-seleccionats" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;min-height:28px;"></div>
+        <input type="text" id="cq-farmacos-altres" class="cues-input" placeholder="Otros fármacos no listados..." style="margin-bottom:0;">
+        <input type="hidden" id="cq-farmacos">
 
         <label class="cues-label" style="margin-top:14px">6. Estilo de alimentación</label>
-        <div class="cues-opcions" id="cq-estil-opcions">
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')">Omnívora</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')">Vegetariana</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')">Vegana</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')">Económica</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')">Mediterránea</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')">Sin restricciones</button>
+        <div class="cues-opcions" id="cq-estil-opcions" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🛒 Omnívoro</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🥚 Ovolacteo-vegetariana</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🥦 Vegana</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🦣 Paleodieta</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🥗 Semi-vegetariana</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🧀 Lacteo-vegetariana</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🐟 Pesco-vegetariana</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🥚 Ovo-vegetariana</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🌿 FODMAP (fase 3)</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🍎 Real Food</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🦠 Inmunonutrición</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🍞 Dieta Low Carb</button>
+          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🐷 Dieta económica</button>
         </div>
         <input type="hidden" id="cq-estil">
-        <input class="cues-input" type="text" id="cq-estil-altre" placeholder="Otro estilo de alimentación...">
+        <input class="cues-input" type="text" id="cq-estil-altre" placeholder="Otro estilo de alimentación..." style="margin-top:8px;">
 
-        <label class="cues-label" style="margin-top:14px">7. Tipo de cocina preferida</label>
-        <div class="cues-opcions" id="cq-cuina-opcions">
-          <button class="cues-opcio" onclick="toggle_opcio_multi(this,'cq-cuina')">Básica</button>
-          <button class="cues-opcio" onclick="toggle_opcio_multi(this,'cq-cuina')">Fácil y rápida</button>
-          <button class="cues-opcio" onclick="toggle_opcio_multi(this,'cq-cuina')">Elaborada</button>
-          <button class="cues-opcio" onclick="toggle_opcio_multi(this,'cq-cuina')">Comercial</button>
-        </div>
-
-        <label class="cues-label" style="margin-top:14px">8. Aversiones, alergias e intolerancias</label>
+        <label class="cues-label" style="margin-top:14px">7. Aversiones, alergias e intolerancias</label>
         <textarea class="cues-textarea" id="cq-aversions" placeholder="Indica alimentos que no tolera, no le gustan o a los que es alérgico/intolerante..."></textarea>
 
-        <label class="cues-label" style="margin-top:14px">9. Actividad física diaria</label>
+        <label class="cues-label" style="margin-top:14px">8. Actividad física diaria</label>
         <div class="cues-opcions" id="cq-activitat-opcions">
           <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')">Ninguna</button>
           <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')">Muy ligera</button>
@@ -4648,6 +4750,7 @@ function confirmar_borrar_tots_pacients() {
           <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')">Muy intensa</button>
         </div>
         <input type="hidden" id="cq-activitat">
+        <input class="cues-input" type="text" id="cq-activitat-text" placeholder="¿Cuál es la actividad? Ej: natación, senderismo, gym..." style="margin-top:6px;">
       </div>
 
       <!-- PASO 4: Datos complementarios -->
@@ -4673,6 +4776,10 @@ function confirmar_borrar_tots_pacients() {
             <input class="cues-input" type="text" id="cq-tabac" placeholder="No fumador, ex-fumador...">
           </div>
           <div>
+            <label class="cues-label">Horas de descanso</label>
+            <input class="cues-input" type="text" id="cq-descans" placeholder="Ej: 7-8h, duerme mal...">
+          </div>
+          <div>
             <label class="cues-label">Grado de motivación</label>
             <div class="cues-opcions" style="margin-bottom:0" id="cq-motivacio-opcions">
               <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-motivacio')" style="font-size:0.75rem;padding:5px 12px">Bajo</button>
@@ -4690,9 +4797,6 @@ function confirmar_borrar_tots_pacients() {
             </div>
             <input type="hidden" id="cq-suport">
           </div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px">
           <div>
             <label class="cues-label">¿Come deprisa?</label>
             <div class="cues-opcions" style="margin-bottom:0" id="cq-depressa-opcions">
@@ -4719,25 +4823,18 @@ function confirmar_borrar_tots_pacients() {
             </div>
             <input type="hidden" id="cq-recorta">
           </div>
-          <div>
-            <label class="cues-label">Menstruación</label>
-            <div class="cues-opcions" style="margin-bottom:0" id="cq-menstruacio-opcions">
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="font-size:0.75rem;padding:5px 12px">Regular</button>
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="font-size:0.75rem;padding:5px 12px">Irregular</button>
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="font-size:0.75rem;padding:5px 12px">Amenorrea</button>
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="font-size:0.75rem;padding:5px 12px">N/A</button>
-            </div>
-            <input type="hidden" id="cq-menstruacio">
-          </div>
         </div>
 
-        <label class="cues-label" style="margin-top:14px">Intentos previos de pérdida de peso</label>
-        <textarea class="cues-textarea" id="cq-intents" placeholder="Dietas anteriores, motivos de fracaso..."></textarea>
+        <label class="cues-label" style="margin-top:14px">Analíticas previas</label>
+        <textarea class="cues-textarea" id="cq-analitica" placeholder="Resultados relevantes de analíticas anteriores..."></textarea>
 
-        <label class="cues-label" style="margin-top:14px">Trastornos de la alimentación</label>
+        <label class="cues-label" style="margin-top:10px">Sintomatología digestiva</label>
+        <textarea class="cues-textarea" id="cq-digestiu" placeholder="Gases, hinchazón, reflujo, estreñimiento..."></textarea>
+
+        <label class="cues-label" style="margin-top:10px">Trastornos de la alimentación</label>
         <textarea class="cues-textarea" id="cq-trastorns" placeholder="Indica si hay o ha habido algún trastorno..."></textarea>
 
-        <label class="cues-label" style="margin-top:14px">Antecedentes familiares</label>
+        <label class="cues-label" style="margin-top:10px">Antecedentes familiares</label>
         <textarea class="cues-textarea" id="cq-antecedents" placeholder="Enfermedades relevantes en la familia..."></textarea>
       </div>
 
