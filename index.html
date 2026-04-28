@@ -604,19 +604,60 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         </div>
         <button class="btn btn-primary" onclick="generar_pdf_planificacio()" style="font-size:0.8rem;padding:7px 16px;">📄 Generar PDF</button>
       </div>
-      <div class="macros-bar" id="macros-bar-total" style="margin-bottom:8px;background:#f0f7f2;border:1px solid var(--verde-clar);">
-        <div class="macros-title" style="color:var(--verde)">Total semanal</div>
-        <div class="macro-item">
-          <div class="macro-nom"><span>Energía</span><span id="val-kcal-total">— kcal</span></div>
-        </div>
-        <div class="macro-item">
-          <div class="macro-nom"><span>Proteínas</span><span id="val-prot-total">— g</span></div>
-        </div>
-        <div class="macro-item">
-          <div class="macro-nom"><span>Hidratos</span><span id="val-hc-total">— g</span></div>
-        </div>
-        <div class="macro-item">
-          <div class="macro-nom"><span>Grasas</span><span id="val-gras-total">— g</span></div>
+      <!-- NUTRIENTES CRÍTICOS -->
+      <div id="nutrientes-criticos" style="margin-bottom:8px;background:white;border:1px solid var(--vora);border-radius:var(--radi);padding:12px 16px;">
+        <div style="font-size:0.7rem;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">⚡ Energía y Nutrientes Críticos · Media diaria</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;">
+          <!-- Kcal destacado -->
+          <div style="min-width:110px;background:var(--verde-suau);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <span id="nc-kcal-val" style="font-size:1.6rem;font-weight:700;color:var(--verde);line-height:1;">—</span>
+            <span style="font-size:0.68rem;color:var(--verde-mig);font-weight:500;">kcal</span>
+            <span id="nc-kcal-desv" style="font-size:0.72rem;color:var(--text-suau);margin-top:2px;">—</span>
+          </div>
+          <!-- Tabla nutrientes -->
+          <div style="flex:1;min-width:200px;">
+            <table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
+              <thead>
+                <tr style="color:var(--text-suau);">
+                  <th style="text-align:left;padding:2px 6px;font-weight:600;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.5px;"></th>
+                  <th style="text-align:right;padding:2px 6px;font-weight:600;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.5px;">Aporte</th>
+                  <th style="text-align:right;padding:2px 6px;font-weight:600;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.5px;">% Desv.</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-top:1px solid var(--vora);">
+                  <td style="padding:4px 6px;color:var(--text);">🧂 Sodio (mg)</td>
+                  <td style="text-align:right;padding:4px 6px;" id="nc-sodio-val">—</td>
+                  <td style="text-align:right;padding:4px 6px;" id="nc-sodio-desv">—</td>
+                </tr>
+                <tr style="border-top:1px solid var(--vora);">
+                  <td style="padding:4px 6px;color:var(--text);">🧈 Colest. (mg)</td>
+                  <td style="text-align:right;padding:4px 6px;" id="nc-colest-val">—</td>
+                  <td style="text-align:right;padding:4px 6px;" id="nc-colest-desv">—</td>
+                </tr>
+                <tr style="border-top:1px solid var(--vora);">
+                  <td style="padding:4px 6px;color:var(--text);">💪 Prot/kg día (g)</td>
+                  <td style="text-align:right;padding:4px 6px;" id="nc-prot-kg-val">—</td>
+                  <td style="text-align:right;padding:4px 6px;" id="nc-prot-kg-desv">—</td>
+                </tr>
+                <tr style="border-top:1px solid var(--vora);">
+                  <td style="padding:4px 6px;color:var(--text);">🫒 AGS (g)</td>
+                  <td style="text-align:right;padding:4px 6px;" id="nc-ags-val">—</td>
+                  <td style="text-align:right;padding:4px 6px;" id="nc-ags-desv">—</td>
+                </tr>
+                <tr style="border-top:1px solid var(--vora);">
+                  <td style="padding:4px 6px;color:var(--text);">🍞 100g HC/día</td>
+                  <td style="text-align:right;padding:4px 6px;" id="nc-hc-val">—</td>
+                  <td style="text-align:right;padding:4px 6px;" id="nc-hc-desv">—</td>
+                </tr>
+                <tr style="border-top:1px solid var(--vora);">
+                  <td style="padding:4px 6px;color:var(--text);">🍷 Etanol (g)</td>
+                  <td style="text-align:right;padding:4px 6px;" id="nc-etanol-val">—</td>
+                  <td style="text-align:right;padding:4px 6px;" id="nc-etanol-desv">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
       <div class="macros-bar" id="macros-bar">
@@ -695,6 +736,62 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <span class="toggle-label" id="toggle-actiu-label">Paciente activo</span>
         </div>
       </div>
+      <!-- DADES ANTROPOMÈTRIQUES -->
+      <div class="ficha-seccio" id="seccio-antropometria">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--vora)">
+          <h4 style="margin:0;border:none;padding:0">📏 Datos antropométricos</h4>
+          <button class="btn btn-primary" onclick="guardar_antropometria()" style="font-size:0.78rem;padding:7px 14px">💾 Guardar</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:16px;">
+          <div>
+            <label class="cues-label">Sexo</label>
+            <select class="cues-input" id="antrop-sexe" style="margin-bottom:0;cursor:pointer;">
+              <option value="">— Seleccionar —</option>
+              <option value="dona">Mujer</option>
+              <option value="home">Hombre</option>
+            </select>
+          </div>
+          <div>
+            <label class="cues-label">Altura (cm)</label>
+            <input class="cues-input" type="number" id="antrop-alcada" placeholder="Ej: 165" min="100" max="220" style="margin-bottom:0;">
+          </div>
+          <div>
+            <label class="cues-label">Peso actual (kg)</label>
+            <input class="cues-input" type="number" id="antrop-pes" placeholder="Ej: 70.5" min="20" max="300" step="0.1" style="margin-bottom:0;">
+          </div>
+          <div>
+            <label class="cues-label">Peso objetivo (kg)</label>
+            <input class="cues-input" type="number" id="antrop-pes-obj" placeholder="Ej: 63" min="20" max="300" step="0.1" style="margin-bottom:0;">
+          </div>
+        </div>
+        <!-- Càlcul GMT -->
+        <div id="gmt-box" style="display:none;background:var(--verde-suau);border-radius:10px;padding:14px 18px;border:1px solid var(--verde-clar);">
+          <div style="font-size:0.7rem;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">🔢 Cálculo energético · Mifflin-St. Jeor</div>
+          <div style="display:flex;gap:20px;flex-wrap:wrap;">
+            <div style="text-align:center;">
+              <div id="gmt-gmb" style="font-size:1.3rem;font-weight:700;color:var(--verde);">—</div>
+              <div style="font-size:0.68rem;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;">GMB (basal)</div>
+            </div>
+            <div style="text-align:center;">
+              <div id="gmt-gmt" style="font-size:1.3rem;font-weight:700;color:var(--verde);">—</div>
+              <div style="font-size:0.68rem;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;">GMT (total)</div>
+            </div>
+            <div style="text-align:center;">
+              <div id="gmt-obj" style="font-size:1.3rem;font-weight:700;color:var(--verde-mig);">—</div>
+              <div style="font-size:0.68rem;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;">Objetivo kcal</div>
+            </div>
+            <div style="flex:1;min-width:180px;font-size:0.78rem;color:var(--text-suau);display:flex;align-items:center;">
+              <span id="gmt-detall">—</span>
+            </div>
+          </div>
+        </div>
+        <!-- Historial pesos -->
+        <div id="historial-pesos-box" style="margin-top:14px;display:none;">
+          <div style="font-size:0.7rem;font-weight:700;color:var(--text-suau);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📈 Historial de pesos guardados</div>
+          <div id="historial-pesos-llista" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+        </div>
+      </div>
+
       <div class="ficha-seccio" id="seccio-cuestionari">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--vora)">
           <h4 style="margin:0;border:none;padding:0">Cuestionario inicial <span id="badge-cuestionari" style="font-size:0.72rem;font-weight:600;padding:3px 10px;border-radius:20px;margin-left:8px;background:#fff3cd;color:#856404">Sin completar</span></h4>
@@ -1205,7 +1302,14 @@ function renderitzar_ficha_resum(){
   document.getElementById('ficha-tags').innerHTML = cq_complet
     ? '<span class="tag" style="background:var(--verde-suau);color:var(--verde)">✅ Cuestionario completado</span>'
     : '<span class="tag tag-gris">Sin cuestionario inicial</span>';
-  document.getElementById('ficha-stats').innerHTML='<div class="ficha-stat"><div class="ficha-stat-val">—</div><div class="ficha-stat-label">kcal / día</div></div>';
+  // Mostrar kcal objectiu GMT si tenim dades
+  const gmt_info = calcular_gmt_pacient(p);
+  const kcal_txt = gmt_info ? gmt_info.objectiu_kcal+' kcal' : '—';
+  const pes_txt = p.pes_actual ? p.pes_actual+' kg' : '—';
+  document.getElementById('ficha-stats').innerHTML=`
+    <div class="ficha-stat"><div class="ficha-stat-val">${kcal_txt}</div><div class="ficha-stat-label">Obj. kcal / día</div></div>
+    <div class="ficha-stat"><div class="ficha-stat-val">${pes_txt}</div><div class="ficha-stat-label">Peso actual</div></div>
+  `;
 }
 function renderitzar_ficha_dades(){
   const p=pacient_actiu, e=calcular_edat(p.naix);
@@ -1216,6 +1320,8 @@ function renderitzar_ficha_dades(){
     <div class="ficha-camp"><span class="ficha-camp-label">Teléfono</span><span class="ficha-camp-val ${p.tel?'':'ficha-camp-buit'}">${p.tel||'No especificado'}</span></div>
     <div class="ficha-camp"><span class="ficha-camp-label">E-mail</span><span class="ficha-camp-val ${p.email?'':'ficha-camp-buit'}">${p.email||'No especificado'}</span></div>
   `;
+  // Emplenar camps antropomètrics
+  carregar_antropometria();
 }
 
 // ── ACTIU / BORRAR ──
@@ -1224,6 +1330,98 @@ function canviar_estat_actiu(actiu) {
   guardar_pacients();
   const label = document.getElementById('toggle-actiu-label');
   label.textContent = actiu ? 'Paciente activo' : 'Paciente inactivo';
+}
+
+function carregar_antropometria() {
+  const p = pacient_actiu;
+  const sel = document.getElementById('antrop-sexe');
+  if(sel) sel.value = p.sexe || '';
+  const alt = document.getElementById('antrop-alcada');
+  if(alt) alt.value = p.alcada || '';
+  const pes = document.getElementById('antrop-pes');
+  if(pes) pes.value = p.pes_actual || '';
+  const obj = document.getElementById('antrop-pes-obj');
+  if(obj) obj.value = p.pes_objectiu || '';
+  renderitzar_gmt();
+  renderitzar_historial_pesos();
+}
+
+function guardar_antropometria() {
+  const p = pacient_actiu;
+  const nou_pes = parseFloat(document.getElementById('antrop-pes').value) || null;
+
+  // Arxivar el pes anterior si ha canviat
+  if(nou_pes && p.pes_actual && nou_pes !== p.pes_actual) {
+    if(!p.historial_pes) p.historial_pes = [];
+    p.historial_pes.push({ data: new Date().toISOString().split('T')[0], pes: p.pes_actual });
+    // Mantenir màxim 20 registres
+    if(p.historial_pes.length > 20) p.historial_pes = p.historial_pes.slice(-20);
+  }
+
+  p.sexe = document.getElementById('antrop-sexe').value || null;
+  p.alcada = parseFloat(document.getElementById('antrop-alcada').value) || null;
+  p.pes_actual = nou_pes;
+  p.pes_objectiu = parseFloat(document.getElementById('antrop-pes-obj').value) || null;
+
+  guardar_pacients();
+  renderitzar_gmt();
+  renderitzar_historial_pesos();
+  // Actualitzar la barra superior de la ficha
+  renderitzar_ficha_resum();
+  // Actualitzar nutrientes crítics si estem a planificació
+  const planif_clau = clau_setmana(setmana_offset);
+  if(pacient_actiu.planificacions[planif_clau]) {
+    actualitzar_macros(pacient_actiu.planificacions[planif_clau]);
+  }
+  mostrar_toast('Datos antropométricos guardados ✓');
+}
+
+function renderitzar_gmt() {
+  const box = document.getElementById('gmt-box');
+  if(!box) return;
+  const info = calcular_gmt_pacient(pacient_actiu);
+  if(!info) { box.style.display='none'; return; }
+  box.style.display='block';
+  document.getElementById('gmt-gmb').textContent = info.gmb + ' kcal';
+  document.getElementById('gmt-gmt').textContent = info.gmt + ' kcal';
+  document.getElementById('gmt-obj').textContent = info.objectiu_kcal + ' kcal';
+  const edat = calcular_edat(pacient_actiu.naix);
+  let reduccio_txt = '';
+  if(edat>=40 && edat<50) reduccio_txt = ' · -5% OMS (40-49a)';
+  else if(edat>=50 && edat<60) reduccio_txt = ' · -10% OMS (50-59a)';
+  else if(edat>=60 && edat<70) reduccio_txt = ' · -20% OMS (60-69a)';
+  else if(edat>=70) reduccio_txt = ' · -30% OMS (≥70a)';
+  document.getElementById('gmt-detall').textContent =
+    `FA: ${info.fa} (${info.act})${reduccio_txt}`;
+}
+
+function renderitzar_historial_pesos() {
+  const p = pacient_actiu;
+  const box = document.getElementById('historial-pesos-box');
+  const llista = document.getElementById('historial-pesos-llista');
+  if(!box || !llista) return;
+  const hist = p.historial_pes;
+  if(!hist || !hist.length) { box.style.display='none'; return; }
+  box.style.display='block';
+  llista.innerHTML = [...hist].reverse().slice(0,10).map(h =>
+    `<span style="background:white;border:1px solid var(--vora);border-radius:8px;padding:4px 10px;font-size:0.78rem;color:var(--text);">
+      <span style="color:var(--text-suau);">${h.data}:</span> <strong>${h.pes} kg</strong>
+    </span>`
+  ).join('');
+}
+
+function mostrar_toast(msg) {
+  let t = document.getElementById('toast-msg');
+  if(!t) {
+    t = document.createElement('div');
+    t.id='toast-msg';
+    t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#2D6A4F;color:white;padding:10px 22px;border-radius:24px;font-size:0.85rem;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);transition:opacity 0.4s;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity='1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>{ t.style.opacity='0'; }, 2200);
 }
 
 function confirmar_borrar_pacient() {
@@ -1310,16 +1508,12 @@ function actualitzar_macros(planif){
   let kcal=0,prot=0,hc=0,gras=0,dies_amb_dades=0;
   for(let di=0;di<7;di++){
     let die_kcal=0,die_prot=0,die_hc=0,die_gras=0,te=false;
-    // Sumar TOTS els plats del dia (totes les claus: mi_di, mi_di_vN, Moment_di...)
-    const MOMENTS_PAC2 = (pacient_actiu.moments_dia && pacient_actiu.moments_dia.length) ? pacient_actiu.moments_dia : MOMENTS;
     Object.entries(planif).forEach(([k,pl])=>{
       if(!pl?.nom) return;
-      // Detectar si pertany a aquest dia
       const nmatch = k.match(/^(\d+)_(\d+)(?:_v\d+)?$/);
       const tmatch = k.match(/^(.+)_(\d+)(?:_v\d+)?$/);
       const pertany = (nmatch && parseInt(nmatch[2])===di) || (tmatch && parseInt(tmatch[2])===di);
       if(!pertany) return;
-      // Obtenir macros del plat (directes o del catàleg)
       const info = obtenir_info_plat_complet(pl);
       const pk = info?.kcal||pl.kcal||0;
       const pp = info?.prot||pl.prot||0;
@@ -1331,24 +1525,163 @@ function actualitzar_macros(planif){
     if(te) dies_amb_dades++;
     kcal+=die_kcal; prot+=die_prot; hc+=die_hc; gras+=die_gras;
   }
-  const d=7; // Sempre dividir per 7 dies
-  document.getElementById('val-kcal').textContent=Math.round(kcal/d)+' kcal';
-  document.getElementById('val-prot').textContent=Math.round(prot/d)+' g';
-  document.getElementById('val-hc').textContent=Math.round(hc/d)+' g';
-  document.getElementById('val-gras').textContent=Math.round(gras/d)+' g';
-  // Total semanal
-  const te = document.getElementById('val-kcal-total');
-  if(te) {
-    document.getElementById('val-kcal-total').textContent=Math.round(kcal)+' kcal';
-    document.getElementById('val-prot-total').textContent=Math.round(prot)+' g';
-    document.getElementById('val-hc-total').textContent=Math.round(hc)+' g';
-    document.getElementById('val-gras-total').textContent=Math.round(gras)+' g';
-  }
+  const d=7;
+  const media_kcal = Math.round(kcal/d);
+  const media_prot = Math.round(prot/d);
+  const media_hc   = Math.round(hc/d);
+  const media_gras = Math.round(gras/d);
+
+  // Media diaria
+  document.getElementById('val-kcal').textContent=media_kcal+' kcal';
+  document.getElementById('val-prot').textContent=media_prot+' g';
+  document.getElementById('val-hc').textContent=media_hc+' g';
+  document.getElementById('val-gras').textContent=media_gras+' g';
+
   const maxK=2500;
-  document.getElementById('bar-kcal').style.width=Math.min(100,Math.round(kcal/d/maxK*100))+'%';
-  document.getElementById('bar-prot').style.width=Math.min(100,Math.round(prot/d/200*100))+'%';
-  document.getElementById('bar-hc').style.width=Math.min(100,Math.round(hc/d/300*100))+'%';
-  document.getElementById('bar-gras').style.width=Math.min(100,Math.round(gras/d/80*100))+'%';
+  document.getElementById('bar-kcal').style.width=Math.min(100,Math.round(media_kcal/maxK*100))+'%';
+  document.getElementById('bar-prot').style.width=Math.min(100,Math.round(media_prot/200*100))+'%';
+  document.getElementById('bar-hc').style.width=Math.min(100,Math.round(media_hc/300*100))+'%';
+  document.getElementById('bar-gras').style.width=Math.min(100,Math.round(media_gras/80*100))+'%';
+
+  // ── NUTRIENTES CRÍTICOS ──
+  actualitzar_nutrientes_criticos(media_kcal, media_prot, media_hc, media_gras);
+}
+
+function calcular_gmt_pacient(p) {
+  // Mifflin-St. Jeor: retorna {gmb, gmt, objectiu_kcal} o null si falten dades
+  const pes = p.pes_actual || (p.evolucio && p.evolucio.length ? p.evolucio[p.evolucio.length-1].pes : null);
+  const alt = p.alcada;
+  const naix = p.naix;
+  const sexe = p.sexe; // 'home' o 'dona'
+  if(!pes || !alt || !naix || !sexe) return null;
+
+  const edat = calcular_edat(naix);
+  if(!edat) return null;
+
+  let gmb;
+  if(sexe === 'home') {
+    gmb = 10*pes + 6.25*alt - 5*edat + 5;
+  } else {
+    gmb = 10*pes + 6.25*alt - 5*edat - 161;
+  }
+
+  // Factor activitat física
+  const FA_MAP = {
+    'Muy ligera': sexe==='home'?1.3:1.3,
+    'Ligera':     sexe==='home'?1.6:1.5,
+    'Moderada':   sexe==='home'?1.7:1.6,
+    'Intensa':    sexe==='home'?2.1:1.9,
+    'Muy intensa':sexe==='home'?2.4:2.2,
+  };
+  const act = p.cuestionari?.activitat || p.activitat_fisica || p.activitat || 'Ligera';
+  const fa = FA_MAP[act] || 1.5;
+  const gmt = Math.round(gmb * fa);
+
+  // Restricció calòrica per edat (OMS)
+  let reduccio_pct = 0;
+  if(edat >= 40 && edat < 50) reduccio_pct = 5;
+  else if(edat >= 50 && edat < 60) reduccio_pct = 10;
+  else if(edat >= 60 && edat < 70) reduccio_pct = 20;
+  else if(edat >= 70) reduccio_pct = 30;
+
+  let objectiu_kcal;
+  if(gmt >= 2000) {
+    objectiu_kcal = Math.round((gmt - 500) * (1 - reduccio_pct/100));
+  } else {
+    objectiu_kcal = Math.round(gmt * 0.75 * (1 - reduccio_pct/100));
+  }
+
+  return { gmb: Math.round(gmb), gmt, objectiu_kcal, fa, act };
+}
+
+function fmt_desv(val, ref, invertit) {
+  // invertit=true quan val>ref és dolent (p.ex. sodio, colesterol)
+  if(val === null || val === undefined || isNaN(val)) return {txt:'—', color:'var(--text-suau)'};
+  if(ref === null || ref === undefined) return {txt:'—', color:'var(--text-suau)'};
+  const pct = Math.round((val - ref) / ref * 100);
+  const positiu = pct >= 0;
+  let color;
+  if(invertit) {
+    color = positiu ? 'var(--rosa)' : 'var(--verde)';
+  } else {
+    color = positiu ? 'var(--verde)' : 'var(--rosa)';
+  }
+  return {txt: (pct>=0?'+':'')+pct+'%', color};
+}
+
+function actualitzar_nutrientes_criticos(media_kcal, media_prot, media_hc, media_gras) {
+  const p = pacient_actiu;
+
+  // ─ Kcal amb desviació respecte objectiu GMT
+  const gmt_info = calcular_gmt_pacient(p);
+  const obj_kcal = gmt_info ? gmt_info.objectiu_kcal : null;
+
+  document.getElementById('nc-kcal-val').textContent = media_kcal || '—';
+  if(obj_kcal && media_kcal) {
+    const desv = fmt_desv(media_kcal, obj_kcal, false);
+    document.getElementById('nc-kcal-desv').textContent = desv.txt + ' Desv.';
+    document.getElementById('nc-kcal-desv').style.color = desv.color;
+  } else {
+    document.getElementById('nc-kcal-desv').textContent = obj_kcal ? 'Obj: '+obj_kcal+' kcal' : 'Sin obj.';
+    document.getElementById('nc-kcal-desv').style.color = 'var(--text-suau)';
+  }
+
+  // ─ Sodio (sense dades al catàleg → —)
+  document.getElementById('nc-sodio-val').textContent = '—';
+  document.getElementById('nc-sodio-desv').textContent = '—';
+  document.getElementById('nc-sodio-desv').style.color = 'var(--text-suau)';
+
+  // ─ Colesterol (sense dades → —)
+  document.getElementById('nc-colest-val').textContent = '—';
+  document.getElementById('nc-colest-desv').textContent = '—';
+  document.getElementById('nc-colest-desv').style.color = 'var(--text-suau)';
+
+  // ─ Prot/kg Pes Ideal
+  const pes = p.pes_actual || (p.evolucio && p.evolucio.length ? p.evolucio[p.evolucio.length-1].pes : null);
+  const alt_cm = p.alcada;
+  if(media_prot && alt_cm) {
+    const alt_m = alt_cm / 100;
+    const pes_ideal = 22 * alt_m * alt_m;
+    const ratio = (media_prot / pes_ideal).toFixed(2);
+    document.getElementById('nc-prot-kg-val').textContent = ratio;
+    // Referència 0.8–1.0 normal; verd si ≥0.8, vermell si <0.8
+    const color_prot = parseFloat(ratio) >= 0.8 ? 'var(--verde)' : 'var(--rosa)';
+    const ref_txt = parseFloat(ratio) >= 0.8 ? '✓' : '↓ baix';
+    document.getElementById('nc-prot-kg-desv').textContent = ref_txt;
+    document.getElementById('nc-prot-kg-desv').style.color = color_prot;
+  } else {
+    document.getElementById('nc-prot-kg-val').textContent = media_prot ? media_prot+'g' : '—';
+    document.getElementById('nc-prot-kg-desv').textContent = '—';
+    document.getElementById('nc-prot-kg-desv').style.color = 'var(--text-suau)';
+  }
+
+  // ─ AGS (sense dades → —)
+  document.getElementById('nc-ags-val').textContent = '—';
+  document.getElementById('nc-ags-desv').textContent = '—';
+  document.getElementById('nc-ags-desv').style.color = 'var(--text-suau)';
+
+  // ─ HC ≥100g/dia
+  if(media_hc) {
+    document.getElementById('nc-hc-val').textContent = media_hc + ' g';
+    if(media_hc >= 100) {
+      document.getElementById('nc-hc-desv').textContent = 'OK';
+      document.getElementById('nc-hc-desv').style.color = 'var(--verde)';
+      document.getElementById('nc-hc-desv').style.fontWeight = '700';
+    } else {
+      document.getElementById('nc-hc-desv').textContent = 'NO OK';
+      document.getElementById('nc-hc-desv').style.color = 'var(--rosa)';
+      document.getElementById('nc-hc-desv').style.fontWeight = '700';
+    }
+  } else {
+    document.getElementById('nc-hc-val').textContent = '—';
+    document.getElementById('nc-hc-desv').textContent = '—';
+    document.getElementById('nc-hc-desv').style.color = 'var(--text-suau)';
+  }
+
+  // ─ Etanol (sense dades → —)
+  document.getElementById('nc-etanol-val').textContent = '—';
+  document.getElementById('nc-etanol-desv').textContent = '—';
+  document.getElementById('nc-etanol-desv').style.color = 'var(--text-suau)';
 }
 
 function copiar_setmana_anterior(){
@@ -2150,6 +2483,17 @@ async function importar_tanita_nou(input) {
     pacient_actiu.evolucio.unshift({ data: tanita.data, tanita, creat: new Date().toISOString() });
     // Ordenar per data desc
     pacient_actiu.evolucio.sort((a,b) => new Date(b.data.split('/').reverse().join('-')) - new Date(a.data.split('/').reverse().join('-')));
+
+    // Sincronitzar pes_actual amb la mesura més recent
+    if(tanita.pes) {
+      if(pacient_actiu.pes_actual && pacient_actiu.pes_actual !== tanita.pes) {
+        if(!pacient_actiu.historial_pes) pacient_actiu.historial_pes = [];
+        pacient_actiu.historial_pes.push({ data: new Date().toISOString().split('T')[0], pes: pacient_actiu.pes_actual });
+        if(pacient_actiu.historial_pes.length > 20) pacient_actiu.historial_pes = pacient_actiu.historial_pes.slice(-20);
+      }
+      pacient_actiu.pes_actual = tanita.pes;
+    }
+
     guardar_pacients();
     renderitzar_evolucio();
     mostrar_toast(`✅ Medición del ${tanita.data} guardada · Peso: ${tanita.pes} kg`, 'ok');
@@ -3183,7 +3527,7 @@ const _canviar_tab_orig2 = canviar_tab;
 canviar_tab = function(id, btn) {
   _canviar_tab_orig2(id, btn);
   if (id === 'evolucio') renderitzar_evolucio();
-  if (id === 'ficha') setTimeout(carregar_observacions, 50);
+  if (id === 'ficha') { setTimeout(carregar_observacions, 50); setTimeout(carregar_antropometria, 60); }
   if (id === 'planificacio') setTimeout(carregar_objectius_planificacio, 50);
 };
 
