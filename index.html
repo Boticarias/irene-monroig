@@ -1561,6 +1561,8 @@ function titol_setmana(offset){
 function canviar_setmana(dir){ setmana_offset+=dir; renderitzar_setmana(); }
 
 function renderitzar_setmana(){
+  // Banner aversions
+  setTimeout(actualitzar_banner_aversions, 50);
   document.getElementById('setmana-titol').textContent=titol_setmana(setmana_offset);
   const clau=clau_setmana(setmana_offset);
   if(!pacient_actiu.planificacions[clau]) pacient_actiu.planificacions[clau]={};
@@ -4643,55 +4645,64 @@ function confirmar_borrar_tots_pacients() {
 
 <!-- ══ MODAL CUESTIONARI INICIAL ══ -->
 <div class="modal-overlay" id="modal-cuestionari">
-  <div class="modal" style="max-width:680px;width:95%">
-    <div class="modal-header">
+  <div class="modal" style="max-width:860px;width:96%">
+    <div class="modal-header" style="background:linear-gradient(135deg,#2D6A4F,#40916C);padding:18px 28px;border-radius:20px 20px 0 0;">
       <div>
-        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.3rem">Cuestionario inicial</h3>
-        <p id="cues-header-pac" style="font-size:0.78rem;color:var(--text-suau)">—</p>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:white;">Cuestionario inicial</h3>
+        <p id="cues-header-pac" style="font-size:0.78rem;color:rgba(255,255,255,0.75);">—</p>
       </div>
-      <button class="modal-close" onclick="tancar_cuestionari()">✕</button>
+      <button class="modal-close" onclick="tancar_cuestionari()" style="color:white;opacity:0.8;">✕</button>
     </div>
-    <div class="modal-body" style="max-height:70vh;overflow-y:auto;padding:24px 28px">
+    <div class="modal-body" style="max-height:78vh;overflow-y:auto;padding:24px 28px">
 
       <!-- Progress -->
       <div class="cues-progress" id="cues-progress"></div>
 
-      <!-- PASO 1: Motivo, peso, estado fisiológico -->
+      <!-- PASO 1 -->
       <div class="cues-step actiu" id="cues-step-1">
         <div class="cues-titol">Consulta y objetivos</div>
         <div class="cues-subtitol">Paso 1 de 4</div>
-
-        <label class="cues-label">1. Motivo de la visita</label>
-        <textarea class="cues-textarea" id="cq-motiu" placeholder="Describe el motivo de la consulta..."></textarea>
-
-        <label class="cues-label" style="margin-top:14px">2. Objetivo respecto al peso</label>
-        <div class="cues-opcions" id="cq-pes-opcions">
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pes')">Reducir grasa</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pes')">Mantener peso</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pes')">Aumentar peso</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <label class="cues-label">1. Motivo de la visita</label>
+            <textarea class="cues-textarea" id="cq-motiu" placeholder="Describe el motivo de la consulta..." style="min-height:90px;"></textarea>
+          </div>
+          <div>
+            <label class="cues-label">2. Objetivo respecto al peso</label>
+            <div class="cues-opcions" id="cq-pes-opcions" style="flex-direction:column;gap:6px;">
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pes')" style="justify-content:flex-start;padding:10px 16px;">📉 Reducir grasa</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pes')" style="justify-content:flex-start;padding:10px 16px;">⚖️ Mantener peso</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pes')" style="justify-content:flex-start;padding:10px 16px;">📈 Aumentar peso</button>
+            </div>
+            <input type="hidden" id="cq-pes">
+          </div>
         </div>
-        <input type="hidden" id="cq-pes">
-
         <!-- P3: Estado fisiológico — solo visible si mujer -->
-        <div id="cq-estat-bloc" style="display:none;">
-          <label class="cues-label" style="margin-top:14px">3. Estado fisiológico</label>
-          <div class="cues-opcions" id="cq-estat-opcions">
-            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Ninguno</button>
-            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Embarazo</button>
-            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Lactancia</button>
-            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Menopausia</button>
-            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')">Posmenopausia</button>
+        <div id="cq-estat-bloc" style="display:none;margin-top:16px;background:var(--verde-suau);border-radius:12px;padding:14px 16px;border:1px solid var(--verde-clar);">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div>
+              <label class="cues-label" style="color:var(--verde);">3. Estado fisiológico</label>
+              <div class="cues-opcions" id="cq-estat-opcions" style="flex-direction:column;gap:5px;">
+                <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')" style="justify-content:flex-start;padding:8px 14px;font-size:0.83rem;">Ninguno</button>
+                <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')" style="justify-content:flex-start;padding:8px 14px;font-size:0.83rem;">🤰 Embarazo</button>
+                <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')" style="justify-content:flex-start;padding:8px 14px;font-size:0.83rem;">🍼 Lactancia</button>
+                <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')" style="justify-content:flex-start;padding:8px 14px;font-size:0.83rem;">Menopausia</button>
+                <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estat')" style="justify-content:flex-start;padding:8px 14px;font-size:0.83rem;">Posmenopausia</button>
+              </div>
+              <input type="hidden" id="cq-estat">
+            </div>
+            <div>
+              <label class="cues-label" style="color:var(--verde);">Menstruación</label>
+              <div class="cues-opcions" id="cq-menstruacio-opcions" style="flex-direction:column;gap:5px;">
+                <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="justify-content:flex-start;padding:8px 14px;font-size:0.83rem;">Regular</button>
+                <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="justify-content:flex-start;padding:8px 14px;font-size:0.83rem;">Irregular</button>
+                <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="justify-content:flex-start;padding:8px 14px;font-size:0.83rem;">Amenorrea</button>
+                <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="justify-content:flex-start;padding:8px 14px;font-size:0.83rem;">N/A</button>
+              </div>
+              <input type="hidden" id="cq-menstruacio">
+              <input class="cues-input" type="text" id="cq-menstruacio-text" placeholder="Observaciones..." style="margin-top:8px;">
+            </div>
           </div>
-          <input type="hidden" id="cq-estat">
-          <label class="cues-label" style="margin-top:10px">Menstruación</label>
-          <div class="cues-opcions" id="cq-menstruacio-opcions">
-            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="font-size:0.82rem;padding:6px 14px">Regular</button>
-            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="font-size:0.82rem;padding:6px 14px">Irregular</button>
-            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="font-size:0.82rem;padding:6px 14px">Amenorrea</button>
-            <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-menstruacio')" style="font-size:0.82rem;padding:6px 14px">N/A</button>
-          </div>
-          <input type="hidden" id="cq-menstruacio">
-          <input class="cues-input" type="text" id="cq-menstruacio-text" placeholder="Observaciones sobre la menstruación..." style="margin-top:6px;">
         </div>
       </div>
 
@@ -4699,58 +4710,66 @@ function confirmar_borrar_tots_pacients() {
       <div class="cues-step" id="cues-step-2">
         <div class="cues-titol">Patologías y síntomas</div>
         <div class="cues-subtitol">Paso 2 de 4</div>
-        <label class="cues-label">4. Selecciona las patologías o tipos de dieta aplicables</label>
+        <label class="cues-label">3. Selecciona las patologías o tipos de dieta aplicables</label>
         <input type="text" class="cues-cerca-path" id="cues-cerca-patologies" placeholder="🔍 Filtrar patologías..." oninput="filtrar_patologies()">
         <div class="cues-check-grid" id="cues-patologies-grid"></div>
       </div>
 
-      <!-- PASO 3: Fármacos, alimentación, hábitos -->
+      <!-- PASO 3: Fármacos, alimentación, actividad -->
       <div class="cues-step" id="cues-step-3">
         <div class="cues-titol">Alimentación y hábitos</div>
         <div class="cues-subtitol">Paso 3 de 4</div>
 
-        <label class="cues-label">5. Fármacos</label>
-        <div style="position:relative;margin-bottom:6px;">
-          <input type="text" id="cq-farmacos-cerca" class="cues-input" placeholder="🔍 Buscar fármaco..." oninput="filtrar_farmacos()" style="margin-bottom:4px;">
-          <div id="cq-farmacos-dropdown" style="display:none;position:absolute;z-index:100;background:white;border:1.5px solid var(--verde-clar);border-radius:10px;max-height:180px;overflow-y:auto;width:100%;box-shadow:0 4px 16px rgba(0,0,0,0.1);"></div>
-        </div>
-        <div id="cq-farmacos-seleccionats" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;min-height:28px;"></div>
-        <input type="text" id="cq-farmacos-altres" class="cues-input" placeholder="Otros fármacos no listados..." style="margin-bottom:0;">
-        <input type="hidden" id="cq-farmacos">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <!-- Columna esquerra -->
+          <div>
+            <label class="cues-label">4. Fármacos</label>
+            <div style="position:relative;margin-bottom:6px;">
+              <input type="text" id="cq-farmacos-cerca" class="cues-input" placeholder="🔍 Buscar fármaco..." oninput="filtrar_farmacos()" style="margin-bottom:4px;">
+              <div id="cq-farmacos-dropdown" style="display:none;position:absolute;z-index:100;background:white;border:1.5px solid var(--verde-clar);border-radius:10px;max-height:160px;overflow-y:auto;width:100%;box-shadow:0 4px 16px rgba(0,0,0,0.1);"></div>
+            </div>
+            <div id="cq-farmacos-seleccionats" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px;min-height:24px;"></div>
+            <input type="text" id="cq-farmacos-altres" class="cues-input" placeholder="Otros fármacos no listados..." style="margin-bottom:0;">
+            <input type="hidden" id="cq-farmacos">
 
-        <label class="cues-label" style="margin-top:14px">6. Estilo de alimentación</label>
-        <div class="cues-opcions" id="cq-estil-opcions" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🛒 Omnívoro</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🥚 Ovolacteo-vegetariana</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🥦 Vegana</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🦣 Paleodieta</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🥗 Semi-vegetariana</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🧀 Lacteo-vegetariana</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🐟 Pesco-vegetariana</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🥚 Ovo-vegetariana</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🌿 FODMAP (fase 3)</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🍎 Real Food</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🦠 Inmunonutrición</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🍞 Dieta Low Carb</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="flex-direction:column;padding:10px 6px;font-size:0.78rem;text-align:center;line-height:1.2;">🐷 Dieta económica</button>
-        </div>
-        <input type="hidden" id="cq-estil">
-        <input class="cues-input" type="text" id="cq-estil-altre" placeholder="Otro estilo de alimentación..." style="margin-top:8px;">
+            <label class="cues-label" style="margin-top:14px">5. Aversiones, alergias e intolerancias</label>
+            <textarea class="cues-textarea" id="cq-aversions" placeholder="Alimentos que no tolera, alergias, intolerancias..." style="min-height:80px;"></textarea>
 
-        <label class="cues-label" style="margin-top:14px">7. Aversiones, alergias e intolerancias</label>
-        <textarea class="cues-textarea" id="cq-aversions" placeholder="Indica alimentos que no tolera, no le gustan o a los que es alérgico/intolerante..."></textarea>
+            <label class="cues-label" style="margin-top:14px">6. Actividad física diaria</label>
+            <div class="cues-opcions" id="cq-activitat-opcions" style="flex-wrap:wrap;gap:6px;">
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')" style="font-size:0.8rem;padding:6px 12px;">Ninguna</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')" style="font-size:0.8rem;padding:6px 12px;">Muy ligera</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')" style="font-size:0.8rem;padding:6px 12px;">Ligera</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')" style="font-size:0.8rem;padding:6px 12px;">Moderada</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')" style="font-size:0.8rem;padding:6px 12px;">Intensa</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')" style="font-size:0.8rem;padding:6px 12px;">Muy intensa</button>
+            </div>
+            <input type="hidden" id="cq-activitat">
+            <input class="cues-input" type="text" id="cq-activitat-text" placeholder="¿Cuál? Ej: natación, gym, senderismo..." style="margin-top:6px;">
+          </div>
 
-        <label class="cues-label" style="margin-top:14px">8. Actividad física diaria</label>
-        <div class="cues-opcions" id="cq-activitat-opcions">
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')">Ninguna</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')">Muy ligera</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')">Ligera</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')">Moderada</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')">Intensa</button>
-          <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-activitat')">Muy intensa</button>
+          <!-- Columna dreta: Estil d'alimentació -->
+          <div>
+            <label class="cues-label">7. Estilo de alimentación</label>
+            <div id="cq-estil-opcions" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="padding:8px 6px;font-size:0.76rem;text-align:center;justify-content:center;">🛒 Omnívoro</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="padding:8px 6px;font-size:0.76rem;text-align:center;justify-content:center;">🥚 Ovolacteo-veg.</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="padding:8px 6px;font-size:0.76rem;text-align:center;justify-content:center;">🥦 Vegana</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="padding:8px 6px;font-size:0.76rem;text-align:center;justify-content:center;">🦣 Paleodieta</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="padding:8px 6px;font-size:0.76rem;text-align:center;justify-content:center;">🥗 Semi-vegetariana</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="padding:8px 6px;font-size:0.76rem;text-align:center;justify-content:center;">🧀 Lacteo-veg.</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="padding:8px 6px;font-size:0.76rem;text-align:center;justify-content:center;">🐟 Pesco-veg.</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="padding:8px 6px;font-size:0.76rem;text-align:center;justify-content:center;">🥚 Ovo-vegetariana</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="padding:8px 6px;font-size:0.76rem;text-align:center;justify-content:center;">🌿 FODMAP (f.3)</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="padding:8px 6px;font-size:0.76rem;text-align:center;justify-content:center;">🍎 Real Food</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="padding:8px 6px;font-size:0.76rem;text-align:center;justify-content:center;">🦠 Inmunonutrición</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="padding:8px 6px;font-size:0.76rem;text-align:center;justify-content:center;">🍞 Low Carb</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-estil')" style="padding:8px 6px;font-size:0.76rem;text-align:center;justify-content:center;">🐷 Dieta económica</button>
+            </div>
+            <input type="hidden" id="cq-estil">
+            <input class="cues-input" type="text" id="cq-estil-altre" placeholder="Otro estilo..." style="margin-top:8px;">
+          </div>
         </div>
-        <input type="hidden" id="cq-activitat">
-        <input class="cues-input" type="text" id="cq-activitat-text" placeholder="¿Cuál es la actividad? Ej: natación, senderismo, gym..." style="margin-top:6px;">
       </div>
 
       <!-- PASO 4: Datos complementarios -->
@@ -4758,84 +4777,91 @@ function confirmar_borrar_tots_pacients() {
         <div class="cues-titol">Datos complementarios</div>
         <div class="cues-subtitol">Paso 4 de 4</div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
           <div>
-            <label class="cues-label">Tipo de trabajo</label>
+            <label class="cues-label">8. Tipo de trabajo</label>
             <input class="cues-input" type="text" id="cq-treball" placeholder="Sedentario, activo...">
           </div>
           <div>
-            <label class="cues-label">Agua al día (L)</label>
+            <label class="cues-label">9. Agua al día (L)</label>
             <input class="cues-input" type="number" id="cq-aigua" placeholder="1.5" step="0.1" min="0" max="10">
           </div>
           <div>
-            <label class="cues-label">Consumo de alcohol</label>
-            <input class="cues-input" type="text" id="cq-alcohol" placeholder="Nunca, ocasional, diario...">
-          </div>
-          <div>
-            <label class="cues-label">Consumo de tabaco</label>
-            <input class="cues-input" type="text" id="cq-tabac" placeholder="No fumador, ex-fumador...">
-          </div>
-          <div>
-            <label class="cues-label">Horas de descanso</label>
+            <label class="cues-label">10. Horas de descanso</label>
             <input class="cues-input" type="text" id="cq-descans" placeholder="Ej: 7-8h, duerme mal...">
           </div>
           <div>
-            <label class="cues-label">Grado de motivación</label>
+            <label class="cues-label">11. Consumo de alcohol</label>
+            <input class="cues-input" type="text" id="cq-alcohol" placeholder="Nunca, ocasional, diario...">
+          </div>
+          <div>
+            <label class="cues-label">12. Consumo de tabaco</label>
+            <input class="cues-input" type="text" id="cq-tabac" placeholder="No fumador, ex-fumador...">
+          </div>
+          <div>
+            <label class="cues-label">13. Grado de motivación</label>
             <div class="cues-opcions" style="margin-bottom:0" id="cq-motivacio-opcions">
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-motivacio')" style="font-size:0.75rem;padding:5px 12px">Bajo</button>
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-motivacio')" style="font-size:0.75rem;padding:5px 12px">Medio</button>
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-motivacio')" style="font-size:0.75rem;padding:5px 12px">Alto</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-motivacio')" style="font-size:0.75rem;padding:5px 10px">Bajo</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-motivacio')" style="font-size:0.75rem;padding:5px 10px">Medio</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-motivacio')" style="font-size:0.75rem;padding:5px 10px">Alto</button>
             </div>
             <input type="hidden" id="cq-motivacio">
           </div>
           <div>
-            <label class="cues-label">Grado de apoyo familiar</label>
+            <label class="cues-label">14. Apoyo familiar</label>
             <div class="cues-opcions" style="margin-bottom:0" id="cq-suport-opcions">
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-suport')" style="font-size:0.75rem;padding:5px 12px">Bajo</button>
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-suport')" style="font-size:0.75rem;padding:5px 12px">Medio</button>
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-suport')" style="font-size:0.75rem;padding:5px 12px">Alto</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-suport')" style="font-size:0.75rem;padding:5px 10px">Bajo</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-suport')" style="font-size:0.75rem;padding:5px 10px">Medio</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-suport')" style="font-size:0.75rem;padding:5px 10px">Alto</button>
             </div>
             <input type="hidden" id="cq-suport">
           </div>
           <div>
             <label class="cues-label">¿Come deprisa?</label>
             <div class="cues-opcions" style="margin-bottom:0" id="cq-depressa-opcions">
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-depressa')" style="font-size:0.75rem;padding:5px 12px">Sí</button>
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-depressa')" style="font-size:0.75rem;padding:5px 12px">No</button>
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-depressa')" style="font-size:0.75rem;padding:5px 12px">A veces</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-depressa')" style="font-size:0.75rem;padding:5px 10px">Sí</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-depressa')" style="font-size:0.75rem;padding:5px 10px">No</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-depressa')" style="font-size:0.75rem;padding:5px 10px">A veces</button>
             </div>
             <input type="hidden" id="cq-depressa">
           </div>
           <div>
             <label class="cues-label">¿Pica entre horas?</label>
             <div class="cues-opcions" style="margin-bottom:0" id="cq-pica-opcions">
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pica')" style="font-size:0.75rem;padding:5px 12px">Sí</button>
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pica')" style="font-size:0.75rem;padding:5px 12px">No</button>
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pica')" style="font-size:0.75rem;padding:5px 12px">A veces</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pica')" style="font-size:0.75rem;padding:5px 10px">Sí</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pica')" style="font-size:0.75rem;padding:5px 10px">No</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-pica')" style="font-size:0.75rem;padding:5px 10px">A veces</button>
             </div>
             <input type="hidden" id="cq-pica">
           </div>
           <div>
-            <label class="cues-label">¿Ya recorta cantidades?</label>
+            <label class="cues-label">¿Recorta cantidades?</label>
             <div class="cues-opcions" style="margin-bottom:0" id="cq-recorta-opcions">
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-recorta')" style="font-size:0.75rem;padding:5px 12px">Sí</button>
-              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-recorta')" style="font-size:0.75rem;padding:5px 12px">No</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-recorta')" style="font-size:0.75rem;padding:5px 10px">Sí</button>
+              <button class="cues-opcio" onclick="toggle_opcio_unica(this,'cq-recorta')" style="font-size:0.75rem;padding:5px 10px">No</button>
             </div>
             <input type="hidden" id="cq-recorta">
           </div>
         </div>
 
-        <label class="cues-label" style="margin-top:14px">Analíticas previas</label>
-        <textarea class="cues-textarea" id="cq-analitica" placeholder="Resultados relevantes de analíticas anteriores..."></textarea>
-
-        <label class="cues-label" style="margin-top:10px">Sintomatología digestiva</label>
-        <textarea class="cues-textarea" id="cq-digestiu" placeholder="Gases, hinchazón, reflujo, estreñimiento..."></textarea>
-
-        <label class="cues-label" style="margin-top:10px">Trastornos de la alimentación</label>
-        <textarea class="cues-textarea" id="cq-trastorns" placeholder="Indica si hay o ha habido algún trastorno..."></textarea>
-
-        <label class="cues-label" style="margin-top:10px">Antecedentes familiares</label>
-        <textarea class="cues-textarea" id="cq-antecedents" placeholder="Enfermedades relevantes en la familia..."></textarea>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
+          <div>
+            <label class="cues-label">15. Analíticas previas</label>
+            <textarea class="cues-textarea" id="cq-analitica" placeholder="Resultados relevantes..." style="min-height:70px;"></textarea>
+          </div>
+          <div>
+            <label class="cues-label">16. Sintomatología digestiva</label>
+            <textarea class="cues-textarea" id="cq-digestiu" placeholder="Gases, hinchazón, reflujo, estreñimiento..." style="min-height:70px;"></textarea>
+          </div>
+          <div>
+            <label class="cues-label">17. Trastornos de la alimentación</label>
+            <textarea class="cues-textarea" id="cq-trastorns" placeholder="Indica si hay o ha habido algún trastorno..." style="min-height:70px;"></textarea>
+          </div>
+          <div>
+            <label class="cues-label">18. Antecedentes familiares</label>
+            <textarea class="cues-textarea" id="cq-antecedents" placeholder="Enfermedades relevantes en la familia..." style="min-height:70px;"></textarea>
+          </div>
+        </div>
       </div>
 
     </div><!-- end modal-body -->
