@@ -975,6 +975,32 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         <label class="form-label">Receta <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(opcional — saldrá en el PDF)</span></label>
         <textarea class="form-input" id="plat-receta" placeholder="Ej: 1. Asar la pechuga a la plancha. 2. Saltear los champiñones..." style="min-height:80px;resize:vertical;font-family:inherit;font-size:0.85rem;"></textarea>
       </div>
+      <!-- Nutrients crítics -->
+      <div style="margin-top:10px;padding:10px 12px;background:var(--verde-suau);border-radius:10px;border:1px solid var(--verde-clar);">
+        <div style="font-size:0.68rem;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">🔬 Nutrientes críticos (ración M)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="form-grup" style="margin:0">
+            <label class="form-label">🧂 Sodio (mg)</label>
+            <input class="form-input" type="number" id="plat-sodio" placeholder="0" style="margin:0">
+          </div>
+          <div class="form-grup" style="margin:0">
+            <label class="form-label">🧈 Colesterol (mg)</label>
+            <input class="form-input" type="number" id="plat-colesterol" placeholder="0" style="margin:0">
+          </div>
+          <div class="form-grup" style="margin:0">
+            <label class="form-label">🫒 AGS (g)</label>
+            <input class="form-input" type="number" id="plat-ags" placeholder="0" style="margin:0">
+          </div>
+          <div class="form-grup" style="margin:0">
+            <label class="form-label">🍷 Etanol (g)</label>
+            <input class="form-input" type="number" id="plat-etanol" placeholder="0" style="margin:0">
+          </div>
+        </div>
+      </div>
+      <div class="form-grup" style="margin-top:8px;">
+        <label class="form-label">Observaciones <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(notas internas)</span></label>
+        <textarea class="form-input" id="plat-observaciones" placeholder="Pesos de referencia, equivalencias..." style="min-height:50px;resize:vertical;font-family:inherit;font-size:0.85rem;"></textarea>
+      </div>
       <div class="form-grup" style="margin-top:8px;">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.85rem;color:var(--text);">
           <input type="checkbox" id="plat-guardar-cataleg" style="accent-color:var(--verde);width:16px;height:16px;" checked>
@@ -1755,6 +1781,11 @@ function obrir_modal_plat(mi,di){
   document.getElementById('plat-gras').value='';
   document.getElementById('plat-ingredientes').value='';
   document.getElementById('plat-receta').value='';
+  document.getElementById('plat-observaciones').value='';
+  document.getElementById('plat-sodio').value='';
+  document.getElementById('plat-colesterol').value='';
+  document.getElementById('plat-ags').value='';
+  document.getElementById('plat-etanol').value='';
   document.getElementById('plat-guardar-cataleg').checked=true;
   document.getElementById('plats-resultats').style.display='none';
   const bc=document.getElementById('btn-copiar-setmana'); if(bc) bc.style.display='none';
@@ -1883,6 +1914,11 @@ function aplicar_talla_plat(info, talla) {
   document.getElementById('plat-prot').value = info['prot_'+talla] || info.prot || '';
   document.getElementById('plat-hc').value   = info['hc_'+talla]   || info.hc   || '';
   document.getElementById('plat-gras').value = info['gras_'+talla] || info.gras || '';
+  document.getElementById('plat-sodio').value = info['sodio_'+talla] || info.sodio || '';
+  document.getElementById('plat-colesterol').value = info['colesterol_'+talla] || info.colesterol || '';
+  document.getElementById('plat-ags').value = info['ags_'+talla] || info.ags || '';
+  document.getElementById('plat-etanol').value = info['etanol_'+talla] || info.etanol || '';
+  document.getElementById('plat-observaciones').value = info.observaciones || '';
 }
 
 function canviar_talla(talla) {
@@ -1904,6 +1940,11 @@ function guardar_plat(copiar_setmana=false){
     gras:parseFloat(document.getElementById('plat-gras').value)||0,
     ingredientes: ingredientes_text || null,
     receta: receta_text || null,
+    sodio: parseFloat(document.getElementById('plat-sodio').value)||0,
+    colesterol: parseFloat(document.getElementById('plat-colesterol').value)||0,
+    ags: parseFloat(document.getElementById('plat-ags').value)||0,
+    etanol: parseFloat(document.getElementById('plat-etanol').value)||0,
+    observaciones: document.getElementById('plat-observaciones').value.trim()||null,
     propio: true,
   };
   // Guardar al catàleg si checkbox marcat
@@ -1915,6 +1956,9 @@ function guardar_plat(copiar_setmana=false){
       kcal: plat.kcal, prot: plat.prot, hc: plat.hc, gras: plat.gras,
       ingredientes: ingredientes_text || '',
       receta: receta_text || '',
+      sodio: plat.sodio||0, colesterol: plat.colesterol||0, ags: plat.ags||0, etanol: plat.etanol||0,
+      sodio_M: plat.sodio||0, colesterol_M: plat.colesterol||0, ags_M: plat.ags||0, etanol_M: plat.etanol||0,
+      observaciones: plat.observaciones||'',
       alergenos: [], dificultad: '', propio: true,
     };
     if (idx >= 0) { cataleg_plats[idx] = { ...cataleg_plats[idx], ...plat_cat }; }
@@ -1982,6 +2026,13 @@ function obrir_modal_editar_plat(mi, di, plat_clau) {
   document.getElementById('plat-gras').value = plat.gras || '';
   document.getElementById('plat-ingredientes').value = Array.isArray(plat.ingredientes) ? plat.ingredientes.join(', ') : (plat.ingredientes||'');
   document.getElementById('plat-receta').value = plat.receta || '';
+  // Carregar nutrientes crítics: primer del plat, si no del catàleg
+  const _info_nc = obtenir_info_plat(plat.nom) || plat;
+  document.getElementById('plat-sodio').value = plat.sodio || _info_nc.sodio || _info_nc.sodio_M || '';
+  document.getElementById('plat-colesterol').value = plat.colesterol || _info_nc.colesterol || _info_nc.colesterol_M || '';
+  document.getElementById('plat-ags').value = plat.ags || _info_nc.ags || _info_nc.ags_M || '';
+  document.getElementById('plat-etanol').value = plat.etanol || _info_nc.etanol || _info_nc.etanol_M || '';
+  document.getElementById('plat-observaciones').value = plat.observaciones || _info_nc.observaciones || '';
   document.getElementById('plat-guardar-cataleg').checked = false;
   document.getElementById('plats-resultats').style.display = 'none';
   document.getElementById('cerca-plat-input').value = '';
