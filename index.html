@@ -1505,9 +1505,9 @@ function renderitzar_setmana(){
 }
 
 function actualitzar_macros(planif){
-  let kcal=0,prot=0,hc=0,gras=0,dies_amb_dades=0;
+  let kcal=0,prot=0,hc=0,gras=0,ags=0,colesterol=0,sodio=0,etanol=0,dies_amb_dades=0;
   for(let di=0;di<7;di++){
-    let die_kcal=0,die_prot=0,die_hc=0,die_gras=0,te=false;
+    let die_kcal=0,die_prot=0,die_hc=0,die_gras=0,die_ags=0,die_col=0,die_sod=0,die_eta=0,te=false;
     Object.entries(planif).forEach(([k,pl])=>{
       if(!pl?.nom) return;
       const nmatch = k.match(/^(\d+)_(\d+)(?:_v\d+)?$/);
@@ -1519,17 +1519,27 @@ function actualitzar_macros(planif){
       const pp = info?.prot||pl.prot||0;
       const ph = info?.hc||pl.hc||0;
       const pg = info?.gras||pl.gras||0;
+      const pa = info?.ags||pl.ags||0;
+      const pc = info?.colesterol||pl.colesterol||0;
+      const ps = info?.sodio||pl.sodio||0;
+      const pe = info?.etanol||pl.etanol||0;
       if(pk||pp||ph||pg){te=true;}
       die_kcal+=pk; die_prot+=pp; die_hc+=ph; die_gras+=pg;
+      die_ags+=pa; die_col+=pc; die_sod+=ps; die_eta+=pe;
     });
     if(te) dies_amb_dades++;
     kcal+=die_kcal; prot+=die_prot; hc+=die_hc; gras+=die_gras;
+    ags+=die_ags; colesterol+=die_col; sodio+=die_sod; etanol+=die_eta;
   }
   const d=7;
   const media_kcal = Math.round(kcal/d);
   const media_prot = Math.round(prot/d);
   const media_hc   = Math.round(hc/d);
   const media_gras = Math.round(gras/d);
+  const media_ags  = Math.round(ags/d*10)/10;
+  const media_col  = Math.round(colesterol/d);
+  const media_sod  = Math.round(sodio/d);
+  const media_eta  = Math.round(etanol/d*10)/10;
 
   // Media diaria
   document.getElementById('val-kcal').textContent=media_kcal+' kcal';
@@ -1544,7 +1554,7 @@ function actualitzar_macros(planif){
   document.getElementById('bar-gras').style.width=Math.min(100,Math.round(media_gras/80*100))+'%';
 
   // ── NUTRIENTES CRÍTICOS ──
-  actualitzar_nutrientes_criticos(media_kcal, media_prot, media_hc, media_gras);
+  actualitzar_nutrientes_criticos(media_kcal, media_prot, media_hc, media_gras, media_ags, media_col, media_sod, media_eta);
 }
 
 function calcular_gmt_pacient(p) {
@@ -1609,7 +1619,7 @@ function fmt_desv(val, ref, invertit) {
   return {txt: (pct>=0?'+':'')+pct+'%', color};
 }
 
-function actualitzar_nutrientes_criticos(media_kcal, media_prot, media_hc, media_gras) {
+function actualitzar_nutrientes_criticos(media_kcal, media_prot, media_hc, media_gras, media_ags, media_col, media_sod, media_eta) {
   const p = pacient_actiu;
 
   // ─ Kcal amb desviació respecte objectiu GMT
@@ -1626,15 +1636,33 @@ function actualitzar_nutrientes_criticos(media_kcal, media_prot, media_hc, media
     document.getElementById('nc-kcal-desv').style.color = 'var(--text-suau)';
   }
 
-  // ─ Sodio (sense dades al catàleg → —)
-  document.getElementById('nc-sodio-val').textContent = '—';
-  document.getElementById('nc-sodio-desv').textContent = '—';
-  document.getElementById('nc-sodio-desv').style.color = 'var(--text-suau)';
+  // ─ Sodio (ref general < 2000 mg/dia)
+  if(media_sod > 0) {
+    const ref_sodio = 2000;
+    document.getElementById('nc-sodio-val').textContent = media_sod + ' mg';
+    const desv_sod = fmt_desv(media_sod, ref_sodio, true);
+    document.getElementById('nc-sodio-desv').textContent = desv_sod.txt;
+    document.getElementById('nc-sodio-desv').style.color = desv_sod.color;
+    document.getElementById('nc-sodio-desv').style.fontWeight = '600';
+  } else {
+    document.getElementById('nc-sodio-val').textContent = '—';
+    document.getElementById('nc-sodio-desv').textContent = '—';
+    document.getElementById('nc-sodio-desv').style.color = 'var(--text-suau)';
+  }
 
-  // ─ Colesterol (sense dades → —)
-  document.getElementById('nc-colest-val').textContent = '—';
-  document.getElementById('nc-colest-desv').textContent = '—';
-  document.getElementById('nc-colest-desv').style.color = 'var(--text-suau)';
+  // ─ Colesterol (ref general < 300 mg/dia)
+  if(media_col > 0) {
+    const ref_col = 300;
+    document.getElementById('nc-colest-val').textContent = media_col + ' mg';
+    const desv_col = fmt_desv(media_col, ref_col, true);
+    document.getElementById('nc-colest-desv').textContent = desv_col.txt;
+    document.getElementById('nc-colest-desv').style.color = desv_col.color;
+    document.getElementById('nc-colest-desv').style.fontWeight = '600';
+  } else {
+    document.getElementById('nc-colest-val').textContent = '—';
+    document.getElementById('nc-colest-desv').textContent = '—';
+    document.getElementById('nc-colest-desv').style.color = 'var(--text-suau)';
+  }
 
   // ─ Prot/kg Pes Ideal
   const pes = p.pes_actual || (p.evolucio && p.evolucio.length ? p.evolucio[p.evolucio.length-1].pes : null);
@@ -1655,10 +1683,19 @@ function actualitzar_nutrientes_criticos(media_kcal, media_prot, media_hc, media
     document.getElementById('nc-prot-kg-desv').style.color = 'var(--text-suau)';
   }
 
-  // ─ AGS (sense dades → —)
-  document.getElementById('nc-ags-val').textContent = '—';
-  document.getElementById('nc-ags-desv').textContent = '—';
-  document.getElementById('nc-ags-desv').style.color = 'var(--text-suau)';
+  // ─ AGS: % sobre kcal totals (ref < 10% kcal)
+  if(media_ags > 0 && media_kcal > 0) {
+    const pct_ags = Math.round(media_ags * 9 / media_kcal * 100 * 10) / 10;
+    document.getElementById('nc-ags-val').textContent = media_ags + ' g (' + pct_ags + '%)';
+    const ok_ags = pct_ags < 10;
+    document.getElementById('nc-ags-desv').textContent = ok_ags ? '✓ <10%' : '↑ >' + pct_ags + '%';
+    document.getElementById('nc-ags-desv').style.color = ok_ags ? 'var(--verde)' : 'var(--rosa)';
+    document.getElementById('nc-ags-desv').style.fontWeight = '600';
+  } else {
+    document.getElementById('nc-ags-val').textContent = '—';
+    document.getElementById('nc-ags-desv').textContent = '—';
+    document.getElementById('nc-ags-desv').style.color = 'var(--text-suau)';
+  }
 
   // ─ HC ≥100g/dia
   if(media_hc) {
@@ -1678,10 +1715,20 @@ function actualitzar_nutrientes_criticos(media_kcal, media_prot, media_hc, media
     document.getElementById('nc-hc-desv').style.color = 'var(--text-suau)';
   }
 
-  // ─ Etanol (sense dades → —)
-  document.getElementById('nc-etanol-val').textContent = '—';
-  document.getElementById('nc-etanol-desv').textContent = '—';
-  document.getElementById('nc-etanol-desv').style.color = 'var(--text-suau)';
+  // ─ Etanol (ref mujer < 20g/dia, home < 30g/dia)
+  if(media_eta > 0) {
+    const sexe = pacient_actiu?.sexe;
+    const ref_eta = sexe === 'home' ? 30 : 20;
+    document.getElementById('nc-etanol-val').textContent = media_eta + ' g';
+    const ok_eta = media_eta < ref_eta;
+    document.getElementById('nc-etanol-desv').textContent = ok_eta ? '✓ <' + ref_eta + 'g' : '↑ >' + ref_eta + 'g';
+    document.getElementById('nc-etanol-desv').style.color = ok_eta ? 'var(--verde)' : 'var(--rosa)';
+    document.getElementById('nc-etanol-desv').style.fontWeight = '600';
+  } else {
+    document.getElementById('nc-etanol-val').textContent = media_eta > 0 ? media_eta + ' g' : '—';
+    document.getElementById('nc-etanol-desv').textContent = '—';
+    document.getElementById('nc-etanol-desv').style.color = 'var(--text-suau)';
+  }
 }
 
 function copiar_setmana_anterior(){
