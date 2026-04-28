@@ -4052,6 +4052,28 @@ Pròxima visita: ${o.proxima_visita}`;
           <input class="form-input" type="number" id="edit-cat-gras" placeholder="0">
         </div>
       </div>
+      <!-- Nutrients crítics -->
+      <div style="margin-top:12px;padding:10px 12px;background:var(--verde-suau);border-radius:10px;border:1px solid var(--verde-clar);">
+        <div style="font-size:0.68rem;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">🔬 Nutrientes críticos (ración M)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="form-grup" style="margin:0">
+            <label class="form-label">🧂 Sodio (mg)</label>
+            <input class="form-input" type="number" id="edit-cat-sodio" placeholder="0" style="margin:0">
+          </div>
+          <div class="form-grup" style="margin:0">
+            <label class="form-label">🧈 Colesterol (mg)</label>
+            <input class="form-input" type="number" id="edit-cat-colesterol" placeholder="0" style="margin:0">
+          </div>
+          <div class="form-grup" style="margin:0">
+            <label class="form-label">🫒 AGS (g)</label>
+            <input class="form-input" type="number" id="edit-cat-ags" placeholder="0" style="margin:0">
+          </div>
+          <div class="form-grup" style="margin:0">
+            <label class="form-label">🍷 Etanol (g)</label>
+            <input class="form-input" type="number" id="edit-cat-etanol" placeholder="0" style="margin:0">
+          </div>
+        </div>
+      </div>
       <div class="form-grup" style="margin-top:10px;">
         <label class="form-label">Alérgenos <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(separados por coma)</span></label>
         <input class="form-input" type="text" id="edit-cat-alergenos" placeholder="Gluten, Lácteos, Huevos...">
@@ -4067,6 +4089,10 @@ Pròxima visita: ${o.proxima_visita}`;
       <div class="form-grup" style="margin-top:10px;">
         <label class="form-label">Receta <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(saldrá en el PDF)</span></label>
         <textarea class="form-input" id="edit-cat-receta" placeholder="Ej: 1. Asar a la plancha..." style="min-height:90px;resize:vertical;font-family:inherit;font-size:0.85rem;"></textarea>
+      </div>
+      <div class="form-grup" style="margin-top:10px;">
+        <label class="form-label">Observaciones <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(notas internas)</span></label>
+        <textarea class="form-input" id="edit-cat-observaciones" placeholder="Pesos de referencia, equivalencias..." style="min-height:60px;resize:vertical;font-family:inherit;font-size:0.85rem;"></textarea>
       </div>
       <div class="form-grup" style="margin-top:10px;">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.85rem;">
@@ -4176,6 +4202,11 @@ function editar_plat_cataleg(idx) {
   const ing = p.ingredientes;
   document.getElementById('edit-cat-ingredientes').value = Array.isArray(ing) ? ing.join(', ') : (ing || '');
   document.getElementById('edit-cat-receta').value = p.receta || '';
+  document.getElementById('edit-cat-sodio').value = p.sodio || p.sodio_M || '';
+  document.getElementById('edit-cat-colesterol').value = p.colesterol || p.colesterol_M || '';
+  document.getElementById('edit-cat-ags').value = p.ags || p.ags_M || '';
+  document.getElementById('edit-cat-etanol').value = p.etanol || p.etanol_M || '';
+  document.getElementById('edit-cat-observaciones').value = p.observaciones || '';
   document.getElementById('edit-cat-propio').checked = !!p.propio;
   document.getElementById('modal-editar-cataleg').classList.add('visible');
 }
@@ -4198,6 +4229,13 @@ function guardar_editar_cataleg() {
   p.dificultad = document.getElementById('edit-cat-dificultad').value.trim();
   p.ingredientes = document.getElementById('edit-cat-ingredientes').value.trim();
   p.receta     = document.getElementById('edit-cat-receta').value.trim();
+  p.observaciones = document.getElementById('edit-cat-observaciones').value.trim();
+  p.sodio      = parseFloat(document.getElementById('edit-cat-sodio').value) || 0;
+  p.colesterol = parseFloat(document.getElementById('edit-cat-colesterol').value) || 0;
+  p.ags        = parseFloat(document.getElementById('edit-cat-ags').value) || 0;
+  p.etanol     = parseFloat(document.getElementById('edit-cat-etanol').value) || 0;
+  // Sync talla M per consistència
+  p.sodio_M = p.sodio; p.colesterol_M = p.colesterol; p.ags_M = p.ags; p.etanol_M = p.etanol;
   p.propio     = document.getElementById('edit-cat-propio').checked;
   guardar_cataleg_plats();
   actualitzar_stat_cataleg();
@@ -4576,6 +4614,28 @@ function confirmar_borrar_tots_pacients() {
           <input class="form-input" type="number" id="edit-cat-gras" placeholder="0">
         </div>
       </div>
+      <!-- Nutrients crítics -->
+      <div style="margin-top:12px;padding:10px 12px;background:var(--verde-suau);border-radius:10px;border:1px solid var(--verde-clar);">
+        <div style="font-size:0.68rem;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">🔬 Nutrientes críticos (ración M)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="form-grup" style="margin:0">
+            <label class="form-label">🧂 Sodio (mg)</label>
+            <input class="form-input" type="number" id="edit-cat-sodio" placeholder="0" style="margin:0">
+          </div>
+          <div class="form-grup" style="margin:0">
+            <label class="form-label">🧈 Colesterol (mg)</label>
+            <input class="form-input" type="number" id="edit-cat-colesterol" placeholder="0" style="margin:0">
+          </div>
+          <div class="form-grup" style="margin:0">
+            <label class="form-label">🫒 AGS (g)</label>
+            <input class="form-input" type="number" id="edit-cat-ags" placeholder="0" style="margin:0">
+          </div>
+          <div class="form-grup" style="margin:0">
+            <label class="form-label">🍷 Etanol (g)</label>
+            <input class="form-input" type="number" id="edit-cat-etanol" placeholder="0" style="margin:0">
+          </div>
+        </div>
+      </div>
       <div class="form-grup" style="margin-top:10px;">
         <label class="form-label">Alérgenos <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(separados por coma)</span></label>
         <input class="form-input" type="text" id="edit-cat-alergenos" placeholder="Gluten, Lácteos, Huevos...">
@@ -4591,6 +4651,10 @@ function confirmar_borrar_tots_pacients() {
       <div class="form-grup" style="margin-top:10px;">
         <label class="form-label">Receta <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(saldrá en el PDF)</span></label>
         <textarea class="form-input" id="edit-cat-receta" placeholder="Ej: 1. Asar a la plancha..." style="min-height:90px;resize:vertical;font-family:inherit;font-size:0.85rem;"></textarea>
+      </div>
+      <div class="form-grup" style="margin-top:10px;">
+        <label class="form-label">Observaciones <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(notas internas)</span></label>
+        <textarea class="form-input" id="edit-cat-observaciones" placeholder="Pesos de referencia, equivalencias..." style="min-height:60px;resize:vertical;font-family:inherit;font-size:0.85rem;"></textarea>
       </div>
       <div class="form-grup" style="margin-top:10px;">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.85rem;">
