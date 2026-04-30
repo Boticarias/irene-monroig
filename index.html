@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Irene Monroig — Farmàcia i Nutrició</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root {
   --verde: #2D6A4F;
@@ -399,9 +400,22 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 .btn-guardar:hover { background: var(--verde-mig); }
 
   .talla-btn.actiu { background: var(--verde) !important; color: white !important; border-color: var(--verde) !important; }
+
+/* ── DRIVE STATUS ── */
+#drive-status {
+  position: fixed; bottom: 16px; right: 16px; z-index: 9999;
+  background: white; border-radius: 10px; padding: 8px 14px;
+  font-size: 0.78rem; color: var(--text-suau); display: none;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12); border: 1px solid var(--vora);
+  align-items: center; gap: 7px; transition: opacity 0.4s;
+}
+#drive-status.visible { display: flex; }
+#drive-status.ok { color: var(--verde); }
+#drive-status.error { color: var(--rosa); }
 </style>
 </head>
 <body>
+<div id="drive-status"></div>
 
 <!-- PORTADA -->
 <div id="portada-screen">
@@ -437,12 +451,12 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       <p>Farmàcia i Nutrició</p>
     </div>
     <div class="login-divider"></div>
-    <label class="login-label">Usuario</label>
-    <input class="login-input" type="text" id="login-user" placeholder="Tu usuario" autocomplete="username">
-    <label class="login-label">Contraseña</label>
-    <input class="login-input" type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
-    <button class="login-btn" onclick="fer_login()">Entrar</button>
-    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
+    <p style="font-size:0.82rem;color:var(--text-suau);text-align:center;margin-bottom:20px;">Acceso exclusivo con cuenta Google autorizada</p>
+    <div id="google-signin-btn" style="display:flex;justify-content:center;margin-bottom:12px;"></div>
+    <div class="login-error" id="login-error">Acceso no autorizado. Usa la cuenta de Irene Monroig.</div>
+    <div id="login-loading" style="display:none;text-align:center;color:var(--text-suau);font-size:0.85rem;margin-top:12px;">
+      <span>⏳ Conectando con Google Drive...</span>
+    </div>
   </div>
 </div>
 
@@ -669,63 +683,63 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
             <!-- Col 1 -->
             <div style="display:flex;flex-direction:column;gap:6px;">
-              <div style="background:white;border:1px solid #C9DDE6;border-radius:8px;padding:7px 9px;">
-                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:3px;">Comidas/día</label>
-                <input type="text" id="hab-comides" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:#f8fbfc;border-color:#C9DDE6;">
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">Comidas/día</label>
+                <input type="text" id="hab-comides" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:white;">
               </div>
-              <div style="background:white;border:1px solid #C9DDE6;border-radius:8px;padding:7px 9px;">
-                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:3px;">Horas de comida</label>
-                <input type="text" id="hab-hores" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:#f8fbfc;border-color:#C9DDE6;">
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">Horas de comida</label>
+                <input type="text" id="hab-hores" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:white;">
               </div>
-              <div style="background:white;border:1px solid #C9DDE6;border-radius:8px;padding:7px 9px;flex:1;">
-                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:3px;">Desayuno</label>
-                <textarea id="hab-desdejuni" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:52px;resize:none;font-family:inherit;background:#f8fbfc;border-color:#C9DDE6;"></textarea>
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">Desayuno</label>
+                <textarea id="hab-desdejuni" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:52px;resize:none;font-family:inherit;background:white;flex:1;"></textarea>
               </div>
             </div>
             <!-- Col 2 -->
             <div style="display:flex;flex-direction:column;gap:6px;">
-              <div style="background:white;border:1px solid #C9DDE6;border-radius:8px;padding:7px 9px;">
-                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:3px;">Almuerzo/merienda</label>
-                <textarea id="hab-almuerzo" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:52px;resize:none;font-family:inherit;background:#f8fbfc;border-color:#C9DDE6;"></textarea>
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">Almuerzo/merienda</label>
+                <textarea id="hab-almuerzo" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:52px;resize:none;font-family:inherit;background:white;"></textarea>
               </div>
-              <div style="background:white;border:1px solid #C9DDE6;border-radius:8px;padding:7px 9px;flex:1;">
-                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:3px;">💪 Proteínas</label>
-                <textarea id="hab-proteines" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:52px;resize:none;font-family:inherit;background:#f8fbfc;border-color:#C9DDE6;"></textarea>
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">💪 Proteínas</label>
+                <textarea id="hab-proteines" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:52px;resize:none;font-family:inherit;background:white;"></textarea>
               </div>
             </div>
             <!-- Col 3 -->
             <div style="display:flex;flex-direction:column;gap:6px;">
-              <div style="background:white;border:1px solid #C9DDE6;border-radius:8px;padding:7px 9px;">
-                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:3px;">🥦 Verdura</label>
-                <input type="text" id="hab-verdura" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:#f8fbfc;border-color:#C9DDE6;">
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">🥦 Verdura</label>
+                <input type="text" id="hab-verdura" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:white;">
               </div>
-              <div style="background:white;border:1px solid #C9DDE6;border-radius:8px;padding:7px 9px;">
-                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:3px;">🍎 Fruta</label>
-                <input type="text" id="hab-fruita" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:#f8fbfc;border-color:#C9DDE6;">
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">🍎 Fruta</label>
+                <input type="text" id="hab-fruita" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:white;">
               </div>
-              <div style="background:white;border:1px solid #C9DDE6;border-radius:8px;padding:7px 9px;">
-                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:3px;">🌰 Frutos secos</label>
-                <input type="text" id="hab-fruits-secs" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:#f8fbfc;border-color:#C9DDE6;">
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">🌰 Frutos secos</label>
+                <input type="text" id="hab-fruits-secs" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:white;">
+              </div>
+              <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:2px;">📝 Otros</label>
+                <textarea id="hab-altres" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;min-height:40px;resize:none;font-family:inherit;background:white;"></textarea>
               </div>
             </div>
-            <!-- Col 4: HC (tot el recuadre) -->
-            <div style="display:flex;flex-direction:column;">
-              <div style="background:#D6EAF2;border-radius:8px;padding:10px 12px;border:1px solid #B0D0DF;flex:1;">
-                <div style="font-size:0.62rem;font-weight:700;color:#2C6E8A;margin-bottom:8px;text-transform:uppercase;">🍞 Hidratos</div>
-                <div style="display:flex;flex-direction:column;gap:8px;">
-                  <div>
-                    <label style="font-size:0.61rem;color:#2C6E8A;display:block;margin-bottom:3px;">Legumbres</label>
-                    <input type="text" id="hab-llegums" class="cues-input" style="margin:0;padding:5px 8px;font-size:0.78rem;background:white;">
-                  </div>
-                  <div>
-                    <label style="font-size:0.61rem;color:#2C6E8A;display:block;margin-bottom:3px;">Otros HC</label>
-                    <input type="text" id="hab-hc-altres" class="cues-input" style="margin:0;padding:5px 8px;font-size:0.78rem;background:white;">
-                  </div>
+            <!-- Col 4: HC -->
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="background:#D6EAF2;border-radius:8px;padding:8px 10px;border:1px solid #B0D0DF;">
+                <div style="font-size:0.62rem;font-weight:700;color:#2C6E8A;margin-bottom:6px;text-transform:uppercase;">🍞 Hidratos</div>
+                <div>
+                  <label style="font-size:0.61rem;color:#2C6E8A;display:block;margin-bottom:2px;">Legumbres</label>
+                  <input type="text" id="hab-llegums" class="cues-input" style="margin:0;padding:3px 7px;font-size:0.77rem;background:white;">
+                </div>
+                <div style="margin-top:6px;">
+                  <label style="font-size:0.61rem;color:#2C6E8A;display:block;margin-bottom:2px;">Otros HC</label>
+                  <input type="text" id="hab-hc-altres" class="cues-input" style="margin:0;padding:3px 7px;font-size:0.77rem;background:white;">
                 </div>
               </div>
             </div>
-            <!-- Campo Otros oculto per compatibilitat amb guardar_habits -->
-            <textarea id="hab-altres" style="display:none;"></textarea>
           </div>
         </div>
 
@@ -768,13 +782,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <!-- OBJECTIUS PLANIFICACIÓ -->
           <div style="margin-top:16px;background:white;border-radius:var(--radi);padding:18px 22px;box-shadow:var(--ombra);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-              <div style="display:flex;align-items:center;gap:12px;">
-                <h4 style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--text);margin:0;border:none;padding:0">Objetivos y notas para el PDF</h4>
-                <select id="obj-idioma" style="font-size:0.75rem;padding:4px 10px;border:1.5px solid var(--verde-clar);border-radius:8px;cursor:pointer;color:var(--verde);font-weight:600;background:var(--verde-suau);">
-                  <option value="val">🇪🇸 Valencià</option>
-                  <option value="cas">🇪🇸 Castellano</option>
-                </select>
-              </div>
+              <h4 style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--text);margin:0;border:none;padding:0">Objetivos y notas para el PDF</h4>
               <div style="display:flex;gap:8px;">
                 <button class="btn" onclick="confirmar_borrar_planificacio()" style="font-size:0.78rem;padding:6px 14px;background:#fdecea;color:#c0392b;border:1.5px solid #f5c6c6;border-radius:10px;font-weight:600;cursor:pointer;">🗑️ Borrar semana</button>
                 <button class="btn btn-primary" onclick="guardar_objectius()" style="font-size:0.78rem;padding:6px 14px;">💾 Guardar</button>
@@ -1171,11 +1179,206 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 </div>
 
 <script>
-const USUARI = 'irene';
-const CONTRASENYA_HASH = '3a9ca9a7c720c6758bbf02f3cf2d75374ec080158a7ac1278180736c76c43e99'; // SHA-256
+// ── GOOGLE DRIVE + AES-GCM CONFIG ──
+const GOOGLE_CLIENT_ID = '813628183544-v2vpk6qltd0lcju9csotutgd4g2gule8.apps.googleusercontent.com';
+const GOOGLE_SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+const AUTHORIZED_EMAIL = 'irenemben@gmail.com'; // Email de Irene
+const AES_KEY_NAME = 'im_aes_key_v1';
+
 const MOMENTS = ['Desayuno','Media mañana','Comida','Merienda','Cena','Recena'];
 const DIES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 
+// ── ESTADO GLOBAL DRIVE ──
+let drive_access_token = null;
+let aes_key = null;
+
+// ── AES-GCM: GENERAR O RECUPERAR CLAVE ──
+async function get_aes_key() {
+  if (aes_key) return aes_key;
+  const stored = localStorage.getItem(AES_KEY_NAME);
+  if (stored) {
+    const raw = Uint8Array.from(atob(stored), c => c.charCodeAt(0));
+    aes_key = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt','decrypt']);
+    return aes_key;
+  }
+  aes_key = await crypto.subtle.generateKey({name:'AES-GCM',length:256}, true, ['encrypt','decrypt']);
+  const exported = await crypto.subtle.exportKey('raw', aes_key);
+  localStorage.setItem(AES_KEY_NAME, btoa(String.fromCharCode(...new Uint8Array(exported))));
+  return aes_key;
+}
+
+async function encrypt_data(obj) {
+  const key = await get_aes_key();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = new TextEncoder();
+  const cipher = await crypto.subtle.encrypt({name:'AES-GCM',iv}, key, enc.encode(JSON.stringify(obj)));
+  const combined = new Uint8Array(12 + cipher.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(cipher), 12);
+  return btoa(String.fromCharCode(...combined));
+}
+
+async function decrypt_data(b64) {
+  const key = await get_aes_key();
+  const combined = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const iv = combined.slice(0, 12);
+  const cipher = combined.slice(12);
+  const plain = await crypto.subtle.decrypt({name:'AES-GCM',iv}, key, cipher);
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+
+// ── GOOGLE DRIVE: LEER/ESCRIBIR ARCHIVO ──
+async function drive_get_file_id(filename) {
+  const r = await fetch(
+    `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='${filename}'&fields=files(id)`,
+    {headers:{Authorization:`Bearer ${drive_access_token}`}}
+  );
+  const d = await r.json();
+  return d.files && d.files.length > 0 ? d.files[0].id : null;
+}
+
+async function drive_read(filename) {
+  const id = await drive_get_file_id(filename);
+  if (!id) return null;
+  const r = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${id}?alt=media`,
+    {headers:{Authorization:`Bearer ${drive_access_token}`}}
+  );
+  return await r.text();
+}
+
+async function drive_write(filename, content) {
+  const id = await drive_get_file_id(filename);
+  const metadata = JSON.stringify({name: filename, parents: id ? undefined : ['appDataFolder']});
+  const blob = new Blob([content], {type:'text/plain'});
+  const form = new FormData();
+  form.append('metadata', new Blob([metadata], {type:'application/json'}));
+  form.append('file', blob);
+  const url = id
+    ? `https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=multipart`
+    : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
+  await fetch(url, {
+    method: id ? 'PATCH' : 'POST',
+    headers: {Authorization:`Bearer ${drive_access_token}`},
+    body: form
+  });
+}
+
+// ── INDICADOR VISUAL GUARDADO ──
+function mostrar_drive_status(msg, tipus='ok') {
+  const el = document.getElementById('drive-status');
+  if (!el) return;
+  el.textContent = (tipus === 'ok' ? '☁️ ' : '⚠️ ') + msg;
+  el.className = 'visible ' + tipus;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 3000);
+}
+
+// ── BACKUP AUTOMÁTICO ──
+async function fer_backup_si_cal() {
+  const avui = new Date().toISOString().slice(0,10);
+  const ultima = localStorage.getItem('im_ultima_backup');
+  if (ultima === avui) return;
+  try {
+    const ts = new Date().toISOString().replace(/[:.]/g,'-');
+    const bk_pac = await encrypt_data(pacients);
+    const bk_cat = await encrypt_data(cataleg_plats);
+    await drive_write(`backup_pacients_${ts}.enc`, bk_pac);
+    await drive_write(`backup_cataleg_${ts}.enc`, bk_cat);
+    // Backup del HTML de la app
+    const htmlRes = await fetch(window.location.href);
+    const htmlText = await htmlRes.text();
+    await drive_write(`backup_app_${ts}.html`, htmlText);
+    localStorage.setItem('im_ultima_backup', avui);
+    console.log('✅ Backup realizado:', ts);
+  } catch(e) { console.warn('Backup fallido:', e); }
+}
+
+// ── GUARDAR / CARGAR PACIENTS ──
+async function guardar_pacients() {
+  if (!drive_access_token) return;
+  try {
+    const enc = await encrypt_data(pacients);
+    await drive_write('pacients.enc', enc);
+    mostrar_drive_status('Guardado en Drive');
+  } catch(e) {
+    console.error('Error guardando pacients:', e);
+    mostrar_drive_status('Error al guardar', 'error');
+  }
+}
+
+async function carregar_pacients_drive() {
+  try {
+    const raw = await drive_read('pacients.enc');
+    if (raw) {
+      pacients = await decrypt_data(raw);
+      return true;
+    }
+  } catch(e) { console.warn('No se pudo leer pacients de Drive:', e); }
+  return false;
+}
+
+// ── LOGIN GOOGLE ──
+function anar_a_login() {
+  document.getElementById('portada-screen').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  // Inicializar botón Google si no está ya
+  if (typeof google !== 'undefined' && !document.querySelector('#google-signin-btn iframe')) {
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handle_google_credential,
+      auto_select: false
+    });
+    google.accounts.id.renderButton(
+      document.getElementById('google-signin-btn'),
+      {theme:'outline', size:'large', text:'signin_with', locale:'es', width:280}
+    );
+  }
+}
+
+async function handle_google_credential(response) {
+  document.getElementById('login-loading').style.display='block';
+  try {
+    // Decodificar JWT para obtener email
+    const payload = JSON.parse(atob(response.credential.split('.')[1]));
+    if (payload.email !== AUTHORIZED_EMAIL) {
+      document.getElementById('login-loading').style.display='none';
+      const e = document.getElementById('login-error');
+      e.style.display='block';
+      setTimeout(()=>e.style.display='none', 4000);
+      return;
+    }
+    // Obtener access_token para Drive con OAuth implícito
+    google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: GOOGLE_SCOPES,
+      callback: async (tokenResponse) => {
+        drive_access_token = tokenResponse.access_token;
+        document.getElementById('login-screen').style.display='none';
+        document.getElementById('app').style.display='block';
+        await init();
+        mostrar_pantalla_inici();
+        document.getElementById('login-loading').style.display='none';
+      }
+    }).requestAccessToken();
+  } catch(e) {
+    document.getElementById('login-loading').style.display='none';
+    console.error('Error login Google:', e);
+  }
+}
+
+async function fer_logout() {
+  drive_access_token = null;
+  google.accounts.id.disableAutoSelect();
+  document.getElementById('app').style.display='none';
+  document.getElementById('portada-screen').style.display='flex';
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter' && document.getElementById('login-screen').style.display==='flex') {}
+});
+
+// ── PACIENTS INICIALS (fallback primera vez) ──
 const PACIENTS_INICIALS = [
   {nom:"Josefa",cognoms:"Merce Borras",email:"pepitamerceborras@gmail.com",tel:"680316995",naix:"1957-01-21"},
   {nom:"Antonia",cognoms:"Diaz Gonzalez",email:"antoniadg4@hotmail.es",tel:"654035983",naix:"1964-09-04"},
@@ -1244,67 +1447,22 @@ let setmana_offset = 0;
 let celda_activa = null;
 
 // ── INIT ──
-function init() {
-  // Try encrypted first, fallback to plain
-  const g2 = localStorage.getItem('im_pacients_v2');
-  const g = localStorage.getItem('im_pacients');
-  if (g2) {
-    try { pacients = JSON.parse(decodeURIComponent(escape(atob(g2)))); }
-    catch(e) { if(g) pacients = JSON.parse(g); }
-  } else if (g) { pacients = JSON.parse(g); }
-  else {
+async function init() {
+  const carregat = await carregar_pacients_drive();
+  if (!carregat) {
     pacients = PACIENTS_INICIALS.map((p,i) => ({
       id:'p_'+i, nom:p.nom, cognoms:p.cognoms, email:p.email,
       tel:p.tel, naix:p.naix, creat:new Date().toISOString(),
       planificacions: {}
     }));
-    guardar_pacients();
+    await guardar_pacients();
   }
   renderitzar_pacients();
+  await carregar_cataleg_plats_drive();
   actualitzar_stat_cataleg();
+  // Backup automático diario
+  fer_backup_si_cal();
 }
-
-function guardar_pacients() {
-  try {
-    const data = JSON.stringify(pacients);
-    const encrypted = btoa(unescape(encodeURIComponent(data))); // Base64 encode
-    localStorage.setItem('im_pacients_v2', encrypted);
-    localStorage.removeItem('im_pacients'); // Remove old unencrypted
-  } catch(e) { localStorage.setItem('im_pacients', JSON.stringify(pacients)); }
-}
-
-// ── LOGIN ──
-function anar_a_login() {
-  document.getElementById('portada-screen').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
-}
-async function fer_login() {
-  const u=document.getElementById('login-user').value.trim().toLowerCase();
-  const p=document.getElementById('login-pass').value;
-  // Hash password with SHA-256
-  const enc = new TextEncoder();
-  const buf = await crypto.subtle.digest('SHA-256', enc.encode(p));
-  const hashHex = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  if(u===USUARI && hashHex===CONTRASENYA_HASH){
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app').style.display='block';
-    init();
-    mostrar_pantalla_inici();
-  } else {
-    const e=document.getElementById('login-error');
-    e.style.display='block';
-    setTimeout(()=>e.style.display='none',3000);
-  }
-}
-function fer_logout() {
-  document.getElementById('app').style.display='none';
-  document.getElementById('portada-screen').style.display='flex';
-  document.getElementById('login-user').value='';
-  document.getElementById('login-pass').value='';
-}
-document.addEventListener('keydown',e=>{
-  if(e.key==='Enter' && document.getElementById('login-screen').style.display==='flex') fer_login();
-});
 
 // ── PACIENTS ──
 function calcular_edat(naix) {
@@ -1989,15 +2147,7 @@ function seleccionar_plat_off(nom,kcal,prot,hc,gras){
     // Mostrar selector de talla
     if (talla_sel) {
       talla_sel.style.display = 'block';
-      // Reset visual dels botons de talla
-      document.querySelectorAll('.talla-btn').forEach(b => {
-        b.classList.remove('actiu');
-        b.style.background = 'white';
-        b.style.color = '';
-        b.style.borderColor = 'var(--verde-clar)';
-      });
-      const btnM = document.querySelector('.talla-btn.actiu') || document.querySelectorAll('.talla-btn')[1];
-      if(btnM){ btnM.classList.add('actiu'); btnM.style.background='var(--verde)'; btnM.style.color='white'; btnM.style.borderColor='var(--verde)'; }
+      document.getElementById('talla-select').value = 'M';
     }
     aplicar_talla_plat(info, 'M');
   } else {
@@ -2026,14 +2176,6 @@ function canviar_talla(talla) {
   const nom = document.getElementById('plat-nom-input').value.trim();
   const info = obtenir_info_plat(nom);
   if (info) aplicar_talla_plat(info, talla);
-  // Update button styles
-  document.querySelectorAll('.talla-btn').forEach(b => {
-    const isActive = b.textContent.trim() === talla;
-    b.classList.toggle('actiu', isActive);
-    b.style.background = isActive ? 'var(--verde)' : 'white';
-    b.style.color = isActive ? 'white' : '';
-    b.style.borderColor = isActive ? 'var(--verde)' : 'var(--verde-clar)';
-  });
 }
 
 function guardar_plat(copiar_setmana=false){
@@ -2041,11 +2183,8 @@ function guardar_plat(copiar_setmana=false){
   if(!nom){alert('Introduce el nombre del plato.');return;}
   const ingredientes_text = document.getElementById('plat-ingredientes').value.trim();
   const receta_text = document.getElementById('plat-receta').value.trim();
-  // Llegir talla seleccionada
-  const talla_activa = document.querySelector('.talla-btn.actiu')?.textContent?.trim() || 'M';
   const plat={
     nom,
-    talla: talla_activa,
     kcal:parseFloat(document.getElementById('plat-kcal').value)||0,
     prot:parseFloat(document.getElementById('plat-prot').value)||0,
     hc:parseFloat(document.getElementById('plat-hc').value)||0,
@@ -2315,12 +2454,11 @@ function clonar_historial(idx) {
     // Buscar al catàleg
     const info = obtenir_info_plat(plat.nom);
     if (info) {
-      // Usar la talla guardada al plat, o M per defecte
-      const t = plat.talla || 'M';
-      plat.kcal = info['kcal_'+t] || info.kcal_M || info.kcal || 0;
-      plat.prot = info['prot_'+t] || info.prot_M || info.prot || 0;
-      plat.hc   = info['hc_'+t]  || info.hc_M   || info.hc   || 0;
-      plat.gras = info['gras_'+t]|| info.gras_M  || info.gras || 0;
+      // Usar talla M com a valor per defecte (kcal_M, prot_M, hc_M, gras_M)
+      plat.kcal = info.kcal_M || info.kcal || 0;
+      plat.prot = info.prot_M || info.prot || 0;
+      plat.hc   = info.hc_M  || info.hc  || 0;
+      plat.gras = info.gras_M || info.gras || 0;
     }
   });
   pacient_actiu.planificacions[clau] = planif_dst;
@@ -3067,23 +3205,27 @@ function extreure_tanita_complet(text, linies) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-// ── IMPORTAR CATÀLEG DE PLATS ──
-let cataleg_plats = (() => {
-  try {
-    const v2 = localStorage.getItem('im_cataleg_plats_v2');
-    if (v2) return JSON.parse(decodeURIComponent(escape(atob(v2))));
-    const v1 = localStorage.getItem('im_cataleg_plats');
-    if (v1) return JSON.parse(v1);
-  } catch(e) {}
-  return [];
-})();
+// ── CATÀLEG DE PLATS ──
+let cataleg_plats = [];
 
-function guardar_cataleg_plats() {
+async function carregar_cataleg_plats_drive() {
+  if (!drive_access_token) return;
   try {
-    const data = JSON.stringify(cataleg_plats);
-    localStorage.setItem('im_cataleg_plats_v2', btoa(unescape(encodeURIComponent(data))));
-    localStorage.removeItem('im_cataleg_plats');
-  } catch(e) { localStorage.setItem('im_cataleg_plats', JSON.stringify(cataleg_plats)); }
+    const raw = await drive_read('cataleg_plats.enc');
+    if (raw) cataleg_plats = await decrypt_data(raw);
+  } catch(e) { console.warn('No se pudo leer catàleg de Drive:', e); }
+}
+
+async function guardar_cataleg_plats() {
+  if (!drive_access_token) return;
+  try {
+    const enc = await encrypt_data(cataleg_plats);
+    await drive_write('cataleg_plats.enc', enc);
+    mostrar_drive_status('Guardado en Drive');
+  } catch(e) {
+    console.error('Error guardando catàleg:', e);
+    mostrar_drive_status('Error al guardar', 'error');
+  }
 }
 
 async function importar_cataleg_plats(input) {
@@ -3304,7 +3446,7 @@ function construir_patologies_grid() {
   const grid = document.getElementById('cues-patologies-grid');
   grid.innerHTML = PATOLOGIES_LLISTA.map(p => {
     const sel = selected.includes(p) ? 'seleccionat' : '';
-    return `<label class="cues-check-item ${sel}" onclick="toggle_patologia(this);event.preventDefault();">
+    return `<label class="cues-check-item ${sel}" onclick="toggle_patologia(this)">
       <input type="checkbox" ${sel?'checked':''} style="pointer-events:none"> ${p}
     </label>`;
   }).join('');
@@ -3318,11 +3460,8 @@ function filtrar_patologies() {
 }
 
 function toggle_patologia(el) {
-  // Assegurar que el és el label, no l'input
-  const label = el.tagName === 'LABEL' ? el : el.closest('label');
-  if (!label) return;
-  label.classList.toggle('seleccionat');
-  label.querySelector('input').checked = label.classList.contains('seleccionat');
+  el.classList.toggle('seleccionat');
+  el.querySelector('input').checked = el.classList.contains('seleccionat');
 }
 
 function toggle_opcio_unica(btn, hiddenId) {
@@ -3862,26 +4001,15 @@ const LOGO_B64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAeAB4AAD/2wBDAAMCAgM
 
 const DIES_SETMANA = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 
-const CONSELLS_GENERALS = {
-  val: `1. La primera norma és no passar fam excessiva. Si tens molta gana entre hores o et resulta difícil seguir la planificació, posa't en contacte amb mi per ajustar-la.
+const CONSELLS_GENERALS = `1. La primera norma és no passar fam excessiva. Si tens molta gana entre hores o et resulta difícil seguir la planificació, posa't en contacte amb mi per ajustar-la.
 2. La planificació setmanal està basada en la dieta mediterrània i consta de 6 dies complets i dos menjars del cap de setmana "lliures", sempre respectant les quantitats. Els menjars lliures no són per a excedir-se, sinó per a gaudir amb equilibri i flexibilitat.
 3. Totes les verdures són intercanviables; és a dir, si posa bajoca, pots usar pimentó. Així també aconseguirem una alimentació variada i rica en vitamines i minerals.
 4. Les fruites també són intercanviables. Prioritza fruites locals i de proximitat, més saboroses, nutritives i sostenibles.
-5. Beu aproximadament entre 1,5 i 2 L d'aigua al dia, ajustant-ho segons la set, l'activitat física o la calor.
+5. Beu entre 1,5 i 2 L d'aigua al dia.
 6. Busca una rutina activa i intenta moure't cada dia (caminar, pujar escales, etc.) per evitar el sedentarisme.
 7. No cal pesar totes les quantitats. Es pot fer al principi per a fer-te una idea, però no cal obsessionar-se. Si les peses, fes-ho sempre en cru.
 8. Les tècniques culinàries recomanades són: al vapor, bullit, a la planxa, al forn, al microones, al papillota o, fins i tot, utilitzant la fregidora d'aire.
-9. Intenta dormir al voltant de 7 hores cada nit. El descans és tan important com l'alimentació.`,
-  cas: `1. La primera norma es no pasar hambre excesiva. Si tienes mucha hambre entre horas o te resulta difícil seguir la planificación, ponte en contacto conmigo para ajustarla.
-2. La planificación semanal está basada en la dieta mediterránea y consta de 6 días completos y dos comidas del fin de semana "libres", respetando siempre las cantidades. Las comidas libres no son para excederse, sino para disfrutar con equilibrio y flexibilidad.
-3. Todas las verduras son intercambiables; es decir, si pone judía verde, puedes usar pimiento. Así también conseguiremos una alimentación variada y rica en vitaminas y minerales.
-4. Las frutas también son intercambiables. Prioriza frutas locales y de proximidad, más sabrosas, nutritivas y sostenibles.
-5. Bebe aproximadamente entre 1,5 y 2 L de agua al día, ajustándolo según la sed, la actividad física o el calor.
-6. Busca una rutina activa e intenta moverte cada día (caminar, subir escaleras, etc.) para evitar el sedentarismo.
-7. No es necesario pesar todas las cantidades. Se puede hacer al principio para hacerse una idea, pero no hay que obsesionarse. Si las pesas, hazlo siempre en crudo.
-8. Las técnicas culinarias recomendadas son: al vapor, hervido, a la plancha, al horno, al microondas, en papillote o incluso usando la freidora de aire.
-9. Intenta dormir alrededor de 7 horas cada noche. El descanso es tan importante como la alimentación.\`
-};
+9. Intenta dormir al voltant de 7 hores cada nit. El descans és tan important com l'alimentació.`;
 
 // Categories per la llista de la compra
 const CATEGORIES_COMPRA = [
@@ -4220,8 +4348,8 @@ Pròxima visita: ${o.proxima_visita}`;
   const pagObs = `<div class="page">
     ${capcalera}
     <div class="obs-titol">OBSERVACIONES</div>
-    <div class="obs-seccio-titol">${idioma_pdf === "cas" ? "RECOMENDACIONES GENERALES:" : "CONSELLS GENERALS:"}</div>
-    <div class="obs-text">${idioma_pdf === "cas" ? CONSELLS_GENERALS.cas : CONSELLS_GENERALS.val}</div>
+    <div class="obs-seccio-titol">CONSELLS GENERALS:</div>
+    <div class="obs-text">${CONSELLS_GENERALS}</div>
     ${o.objectiu_esportiu ? `<div class="obs-seccio-titol">OBJECTIU ESPORTIU:</div><div class="obs-text">${o.objectiu_esportiu}</div>` : ''}
     ${o.a_tenir_en_compte ? `<div class="obs-seccio-titol">A TINDRE EN COMPTE:</div><div class="obs-text">${o.a_tenir_en_compte}</div>` : ''}
     ${resultats_tanita ? `<div class="obs-seccio-titol"></div><div class="obs-resultats">${resultats_tanita}</div>` : ''}
@@ -4376,7 +4504,6 @@ Pròxima visita: ${o.proxima_visita}`;
 
 // ── BOTÓ GENERAR PDF ──
 function generar_pdf_planificacio() {
-  const idioma_pdf = document.getElementById('obj-idioma')?.value || 'val';
   if (!pacient_actiu) return;
 
   // Trobar la planificació activa (setmana actual o la més recent)
