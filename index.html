@@ -1441,9 +1441,17 @@ async function handle_google_credential(response) {
       e.style.display='block'; setTimeout(()=>e.style.display='none', 4000);
       return;
     }
-    google.accounts.oauth2.initTokenClient({
-      client_id: GOOGLE_CLIENT_ID, scope: GOOGLE_SCOPES,
+    // Email verificado — obtener token de Drive
+    const tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: GOOGLE_SCOPES,
+      prompt: '',
+      hint: payload.email,
       callback: async (tokenResponse) => {
+        if (tokenResponse.error) {
+          document.getElementById('login-loading').style.display='none';
+          return;
+        }
         drive_access_token = tokenResponse.access_token;
         document.getElementById('login-screen').style.display='none';
         document.getElementById('app').style.display='block';
@@ -1451,7 +1459,8 @@ async function handle_google_credential(response) {
         mostrar_pantalla_inici();
         document.getElementById('login-loading').style.display='none';
       }
-    }).requestAccessToken();
+    });
+    tokenClient.requestAccessToken();
   } catch(e) {
     document.getElementById('login-loading').style.display='none';
     console.error('Error login Google:', e);
@@ -4166,7 +4175,7 @@ function pertany_a_cel(clau, mi, di, moment_nom) {
   return false;
 }
 
-function generar_html_pdf(pacient, planificacio, moments, observacions, data_planif) {
+function generar_html_pdf(pacient, planificacio, moments, observacions, data_planif, idioma_pdf='val') {
   const nom_complet = (pacient.nom + ' ' + (pacient.cognoms||'')).toUpperCase().trim();
   const titol_planif = `PLAN DIETÉTICO SEMANAL DE ${nom_complet} ${data_planif||''}`;
 
@@ -4554,8 +4563,9 @@ function generar_pdf_planificacio() {
 
   const moments = pacient_actiu.moments_dia || ['Desayuno','Almuerzo 1','Comida','Merienda 1','Cena'];
   const observacions = pacient_actiu.observacions || {};
+  const idioma_pdf = (document.getElementById('obj-idioma')?.value) || 'val';
 
-  const html = generar_html_pdf(pacient_actiu, planificacio, moments, observacions, data_planif);
+  const html = generar_html_pdf(pacient_actiu, planificacio, moments, observacions, data_planif, idioma_pdf);
 
   // Obrir en nova finestra via about:blank per evitar bloqueig de popups
   const win = window.open('about:blank', '_blank');
