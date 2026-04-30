@@ -451,9 +451,17 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       <p>Farmàcia i Nutrició</p>
     </div>
     <div class="login-divider"></div>
-    <p style="font-size:0.82rem;color:var(--text-suau);text-align:center;margin-bottom:20px;">Acceso exclusivo con cuenta Google autorizada</p>
-    <div id="google-signin-btn" style="display:flex;justify-content:center;margin-bottom:12px;"></div>
-    <div class="login-error" id="login-error">Acceso no autorizado. Usa la cuenta de Irene Monroig.</div>
+    <div id="login-paso1">
+      <label class="login-label">Contraseña</label>
+      <input class="login-input" type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+      <button class="login-btn" onclick="verificar_password()">Continuar</button>
+      <div class="login-error" id="login-error-pass">Contraseña incorrecta</div>
+    </div>
+    <div id="login-paso2" style="display:none;">
+      <p style="font-size:0.82rem;color:var(--text-suau);text-align:center;margin-bottom:20px;">Ahora inicia sesión con Google</p>
+      <div id="google-signin-btn" style="display:flex;justify-content:center;margin-bottom:12px;"></div>
+      <div class="login-error" id="login-error">Acceso no autorizado. Usa la cuenta de Irene Monroig.</div>
+    </div>
     <div id="login-loading" style="display:none;text-align:center;color:var(--text-suau);font-size:0.85rem;margin-top:12px;">
       <span>⏳ Conectando con Google Drive...</span>
     </div>
@@ -1184,6 +1192,8 @@ const GOOGLE_CLIENT_ID = '813628183544-v2vpk6qltd0lcju9csotutgd4g2gule8.apps.goo
 const GOOGLE_SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
 const AUTHORIZED_EMAIL = 'boticariasbengochea@gmail.com'; // Email de Irene
 const AES_KEY_NAME = 'im_aes_key_v1';
+const PASSWORD_HASH = '3a9ca9a7c720c6758bbf02f3cf2d75374ec080158a7ac1278180736c76c43e99'; // SHA-256
+const PASSWORD_OK_KEY = 'im_pwd_ok_v1';
 
 const MOMENTS = ['Desayuno','Media mañana','Comida','Merienda','Cena','Recena'];
 const DIES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
@@ -1322,7 +1332,30 @@ async function carregar_pacients_drive() {
 function anar_a_login() {
   document.getElementById('portada-screen').style.display='none';
   document.getElementById('login-screen').style.display='flex';
-  // Inicializar botón Google si no está ya
+  // Si ya verificó contraseña en este dispositivo, ir directo al paso 2
+  if (localStorage.getItem(PASSWORD_OK_KEY) === 'true') {
+    mostrar_pas2_login();
+  }
+}
+
+async function verificar_password() {
+  const p = document.getElementById('login-pass').value;
+  const enc = new TextEncoder();
+  const buf = await crypto.subtle.digest('SHA-256', enc.encode(p));
+  const hash = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if (hash === PASSWORD_HASH) {
+    localStorage.setItem(PASSWORD_OK_KEY, 'true');
+    mostrar_pas2_login();
+  } else {
+    const e = document.getElementById('login-error-pass');
+    e.style.display = 'block';
+    setTimeout(()=>e.style.display='none', 3000);
+  }
+}
+
+function mostrar_pas2_login() {
+  document.getElementById('login-paso1').style.display = 'none';
+  document.getElementById('login-paso2').style.display = 'block';
   if (typeof google !== 'undefined' && !document.querySelector('#google-signin-btn iframe')) {
     google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
@@ -1370,12 +1403,16 @@ async function handle_google_credential(response) {
 async function fer_logout() {
   drive_access_token = null;
   google.accounts.id.disableAutoSelect();
+  // Resetear login a paso 1
+  document.getElementById('login-paso1').style.display = 'block';
+  document.getElementById('login-paso2').style.display = 'none';
+  document.getElementById('login-pass').value = '';
   document.getElementById('app').style.display='none';
   document.getElementById('portada-screen').style.display='flex';
 }
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Enter' && document.getElementById('login-screen').style.display==='flex') {}
+  if(e.key==='Enter' && document.getElementById('login-screen').style.display==='flex') verificar_password();
 });
 
 // ── PACIENTS INICIALS (fallback primera vez) ──
