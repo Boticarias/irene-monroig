@@ -6,6 +6,8 @@
 <title>Irene Monroig — Farmàcia i Nutrició</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
   --verde: #2D6A4F;
@@ -3236,10 +3238,7 @@ function extreure_tanita_complet(text, linies) {
 ['modal-plat','modal-nou-pacient','modal-confirmar-borrar','modal-import-preview','modal-composicio-confirm','modal-cuestionari','modal-editar-cataleg'].forEach(id=>{
   const el=document.getElementById(id); if(el) el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('visible');});
 });
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script>
+
 // ── CATÀLEG DE PLATS ──
 
 async function carregar_cataleg_plats_drive_2() {} // ya definida arriba
@@ -4563,7 +4562,6 @@ function generar_pdf_planificacio() {
 
   const moments = pacient_actiu.moments_dia || ['Desayuno','Almuerzo 1','Comida','Merienda 1','Cena'];
   const observacions = pacient_actiu.observacions || {};
-  const idioma_pdf = (document.getElementById('obj-idioma')?.value) || 'val';
 
   const html = generar_html_pdf(pacient_actiu, planificacio, moments, observacions, data_planif, idioma_pdf);
 
