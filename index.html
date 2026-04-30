@@ -1199,7 +1199,7 @@ const GOOGLE_SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
 const AUTHORIZED_EMAIL = 'boticariasbengochea@gmail.com';
 const AES_KEY_NAME = 'im_aes_key_v1';
 const PASSWORD_HASH = '3a9ca9a7c720c6758bbf02f3cf2d75374ec080158a7ac1278180736c76c43e99'; // SHA-256 de Paracetamol650.
-const PASSWORD_OK_KEY = 'im_pwd_ok_v1';
+const PASSWORD_OK_KEY = 'im_pwd_ok_session'; // Usar sessionStorage (se borra al cerrar pestaña)
 
 const MOMENTS = ['Desayuno','Media mañana','Comida','Merienda','Cena','Recena'];
 const DIES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
@@ -1308,6 +1308,14 @@ async function carregar_pacients_drive() {
   return false;
 }
 
+async function carregar_cataleg_plats_drive() {
+  if (!drive_access_token) return;
+  try {
+    const raw = await drive_read('cataleg_plats.enc');
+    if (raw) cataleg_plats = await decrypt_data(raw);
+  } catch(e) { console.warn('No se pudo leer catàleg:', e); }
+}
+
 // ── PACIENTS INICIALS (fallback primera vegada) ──
 const PACIENTS_INICIALS = [
   {nom:"Josefa",cognoms:"Merce Borras",email:"pepitamerceborras@gmail.com",tel:"680316995",naix:"1957-01-21"},
@@ -1371,6 +1379,7 @@ const PACIENTS_INICIALS = [
 ];
 
 let pacients = [];
+let cataleg_plats = [];
 let pacient_actiu = null;
 let filtre_lletra = 'tots';
 let setmana_offset = 0;
@@ -1397,7 +1406,7 @@ async function init() {
 function anar_a_login() {
   document.getElementById('portada-screen').style.display='none';
   document.getElementById('login-screen').style.display='flex';
-  if (localStorage.getItem(PASSWORD_OK_KEY) === 'true') mostrar_pas2_login();
+  if (sessionStorage.getItem(PASSWORD_OK_KEY) === 'true') mostrar_pas2_login();
 }
 async function verificar_password() {
   const p = document.getElementById('login-pass').value;
@@ -1405,7 +1414,7 @@ async function verificar_password() {
   const buf = await crypto.subtle.digest('SHA-256', enc.encode(p));
   const hash = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
   if (hash === PASSWORD_HASH) {
-    localStorage.setItem(PASSWORD_OK_KEY, 'true');
+    sessionStorage.setItem(PASSWORD_OK_KEY, 'true');
     mostrar_pas2_login();
   } else {
     const e = document.getElementById('login-error-pass');
@@ -3223,15 +3232,8 @@ function extreure_tanita_complet(text, linies) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 // ── CATÀLEG DE PLATS ──
-let cataleg_plats = [];
 
-async function carregar_cataleg_plats_drive() {
-  if (!drive_access_token) return;
-  try {
-    const raw = await drive_read('cataleg_plats.enc');
-    if (raw) cataleg_plats = await decrypt_data(raw);
-  } catch(e) { console.warn('No se pudo leer catàleg:', e); }
-}
+async function carregar_cataleg_plats_drive_2() {} // ya definida arriba
 
 async function guardar_cataleg_plats() {
   if (!drive_access_token) return;
@@ -4035,7 +4037,7 @@ const CONSELLS_GENERALS = {
 6. Busca una rutina activa e intenta moverte cada día (caminar, subir escaleras, etc.) para evitar el sedentarismo.
 7. No es necesario pesar todas las cantidades. Se puede hacer al principio para hacerse una idea, pero no hay que obsesionarse. Si las pesas, hazlo siempre en crudo.
 8. Las técnicas culinarias recomendadas son: al vapor, hervido, a la plancha, al horno, al microondas, en papillote o incluso usando la freidora de aire.
-9. Intenta dormir alrededor de 7 horas cada noche. El descanso es tan importante como la alimentación.\`
+9. Intenta dormir alrededor de 7 horas cada noche. El descanso es tan importante como la alimentación.`
 };
 
 // Categories per la llista de la compra
