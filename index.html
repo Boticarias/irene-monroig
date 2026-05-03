@@ -2551,17 +2551,14 @@ function clonar_historial(idx) {
   Object.keys(planif_dst).forEach(k => {
     const plat = planif_dst[k];
     if (!plat?.nom) return;
-    // Si ja té macros, no sobreescribir
-    if (plat.kcal || plat.prot || plat.hc || plat.gras) return;
-    // Buscar al catàleg
+    // Buscar al catàleg sempre (no saltar si kcal=0, pot ser un plat importat sense macros)
     const info = obtenir_info_plat(plat.nom);
     if (info) {
-      // Usar la talla guardada al plat, o M per defecte
       const t = plat.talla || 'M';
-      plat.kcal = info['kcal_'+t] || info.kcal_M || info.kcal || 0;
-      plat.prot = info['prot_'+t] || info.prot_M || info.prot || 0;
-      plat.hc   = info['hc_'+t]  || info.hc_M   || info.hc   || 0;
-      plat.gras = info['gras_'+t]|| info.gras_M  || info.gras || 0;
+      plat.kcal = info['kcal_'+t] || info.kcal_M || info.kcal || plat.kcal || 0;
+      plat.prot = info['prot_'+t] || info.prot_M || info.prot || plat.prot || 0;
+      plat.hc   = info['hc_'+t]  || info.hc_M   || info.hc   || plat.hc   || 0;
+      plat.gras = info['gras_'+t]|| info.gras_M  || info.gras || plat.gras || 0;
     }
   });
   pacient_actiu.planificacions[clau] = planif_dst;
@@ -2769,7 +2766,11 @@ function extreure_plats_pagina(text_pagina, moment_filter) {
   const parts = segment.split(/\s+INGREDIENTES(?:\s*\(\s*1\s*persona\s*\))?\s*:/i);
   const plats = [];
 
-  parts.slice(0, -1).forEach(part => {
+  parts.slice(0, -1).forEach((part, idx) => {
+    // Capturar el pes del primer ingredient ABANS de netejar
+    const primer_ingredient_match = part.match(/[\wáéíóúüñÁÉÍÓÚÜÑ/\s,()]+:\s*(\d+(?:[.,]\d+)?)\s*g/i);
+    const pes_primer_ingredient = primer_ingredient_match ? parseFloat(primer_ingredient_match[1].replace(',','.')) : null;
+
     let clean = part.replace(/\s+/g, ' ').trim();
     // Eliminar hores (06:30)
     clean = clean.replace(/\d{2}:\d{2}/g, '');
@@ -2780,7 +2781,6 @@ function extreure_plats_pagina(text_pagina, moment_filter) {
     clean = clean.replace(/\s+/g, ' ').trim();
 
     // El nom del plat és l'últim fragment DESPRÉS de l'últim punt de recepta
-    // Dividir per ". " i agafar el darrer tros
     const fragments = clean.split(/\.\s+/);
     const candidate = fragments[fragments.length - 1].trim();
 
@@ -2788,7 +2788,49 @@ function extreure_plats_pagina(text_pagina, moment_filter) {
     if (nomM) {
       const nom = nomM[1].replace(/\s+/g,' ').trim();
       if (nom.length >= 2 && nom.length <= 180) {
-        plats.push({ nom, kcal:0, prot:0, hc:0, gras:0 });
+        // Deduir la talla comparant el pes del primer ingredient amb el catàleg
+        let talla = 'M';
+        if (pes_primer_ingredient !== null) {
+          const info = cataleg_plats.find(p => {
+            const n = (p.nombre || p.nom || '').toLowerCase().trim();
+            return n === nom.toLowerCase().trim() || n.includes(nom.toLowerCase().trim()) || nom.toLowerCase().trim().includes(n);
+          });
+          if (info) {
+            // Buscar quin ingredient del catàleg té un pes similar al del PDF
+            const talles = ['S','M','L','XL'];
+            // Usar kcal per talla per deduir proporcionalment
+            const kcal_M = info.kcal_M || info.kcal || 0;
+            if (kcal_M > 0) {
+              const kcal_S = info.kcal_S || kcal_M * 0.55;
+              const kcal_L = info.kcal_L || kcal_M * 1.5;
+              const kcal_XL = info.kcal_XL || kcal_M * 2;
+              // Calcular ratio del pes respecte M
+              const ratio = pes_primer_ingredient / (info.pes_ingredient_M || pes_primer_ingredient);
+              // Comparar kcal proporcionals
+              const kcal_estimada = kcal_M * ratio;
+              const distancies = [
+                { t:'S', d: Math.abs(kcal_estimada - kcal_S) },
+                { t:'M', d: Math.abs(kcal_estimada - kcal_M) },
+                { t:'L', d: Math.abs(kcal_estimada - kcal_L) },
+                { t:'XL', d: Math.abs(kcal_estimada - kcal_XL) }
+              ];
+              // Comparar directament el pes amb els pesos per talla si els tenim
+              const pesos = [
+                { t:'S', p: info.pes_S },
+                { t:'M', p: info.pes_M },
+                { t:'L', p: info.pes_L },
+                { t:'XL', p: info.pes_XL }
+              ].filter(x => x.p);
+              if (pesos.length >= 2) {
+                const best = pesos.reduce((a,b) => Math.abs(b.p - pes_primer_ingredient) < Math.abs(a.p - pes_primer_ingredient) ? b : a);
+                talla = best.t;
+              } else {
+                talla = distancies.reduce((a,b) => b.d < a.d ? b : a).t;
+              }
+            }
+          }
+        }
+        plats.push({ nom, talla, kcal:0, prot:0, hc:0, gras:0 });
       }
     }
   });
@@ -4158,7 +4200,18 @@ function obtenir_plats_dia(planificacio, moments, dia_idx) {
 function obtenir_info_plat(nom_plat) {
   if (!nom_plat) return null;
   const nomLow = nom_plat.toLowerCase().trim();
-  return cataleg_plats.find(p => p.nombre && p.nombre.toLowerCase().trim() === nomLow) || null;
+  // Buscar coincidència exacta per 'nombre' o 'nom'
+  let trobat = cataleg_plats.find(p => {
+    const n = (p.nombre || p.nom || '').toLowerCase().trim();
+    return n === nomLow;
+  });
+  if (trobat) return trobat;
+  // Buscar coincidència parcial (el nom importat pot estar truncat)
+  trobat = cataleg_plats.find(p => {
+    const n = (p.nombre || p.nom || '').toLowerCase().trim();
+    return n.includes(nomLow) || nomLow.includes(n);
+  });
+  return trobat || null;
 }
 
 // Versió que també busca pel camp 'nom' (plats a la planificació)
