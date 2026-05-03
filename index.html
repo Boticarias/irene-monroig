@@ -186,8 +186,8 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 .cues-label { font-size:0.75rem; font-weight:600; color:var(--text-suau); letter-spacing:0.8px; text-transform:uppercase; margin-bottom:8px; display:block; }
 .cues-textarea { width:100%; padding:10px 14px; border:1.5px solid var(--vora); border-radius:10px; font-family:"Jost",sans-serif; font-size:0.88rem; color:var(--text); background:var(--crema); outline:none; resize:vertical; min-height:70px; transition:border-color 0.2s; }
 .cues-textarea:focus { border-color:var(--verde-clar); background:white; }
-.cues-input { width:100%; padding:10px 14px; border:1.5px solid #B8D8C4; border-radius:10px; font-family:"Jost",sans-serif; font-size:0.93rem; color:var(--text); background:#EFF6F2; outline:none; transition:border-color 0.2s,background 0.2s; margin-bottom:10px; }
-.cues-input:focus { border-color:var(--verde-clar); background:#E3F2E9; }
+.cues-input { width:100%; padding:10px 14px; border:2px solid #7CB9A0; border-radius:10px; font-family:"Jost",sans-serif; font-size:1rem; color:var(--text); background:#D8EEE4; outline:none; transition:border-color 0.2s,background 0.2s; margin-bottom:10px; }
+.cues-input:focus { border-color:var(--verde); background:#C4E4D4; }
 .cues-opcions { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
 .cues-opcio { padding:7px 16px; border:1.5px solid var(--vora); border-radius:20px; font-family:"Jost",sans-serif; font-size:0.82rem; color:var(--text-suau); cursor:pointer; transition:all 0.15s; background:white; }
 .cues-opcio:hover { border-color:var(--verde-clar); color:var(--verde); }
@@ -333,8 +333,8 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 .modal-footer { padding: 14px 26px 22px; display: flex; gap: 10px; justify-content: flex-end; }
 .form-grup { margin-bottom: 16px; }
 .form-label { display: block; font-size: 0.72rem; font-weight: 600; color: var(--text-suau); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
-.form-input, .form-select { width: 100%; padding: 10px 14px; border: 1.5px solid #B8D8C4; border-radius: 10px; font-family: "Jost", sans-serif; font-size: 0.93rem; color: var(--text); background: #EFF6F2; outline: none; transition: border-color 0.2s,background 0.2s; }
-.form-input:focus, .form-select:focus { border-color: var(--verde-clar); background: #E3F2E9; }
+.form-input, .form-select { width: 100%; padding: 10px 14px; border: 2px solid #7CB9A0; border-radius: 10px; font-family: "Jost", sans-serif; font-size: 1rem; color: var(--text); background: #D8EEE4; outline: none; transition: border-color 0.2s,background 0.2s; }
+.form-input:focus, .form-select:focus { border-color: var(--verde); background: #C4E4D4; }
 .form-fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-fila-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
 .cerca-plats-wrap { position: relative; margin-bottom: 12px; }
@@ -700,41 +700,41 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
             <div style="display:flex;flex-direction:column;gap:6px;">
               <div style="background:white;border:1px solid #C9DDE6;border-radius:8px;padding:7px 9px;">
                 <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:3px;">Comidas/día</label>
-                <input type="text" id="hab-comides" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:#EFF6F2;border-color:#B8D8C4;">
+                <input type="text" id="hab-comides" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:#D8EEE4;border-color:#7CB9A0;">
               </div>
               <div style="background:white;border:1px solid #C9DDE6;border-radius:8px;padding:7px 9px;">
                 <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:3px;">Horas de comida</label>
-                <input type="text" id="hab-hores" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:#EFF6F2;border-color:#B8D8C4;">
+                <input type="text" id="hab-hores" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;background:#D8EEE4;border-color:#7CB9A0;">
               </div>
               <div style="background:white;border:1px solid #C9DDE6;border-radius:8px;padding:7px 9px;flex:1;display:flex;flex-direction:column;">
                 <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:3px;">Desayuno</label>
-                <textarea id="hab-desdejuni" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;resize:none;font-family:inherit;background:#EFF6F2;border-color:#B8D8C4;flex:1;min-height:60px;"></textarea>
+                <textarea id="hab-desdejuni" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;resize:none;font-family:inherit;background:#D8EEE4;border-color:#7CB9A0;flex:1;min-height:60px;"></textarea>
               </div>
             </div>
             <!-- Col 2 -->
             <div style="display:flex;flex-direction:column;gap:6px;">
               <div style="background:white;border:1px solid #C9DDE6;border-radius:8px;padding:7px 9px;flex:1;display:flex;flex-direction:column;">
                 <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:3px;">Almuerzo/merienda</label>
-                <textarea id="hab-almuerzo" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;resize:none;font-family:inherit;background:#EFF6F2;border-color:#B8D8C4;flex:1;min-height:60px;"></textarea>
+                <textarea id="hab-almuerzo" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;resize:none;font-family:inherit;background:#D8EEE4;border-color:#7CB9A0;flex:1;min-height:60px;"></textarea>
               </div>
               <div style="background:white;border:1px solid #C9DDE6;border-radius:8px;padding:7px 9px;flex:1;display:flex;flex-direction:column;">
                 <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:3px;">💪 Proteínas</label>
-                <textarea id="hab-proteines" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;resize:none;font-family:inherit;background:#EFF6F2;border-color:#B8D8C4;flex:1;min-height:60px;"></textarea>
+                <textarea id="hab-proteines" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;resize:none;font-family:inherit;background:#D8EEE4;border-color:#7CB9A0;flex:1;min-height:60px;"></textarea>
               </div>
             </div>
             <!-- Col 3 -->
             <div style="display:flex;flex-direction:column;gap:6px;">
               <div style="background:white;border:1px solid #C9DDE6;border-radius:8px;padding:7px 9px;flex:1;display:flex;flex-direction:column;">
                 <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:3px;">🥦 Verdura</label>
-                <textarea id="hab-verdura" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;resize:none;font-family:inherit;background:#EFF6F2;border-color:#B8D8C4;flex:1;min-height:40px;"></textarea>
+                <textarea id="hab-verdura" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;resize:none;font-family:inherit;background:#D8EEE4;border-color:#7CB9A0;flex:1;min-height:40px;"></textarea>
               </div>
               <div style="background:white;border:1px solid #C9DDE6;border-radius:8px;padding:7px 9px;flex:1;display:flex;flex-direction:column;">
                 <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:3px;">🍎 Fruta</label>
-                <textarea id="hab-fruita" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;resize:none;font-family:inherit;background:#EFF6F2;border-color:#B8D8C4;flex:1;min-height:40px;"></textarea>
+                <textarea id="hab-fruita" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;resize:none;font-family:inherit;background:#D8EEE4;border-color:#7CB9A0;flex:1;min-height:40px;"></textarea>
               </div>
               <div style="background:white;border:1px solid #C9DDE6;border-radius:8px;padding:7px 9px;flex:1;display:flex;flex-direction:column;">
                 <label style="font-size:0.62rem;font-weight:600;color:#2C6E8A;text-transform:uppercase;display:block;margin-bottom:3px;">🌰 Frutos secos</label>
-                <textarea id="hab-fruits-secs" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;resize:none;font-family:inherit;background:#EFF6F2;border-color:#B8D8C4;flex:1;min-height:40px;"></textarea>
+                <textarea id="hab-fruits-secs" class="cues-input" style="margin:0;padding:4px 8px;font-size:0.78rem;resize:none;font-family:inherit;background:#D8EEE4;border-color:#7CB9A0;flex:1;min-height:40px;"></textarea>
               </div>
             </div>
             <!-- Col 4: HC -->
