@@ -574,6 +574,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         <input type="file" id="input-importar-plats-global" accept=".json" multiple style="display:none" onchange="importar_multiples_json(this,'plats')">
         <button class="btn btn-secondary" onclick="document.getElementById('input-importar-composicio-global').click()">🔬 Importar composición</button>
         <input type="file" id="input-importar-composicio-global" accept=".json" multiple style="display:none" onchange="importar_multiples_json(this,'composicio')">
+        <button class="btn btn-secondary" onclick="guardar_cataleg_plats().then(()=>mostrar_toast('✅ Catálogo guardado en Drive.','ok'))" style="background:var(--verde);color:white;border-color:var(--verde);">☁️ Guardar en Drive</button>
       </div>
       <div id="cataleg-grid-global"></div>
     </div>
@@ -1020,6 +1021,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <input type="file" id="input-importar-plats" accept=".json" multiple style="display:none" onchange="importar_multiples_json(this,'plats')">
           <button class="btn btn-secondary" onclick="document.getElementById('input-importar-composicio').click()">🔬 Importar composición</button>
           <input type="file" id="input-importar-composicio" accept=".json" multiple style="display:none" onchange="importar_multiples_json(this,'composicio')">
+          <button class="btn btn-secondary" onclick="guardar_cataleg_plats().then(()=>mostrar_toast('✅ Catálogo guardado en Drive.','ok'))" style="background:var(--verde);color:white;border-color:var(--verde);">☁️ Guardar en Drive</button>
         </div>
       </div>
       <div style="margin-bottom:16px;">
@@ -1683,9 +1685,9 @@ function renderitzar_ficha_dades(){
 }
 
 // ── ACTIU / BORRAR ──
-function canviar_estat_actiu(actiu) {
+async function canviar_estat_actiu(actiu) {
   pacient_actiu.actiu = actiu;
-  guardar_pacients();
+  await guardar_pacients();
   const label = document.getElementById('toggle-actiu-label');
   label.textContent = actiu ? 'Paciente activo' : 'Paciente inactivo';
 }
@@ -1704,7 +1706,7 @@ function carregar_antropometria() {
   renderitzar_historial_pesos();
 }
 
-function guardar_antropometria() {
+async function guardar_antropometria() {
   const p = pacient_actiu;
   const nou_pes = parseFloat(document.getElementById('antrop-pes').value) || null;
 
@@ -1721,7 +1723,7 @@ function guardar_antropometria() {
   p.pes_actual = nou_pes;
   p.pes_objectiu = parseFloat(document.getElementById('antrop-pes-obj').value) || null;
 
-  guardar_pacients();
+  await guardar_pacients();
   renderitzar_gmt();
   renderitzar_historial_pesos();
   // Actualitzar la barra superior de la ficha
@@ -1787,9 +1789,9 @@ function confirmar_borrar_pacient() {
   document.getElementById('modal-confirmar-borrar').classList.add('visible');
 }
 
-function borrar_pacient_definitiu() {
+async function borrar_pacient_definitiu() {
   pacients = pacients.filter(p => p.id !== pacient_actiu.id);
-  guardar_pacients();
+  await guardar_pacients();
   document.getElementById('modal-confirmar-borrar').classList.remove('visible');
   tornar_a_llista();
 }
@@ -2091,14 +2093,14 @@ function actualitzar_nutrientes_criticos(media_kcal, media_prot, media_hc, media
   }
 }
 
-function copiar_setmana_anterior(){
+async function copiar_setmana_anterior(){
   const clau_actual=clau_setmana(setmana_offset);
   const clau_anterior=clau_setmana(setmana_offset-1);
   const ant=pacient_actiu.planificacions[clau_anterior];
   if(!ant||!Object.keys(ant).length){alert('No hay planificación en la semana anterior.');return;}
   if(!confirm('¿Copiar la planificación de la semana anterior a esta semana?')) return;
   pacient_actiu.planificacions[clau_actual]=JSON.parse(JSON.stringify(ant));
-  guardar_pacients();
+  await guardar_pacients();
   renderitzar_setmana();
 }
 
@@ -2277,7 +2279,7 @@ function canviar_talla(talla) {
   });
 }
 
-function guardar_plat(copiar_setmana=false){
+async function guardar_plat(copiar_setmana=false){
   const nom=document.getElementById('plat-nom-input').value.trim();
   if(!nom){alert('Introduce el nombre del plato.');return;}
   const ingredientes_text = document.getElementById('plat-ingredientes').value.trim();
@@ -2316,7 +2318,7 @@ function guardar_plat(copiar_setmana=false){
     };
     if (idx >= 0) { cataleg_plats[idx] = { ...cataleg_plats[idx], ...plat_cat }; }
     else { cataleg_plats.push(plat_cat); }
-    guardar_cataleg_plats();
+    await guardar_cataleg_plats();
     actualitzar_stat_cataleg();
     mostrar_toast(`✅ "${nom}" guardado en el catálogo como Plato propio.`, 'ok');
   }
@@ -2346,22 +2348,22 @@ function guardar_plat(copiar_setmana=false){
     }
     pacient_actiu.planificacions[clau][nova_clau] = plat;
   }
-  guardar_pacients();
+  await guardar_pacients();
   tancar_modal_plat();
   renderitzar_setmana();
 }
 
-function eliminar_plat(mi,di){
+async function eliminar_platb(mi,di){
   const clau=clau_setmana(setmana_offset);
   delete pacient_actiu.planificacions[clau][mi+'_'+di];
-  guardar_pacients();
+  await guardar_pacients();
   renderitzar_setmana();
 }
 
-function eliminar_plat_clau(plat_clau){
+async function eliminar_plat_clau(plat_clau){
   const clau=clau_setmana(setmana_offset);
   delete pacient_actiu.planificacions[clau][plat_clau];
-  guardar_pacients();
+  await guardar_pacients();
   renderitzar_setmana();
 }
 
@@ -2407,7 +2409,7 @@ function tancar_modal_nou_pacient(){
   document.getElementById('modal-nou-pacient').classList.remove('visible');
   ['nou-nom','nou-cognoms','nou-data','nou-tel','nou-email'].forEach(id=>document.getElementById(id).value='');
 }
-function guardar_nou_pacient(){
+async function guardar_nou_pacient(){
   const nom=document.getElementById('nou-nom').value.trim();
   const cog=document.getElementById('nou-cognoms').value.trim();
   if(!nom||!cog){alert('Nombre y apellidos son obligatorios.');return;}
@@ -2419,7 +2421,7 @@ function guardar_nou_pacient(){
     creat:new Date().toISOString(), planificacions:{}
   };
   pacients.unshift(nou);
-  guardar_pacients();
+  await guardar_pacients();
   tancar_modal_nou_pacient();
   renderitzar_pacients();
   // Obrir el pacient i llançar el cuestionari automàticament
@@ -2461,11 +2463,11 @@ function renderitzar_historial() {
     </div>`).join('');
 }
 
-function borrar_historial(idx) {
+async function borrar_historial(idx) {
   const h = pacient_actiu.historial[idx];
   if (!confirm(`¿Eliminar la planificación "${h.titol}"?`)) return;
   pacient_actiu.historial.splice(idx, 1);
-  guardar_pacients();
+  await guardar_pacients();
   renderitzar_historial();
 }
 
@@ -2511,7 +2513,7 @@ function mostrar_preview_historial(h) {
   document.getElementById('modal-import-preview').classList.add('visible');
 }
 
-function clonar_historial(idx) {
+async function clonar_historial(idx) {
   const h = pacient_actiu.historial[idx];
   if(!h || !h.planificacio) { mostrar_toast('❌ Esta entrada no tiene planificación.', 'error'); return; }
 
@@ -2566,7 +2568,7 @@ function clonar_historial(idx) {
   // Copiar moments si existeixen
   if(h.moments && h.moments.length) pacient_actiu.moments_dia = h.moments;
 
-  guardar_pacients();
+  await guardar_pacients();
 
   // Navegar a planificació
   const tabBtn = document.querySelector('.tab-btn[onclick*="planificacio"]');
@@ -2936,7 +2938,7 @@ function mostrar_preview_importacio(dades) {
   document.getElementById('import-preview-subtitol').textContent = `${dades.moments.length} momentos · ${Object.keys(dades.planificacio).length} platos`;
 }
 
-function confirmar_importacio() {
+async function confirmar_importacio() {
   if(!dades_import_temp) return;
   if(!pacient_actiu.historial) pacient_actiu.historial = [];
   pacient_actiu.historial.unshift(dades_import_temp);
@@ -2950,7 +2952,7 @@ function confirmar_importacio() {
       creat: new Date().toISOString()
     });
   }
-  guardar_pacients();
+  await guardar_pacients();
   document.getElementById('modal-import-preview').classList.remove('visible');
   dades_import_temp = null;
   renderitzar_historial();
@@ -3400,7 +3402,7 @@ async function importar_cataleg_plats(input) {
       }
     });
 
-    guardar_cataleg_plats();
+    await guardar_cataleg_plats();
 
     const msg = `✅ Catálogo actualizado: ${afegits} platos nuevos, ${actualitzats} actualizados. Total: ${cataleg_plats.length} platos.`;
     mostrar_toast(msg, 'ok');
@@ -3468,7 +3470,7 @@ async function importar_composicio_plat(input) {
     if (idx >= 0) {
       // Existeix: actualitzar directament
       cataleg_plats[idx] = { ...cataleg_plats[idx], ...plat };
-      guardar_cataleg_plats();
+      await guardar_cataleg_plats();
       mostrar_toast(`✅ Composición de "${plat.nombre}" actualizada.`, 'ok');
     } else {
       // No existeix: preguntar
@@ -3482,7 +3484,7 @@ async function importar_composicio_plat(input) {
   }
 }
 
-function confirmar_importar_composicio() {
+async function confirmar_importar_composicio() {
   if (!_composicio_pendent) return;
   cataleg_plats.push(_composicio_pendent);
   guardar_cataleg_plats();
@@ -3733,18 +3735,18 @@ function actualitzar_cues_ui() {
   document.getElementById('cues-btn-seguent').textContent = cues_step_actual === CUES_TOTAL_STEPS ? '💾 Guardar' : 'Siguiente →';
 }
 
-function guardar_cuestionari() {
+async function guardar_cuestionari() {
   pacient_actiu.cuestionari = recollir_dades_cuestionari();
-  guardar_pacients();
+  await guardar_pacients();
   tancar_cuestionari();
   renderitzar_cuestionari_resum();
   mostrar_toast('✅ Cuestionario guardado correctamente.', 'ok');
 }
 
-function borrar_cuestionari() {
+async function borrar_cuestionari() {
   if (!confirm('¿Eliminar el cuestionario de este paciente?')) return;
   delete pacient_actiu.cuestionari;
-  guardar_pacients();
+  await guardar_pacients();
   renderitzar_cuestionari_resum();
   mostrar_toast('🗑️ Cuestionario eliminado.', 'ok');
 }
@@ -4090,11 +4092,11 @@ function dibuixar_grafic() {
   });
 }
 
-function borrar_evolucio(idx) {
+async function borrar_evolucio(idx) {
   const e = pacient_actiu.evolucio[idx];
   if (!confirm(`¿Eliminar la medición del ${e.data}?`)) return;
   pacient_actiu.evolucio.splice(idx, 1);
-  guardar_pacients();
+  await guardar_pacients();
   renderitzar_evolucio();
 }
 
@@ -4112,7 +4114,7 @@ canviar_tab = function(id, btn) {
 // ════════════════════════════════════════════════════════
 // OBSERVACIONS — guardar/carregar
 // ════════════════════════════════════════════════════════
-function guardar_observacions() {
+async function guardar_observacions() {
   if (!pacient_actiu) return;
   if (!pacient_actiu.observacions) pacient_actiu.observacions = {};
   pacient_actiu.observacions.objectiu_esportiu = document.getElementById('obs-objectiu').value.trim();
@@ -4120,7 +4122,7 @@ function guardar_observacions() {
   pacient_actiu.observacions.tensio            = document.getElementById('obs-tensio').value.trim();
   pacient_actiu.observacions.pulsacions        = document.getElementById('obs-pulsacions').value.trim();
   pacient_actiu.observacions.proxima_visita    = document.getElementById('obs-proxima-visita').value.trim();
-  guardar_pacients();
+  await guardar_pacients();
   mostrar_toast('✅ Observaciones guardadas.', 'ok');
 }
 
@@ -4780,7 +4782,7 @@ function guardar_editar_cataleg() {
 
 
 // ── OBJECTIUS DE PLANIFICACIÓ ──
-function guardar_habits() {
+async function guardar_habits() {
   if (!pacient_actiu) return;
   if (!pacient_actiu.habits) pacient_actiu.habits = {};
   const h = pacient_actiu.habits;
@@ -4795,7 +4797,7 @@ function guardar_habits() {
   h.fruita        = document.getElementById('hab-fruita').value.trim();
   h.fruits_secs   = document.getElementById('hab-fruits-secs').value.trim();
   h.altres        = document.getElementById('hab-altres').value.trim();
-  guardar_pacients();
+  await guardar_pacients();
   mostrar_toast('✅ Hábitos guardados.', 'ok');
 }
 
@@ -4839,7 +4841,7 @@ function carregar_objectius_planificacio() {
   set('obj-proxima',  o.proxima_visita);
 }
 
-function guardar_objectius() {
+async function guardar_objectius() {
   if (!pacient_actiu) return;
   if (!pacient_actiu.observacions) pacient_actiu.observacions = {};
   pacient_actiu.observacions.objectiu_esportiu = document.getElementById('obj-esportiu').value.trim();
@@ -4847,7 +4849,7 @@ function guardar_objectius() {
   pacient_actiu.observacions.tensio             = document.getElementById('obj-tensio').value.trim();
   pacient_actiu.observacions.pulsacions         = document.getElementById('obj-pulsacions').value.trim();
   pacient_actiu.observacions.proxima_visita     = document.getElementById('obj-proxima').value.trim();
-  guardar_pacients();
+  await guardar_pacients();
   // Sync amb els camps de la ficha
   carregar_observacions();
   mostrar_toast('✅ Objetivos guardados.', 'ok');
@@ -5152,10 +5154,10 @@ function importar_pacients_json(input) {
   });
 }
 
-function confirmar_borrar_tots_pacients() {
+async function confirmar_borrar_tots_pacients() {
   if (!confirm(`⚠️ ¿Borrar TODOS los ${pacients.length} pacientes y sus datos?\n\nEsta acción no se puede deshacer.`)) return;
   pacients = [];
-  guardar_pacients();
+  await guardar_pacients();
   renderitzar_pacients();
   mostrar_toast('🗑️ Todos los pacientes eliminados.', 'ok');
 }
