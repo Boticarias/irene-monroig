@@ -4093,7 +4093,7 @@ const LOGO_B64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAeAB4AAD/2wBDAAMCAgM
 
 const DIES_SETMANA = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 
-const CONSELLS_GENERALS = consells_generals_actius;
+// CONSELLS_GENERALS se lee dinámicamente desde consells_generals_actius
 
 // Categories per la llista de la compra
 const CATEGORIES_COMPRA = [
@@ -4433,7 +4433,7 @@ Pròxima visita: ${o.proxima_visita}`;
     ${capcalera}
     <div class="obs-titol">OBSERVACIONES</div>
     <div class="obs-seccio-titol">${idioma_pdf === "cas" ? "RECOMENDACIONES GENERALES:" : "CONSELLS GENERALS:"}</div>
-    <div class="obs-text">${idioma_pdf === "cas" ? CONSELLS_GENERALS.cas : CONSELLS_GENERALS.val}</div>
+    <div class="obs-text">${idioma_pdf === "cas" ? consells_generals_actius.cas : consells_generals_actius.val}</div>
     ${o.objectiu_esportiu ? `<div class="obs-seccio-titol">OBJECTIU ESPORTIU:</div><div class="obs-text">${o.objectiu_esportiu}</div>` : ''}
     ${o.a_tenir_en_compte ? `<div class="obs-seccio-titol">A TINDRE EN COMPTE:</div><div class="obs-text">${o.a_tenir_en_compte}</div>` : ''}
     ${resultats_tanita ? `<div class="obs-seccio-titol"></div><div class="obs-resultats">${resultats_tanita}</div>` : ''}
