@@ -2699,21 +2699,23 @@ function parsejar_pdf_dietopro(text, filename) {
   // Cada pàgina de detall té el nom del dia a la capçalera (just després del títol del pacient)
   // Estructura: "N  NOM PACIENT  DATA  DIA  Platos  Recetas..."
   const paginaPerDia = {};
+  let ultimDia = -1;
   pages.forEach(p => {
     if (!/INGREDIENTES/i.test(p) || p.trim().length < 50) return;
+    const header = p.slice(0, 300);
+    let diaDetectat = -1;
     dies.forEach((dia, di) => {
-      // El dia ha d'aparèixer com a paraula sola a la capçalera (primers 300 chars)
-      const header = p.slice(0, 300);
       const reDay = new RegExp('\\b' + dia + '\\b(?!\\s+(?:' + dies.filter((_,i)=>i!==di).join('|') + '))', 'i');
-      if (reDay.test(header)) {
-        // Concatenar si ja tenim pàgina per aquest dia (pot estar tallat en dues pàgines)
-        if (paginaPerDia[di]) {
-          paginaPerDia[di] += '\n' + p;
-        } else {
-          paginaPerDia[di] = p;
-        }
-      }
+      if (reDay.test(header)) diaDetectat = di;
     });
+    if (diaDetectat >= 0) {
+      // Pàgina amb nom de dia — assignar o concatenar
+      ultimDia = diaDetectat;
+      paginaPerDia[diaDetectat] = (paginaPerDia[diaDetectat] || '') + '\n' + p;
+    } else if (ultimDia >= 0) {
+      // Pàgina de continuació (sense nom de dia) — afegir al dia anterior
+      paginaPerDia[ultimDia] = (paginaPerDia[ultimDia] || '') + '\n' + p;
+    }
   });
 
   moments_presents.forEach((moment, mi) => {
