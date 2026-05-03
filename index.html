@@ -505,6 +505,11 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <button onclick="confirmar_borrar_tots_plats();toggle_config_panel()" style="width:100%;text-align:left;padding:9px 12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:0.83rem;color:var(--rosa);border-radius:8px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#fdecea'" onmouseout="this.style.background='none'">
             🗑️ Borrar todos los platos
           </button>
+          <!-- Backup -->
+          <div style="font-size:0.67rem;font-weight:700;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.8px;margin-top:10px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--vora);">☁️ Copias de seguridad</div>
+          <button onclick="toggle_config_panel();obrir_modal_backup()" style="width:100%;text-align:left;padding:9px 12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:0.83rem;color:var(--text);border-radius:8px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='var(--verde-suau)'" onmouseout="this.style.background='none'">
+            🔄 Restaurar copia de seguridad
+          </button>
         </div>
       </div>
     </div>
@@ -1152,6 +1157,35 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 </div>
 
 <!-- MODAL CONFIRMAR BORRAR -->
+<!-- MODAL BACKUP -->
+<div class="modal-overlay" id="modal-backup">
+  <div class="modal" style="max-width:520px;width:95%;">
+    <div class="modal-header">
+      <div><h3>☁️ Restaurar copia de seguridad</h3><p>Selecciona la copia que quieres restaurar</p></div>
+      <button class="modal-close" onclick="document.getElementById('modal-backup').classList.remove('visible')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      <div style="background:#fff8e1;border-bottom:1px solid #ffe082;padding:12px 20px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:1.3rem;">⚠️</span>
+        <p style="font-size:0.82rem;color:#7a5c00;margin:0;"><strong>Atención:</strong> al restaurar se borrarán todos los datos actuales de pacientes y/o catálogo y se sustituirán por los de la copia seleccionada.</p>
+      </div>
+      <div style="padding:16px 20px;">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--text-suau);text-transform:uppercase;margin-bottom:10px;">Pacientes</div>
+        <div id="backup-list-pacients" style="display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;">
+          <div style="color:var(--text-suau);font-size:0.83rem;padding:8px;">⏳ Cargando copias...</div>
+        </div>
+        <div style="font-size:0.72rem;font-weight:700;color:var(--text-suau);text-transform:uppercase;margin-top:14px;margin-bottom:10px;">Catálogo de platos</div>
+        <div id="backup-list-cataleg" style="display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;">
+          <div style="color:var(--text-suau);font-size:0.83rem;padding:8px;">⏳ Cargando copias...</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="document.getElementById('modal-backup').classList.remove('visible')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-confirmar-borrar">
   <div class="modal modal-confirm">
     <div class="modal-header">
@@ -3235,7 +3269,7 @@ function extreure_tanita_complet(text, linies) {
 }
 
 // Tancar modals clicant fora
-['modal-plat','modal-nou-pacient','modal-confirmar-borrar','modal-import-preview','modal-composicio-confirm','modal-cuestionari','modal-editar-cataleg'].forEach(id=>{
+['modal-plat','modal-nou-pacient','modal-confirmar-borrar','modal-import-preview','modal-composicio-confirm','modal-cuestionari','modal-editar-cataleg','modal-backup'].forEach(id=>{
   const el=document.getElementById(id); if(el) el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('visible');});
 });
 
@@ -4839,6 +4873,76 @@ async function importar_pacients_json(input) {
 }
 
 // ── BORRAR TOTS ELS PACIENTS ──
+// ── BACKUP: OBRIR MODAL I LLISTAR ──
+async function obrir_modal_backup() {
+  document.getElementById('modal-backup').classList.add('visible');
+  await llistar_backups('pacients', 'backup-list-pacients');
+  await llistar_backups('cataleg', 'backup-list-cataleg');
+}
+
+async function llistar_backups(tipus, container_id) {
+  const container = document.getElementById(container_id);
+  container.innerHTML = '<div style="color:var(--text-suau);font-size:0.83rem;padding:8px;">⏳ Cargando...</div>';
+  try {
+    const r = await fetch(
+      `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name+contains+'backup_${tipus}_'&fields=files(id,name,createdTime)&orderBy=createdTime+desc`,
+      {headers:{Authorization:`Bearer ${drive_access_token}`}}
+    );
+    const d = await r.json();
+    const files = d.files || [];
+    if (!files.length) {
+      container.innerHTML = '<div style="color:var(--text-suau);font-size:0.83rem;padding:8px;">No hay copias disponibles.</div>';
+      return;
+    }
+    container.innerHTML = files.map(f => {
+      const ts = f.name.replace(`backup_${tipus}_`, '').replace('.enc','');
+      const parts = ts.split('T');
+      const data = parts[0];
+      const hora = parts[1] ? parts[1].replace(/-/g,':').slice(0,8) : '';
+      const label = `${data} a las ${hora}`;
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border:1px solid var(--vora);border-radius:8px;background:#fafafa;">
+        <span style="font-size:0.83rem;">📅 ${label}</span>
+        <button onclick="confirmar_restaurar_backup('${f.id}','${tipus}','${label}')"
+          style="font-size:0.75rem;padding:5px 12px;border:none;background:var(--verde);color:white;border-radius:7px;cursor:pointer;font-weight:600;">
+          Restaurar
+        </button>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<div style="color:var(--rosa);font-size:0.83rem;padding:8px;">⚠️ Error al cargar copias.</div>';
+  }
+}
+
+async function confirmar_restaurar_backup(file_id, tipus, label) {
+  const msg = `⚠️ Atención\n\nSe borrarán todos los datos actuales de ${tipus === 'pacients' ? 'pacientes' : 'catálogo de platos'} y se sustituirán por la copia del:\n\n📅 ${label}\n\n¿Estás segura?`;
+  if (!confirm(msg)) return;
+  try {
+    mostrar_drive_status('Restaurando...', 'ok');
+    const r = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${file_id}?alt=media`,
+      {headers:{Authorization:`Bearer ${drive_access_token}`}}
+    );
+    const b64 = await r.text();
+    const data = await decrypt_data(b64);
+    if (tipus === 'pacients') {
+      pacients = data;
+      await guardar_pacients();
+      renderitzar_pacients();
+      mostrar_toast('✅ Pacientes restaurados correctamente.', 'ok');
+    } else {
+      cataleg_plats = data;
+      await guardar_cataleg_plats();
+      actualitzar_stat_cataleg();
+      mostrar_toast('✅ Catálogo restaurado correctamente.', 'ok');
+    }
+    document.getElementById('modal-backup').classList.remove('visible');
+    mostrar_drive_status('Restaurado correctamente');
+  } catch(e) {
+    console.error('Error restaurando backup:', e);
+    mostrar_toast('⚠️ Error al restaurar la copia.', 'error');
+  }
+}
+
 function toggle_config_panel() {
   const panel = document.getElementById('config-panel');
   const isOpen = panel.style.display !== 'none';
