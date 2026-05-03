@@ -1140,7 +1140,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
 <!-- MODAL PREVISUALITZAR IMPORTACIÓ PDF -->
 <div class="modal-overlay" id="modal-import-preview">
-  <div class="modal" style="width:680px;max-width:96vw;">
+  <div class="modal" style="width:96vw;max-width:1200px;">
     <div class="modal-header">
       <div>
         <h3>Vista previa de importación</h3>
@@ -1148,7 +1148,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       </div>
       <button class="modal-close" onclick="document.getElementById('modal-import-preview').classList.remove('visible')">✕</button>
     </div>
-    <div class="modal-body" id="import-preview-body" style="max-height:60vh;overflow-y:auto;">
+    <div class="modal-body" id="import-preview-body" style="max-height:70vh;overflow-y:auto;overflow-x:auto;">
       <div style="text-align:center;padding:40px;color:var(--text-suau)">
         <div style="font-size:2rem;margin-bottom:10px">⏳</div>
         <p>Leyendo PDF...</p>
@@ -2702,12 +2702,16 @@ function parsejar_pdf_dietopro(text, filename) {
   pages.forEach(p => {
     if (!/INGREDIENTES/i.test(p) || p.trim().length < 50) return;
     dies.forEach((dia, di) => {
-      if (paginaPerDia[di]) return; // ja tenim pàgina per aquest dia
       // El dia ha d'aparèixer com a paraula sola a la capçalera (primers 300 chars)
       const header = p.slice(0, 300);
       const reDay = new RegExp('\\b' + dia + '\\b(?!\\s+(?:' + dies.filter((_,i)=>i!==di).join('|') + '))', 'i');
       if (reDay.test(header)) {
-        paginaPerDia[di] = p;
+        // Concatenar si ja tenim pàgina per aquest dia (pot estar tallat en dues pàgines)
+        if (paginaPerDia[di]) {
+          paginaPerDia[di] += '\n' + p;
+        } else {
+          paginaPerDia[di] = p;
+        }
       }
     });
   });
