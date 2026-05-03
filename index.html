@@ -510,6 +510,11 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <button onclick="toggle_config_panel();obrir_modal_backup()" style="width:100%;text-align:left;padding:9px 12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:0.83rem;color:var(--text);border-radius:8px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='var(--verde-suau)'" onmouseout="this.style.background='none'">
             🔄 Restaurar copia de seguridad
           </button>
+          <!-- Objetivos generales -->
+          <div style="font-size:0.67rem;font-weight:700;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.8px;margin-top:10px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--vora);">📋 Objetivos generales</div>
+          <button onclick="toggle_config_panel();obrir_modal_objectius_generals()" style="width:100%;text-align:left;padding:9px 12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:0.83rem;color:var(--text);border-radius:8px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='var(--verde-suau)'" onmouseout="this.style.background='none'">
+            ✏️ Editar objetivos generales
+          </button>
         </div>
       </div>
     </div>
@@ -1157,6 +1162,32 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 </div>
 
 <!-- MODAL CONFIRMAR BORRAR -->
+<!-- MODAL OBJECTIUS GENERALS -->
+<div class="modal-overlay" id="modal-objectius-generals">
+  <div class="modal" style="max-width:680px;width:95%;">
+    <div class="modal-header">
+      <div><h3>📋 Objetivos generales</h3><p>Se guardan en Drive y se usan al generar el PDF</p></div>
+      <button class="modal-close" onclick="document.getElementById('modal-objectius-generals').classList.remove('visible')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:16px 20px;">
+      <div style="display:flex;gap:0;margin-bottom:14px;border-bottom:2px solid var(--vora);">
+        <button id="tab-obj-val" onclick="canviar_tab_obj('val')" style="padding:8px 20px;border:none;background:none;font-family:Jost,sans-serif;font-size:0.85rem;font-weight:600;color:var(--verde);border-bottom:2px solid var(--verde);margin-bottom:-2px;cursor:pointer;">🇻🇦 Valenciano</button>
+        <button id="tab-obj-cas" onclick="canviar_tab_obj('cas')" style="padding:8px 20px;border:none;background:none;font-family:Jost,sans-serif;font-size:0.85rem;color:var(--text-suau);cursor:pointer;">🇪🇸 Castellano</button>
+      </div>
+      <div id="tab-obj-val-content">
+        <textarea id="obj-generals-val" style="width:100%;height:320px;padding:12px;border:2px solid #7CB9A0;border-radius:10px;font-family:Jost,sans-serif;font-size:0.88rem;color:var(--text);background:#D8EEE4;resize:vertical;line-height:1.6;"></textarea>
+      </div>
+      <div id="tab-obj-cas-content" style="display:none;">
+        <textarea id="obj-generals-cas" style="width:100%;height:320px;padding:12px;border:2px solid #7CB9A0;border-radius:10px;font-family:Jost,sans-serif;font-size:0.88rem;color:var(--text);background:#D8EEE4;resize:vertical;line-height:1.6;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="document.getElementById('modal-objectius-generals').classList.remove('visible')">Cancelar</button>
+      <button class="btn-guardar" onclick="guardar_objectius_generals()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL BACKUP -->
 <div class="modal-overlay" id="modal-backup">
   <div class="modal" style="max-width:520px;width:95%;">
@@ -1434,6 +1465,7 @@ async function init() {
   }
   renderitzar_pacients();
   await carregar_cataleg_plats_drive();
+  await carregar_objectius_generals_drive();
   actualitzar_stat_cataleg();
   fer_backup_si_cal();
 }
@@ -3269,7 +3301,7 @@ function extreure_tanita_complet(text, linies) {
 }
 
 // Tancar modals clicant fora
-['modal-plat','modal-nou-pacient','modal-confirmar-borrar','modal-import-preview','modal-composicio-confirm','modal-cuestionari','modal-editar-cataleg','modal-backup'].forEach(id=>{
+['modal-plat','modal-nou-pacient','modal-confirmar-borrar','modal-import-preview','modal-composicio-confirm','modal-cuestionari','modal-editar-cataleg','modal-backup','modal-objectius-generals'].forEach(id=>{
   const el=document.getElementById(id); if(el) el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('visible');});
 });
 
@@ -4061,26 +4093,7 @@ const LOGO_B64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAeAB4AAD/2wBDAAMCAgM
 
 const DIES_SETMANA = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 
-const CONSELLS_GENERALS = {
-  val: `1. La primera norma és no passar fam excessiva. Si tens molta gana entre hores o et resulta difícil seguir la planificació, posa't en contacte amb mi per ajustar-la.
-2. La planificació setmanal està basada en la dieta mediterrània i consta de 6 dies complets i dos menjars del cap de setmana "lliures", sempre respectant les quantitats. Els menjars lliures no són per a excedir-se, sinó per a gaudir amb equilibri i flexibilitat.
-3. Totes les verdures són intercanviables; és a dir, si posa bajoca, pots usar pimentó. Així també aconseguirem una alimentació variada i rica en vitamines i minerals.
-4. Les fruites també són intercanviables. Prioritza fruites locals i de proximitat, més saboroses, nutritives i sostenibles.
-5. Beu aproximadament entre 1,5 i 2 L d'aigua al dia, ajustant-ho segons la set, l'activitat física o la calor.
-6. Busca una rutina activa i intenta moure't cada dia (caminar, pujar escales, etc.) per evitar el sedentarisme.
-7. No cal pesar totes les quantitats. Es pot fer al principi per a fer-te una idea, però no cal obsessionar-se. Si les peses, fes-ho sempre en cru.
-8. Les tècniques culinàries recomanades són: al vapor, bullit, a la planxa, al forn, al microones, al papillota o, fins i tot, utilitzant la fregidora d'aire.
-9. Intenta dormir al voltant de 7 hores cada nit. El descans és tan important com l'alimentació.`,
-  cas: `1. La primera norma es no pasar hambre excesiva. Si tienes mucha hambre entre horas o te resulta difícil seguir la planificación, ponte en contacto conmigo para ajustarla.
-2. La planificación semanal está basada en la dieta mediterránea y consta de 6 días completos y dos comidas del fin de semana "libres", respetando siempre las cantidades. Las comidas libres no son para excederse, sino para disfrutar con equilibrio y flexibilidad.
-3. Todas las verduras son intercambiables; es decir, si pone judía verde, puedes usar pimiento. Así también conseguiremos una alimentación variada y rica en vitaminas y minerales.
-4. Las frutas también son intercambiables. Prioriza frutas locales y de proximidad, más sabrosas, nutritivas y sostenibles.
-5. Bebe aproximadamente entre 1,5 y 2 L de agua al día, ajustándolo según la sed, la actividad física o el calor.
-6. Busca una rutina activa e intenta moverte cada día (caminar, subir escaleras, etc.) para evitar el sedentarismo.
-7. No es necesario pesar todas las cantidades. Se puede hacer al principio para hacerse una idea, pero no hay que obsesionarse. Si las pesas, hazlo siempre en crudo.
-8. Las técnicas culinarias recomendadas son: al vapor, hervido, a la plancha, al horno, al microondas, en papillote o incluso usando la freidora de aire.
-9. Intenta dormir alrededor de 7 horas cada noche. El descanso es tan importante como la alimentación.`
-};
+const CONSELLS_GENERALS = consells_generals_actius;
 
 // Categories per la llista de la compra
 const CATEGORIES_COMPRA = [
@@ -4873,6 +4886,66 @@ async function importar_pacients_json(input) {
 }
 
 // ── BORRAR TOTS ELS PACIENTS ──
+// ── OBJECTIUS GENERALS (editables, guardats a Drive) ──
+const CONSELLS_GENERALS_DEFAULT = {
+  val: `1. La primera norma és no passar fam excessiva. Si tens molta gana entre hores o et resulta difícil seguir la planificació, posa't en contacte amb mi per ajustar-la.
+2. La planificació setmanal està basada en la dieta mediterrània i consta de 6 dies complets i dos menjars del cap de setmana "lliures", sempre respectant les quantitats. Els menjars lliures no són per a excedir-se, sinó per a gaudir amb equilibri i flexibilitat.
+3. Totes les verdures són intercanviables; és a dir, si posa bajoca, pots usar pimentó. Així també aconseguirem una alimentació variada i rica en vitamines i minerals.
+4. Les fruites també són intercanviables. Prioritza fruites locals i de proximitat, més saboroses, nutritives i sostenibles.
+5. Beu aproximadament entre 1,5 i 2 L d'aigua al dia, ajustant-ho segons la set, l'activitat física o la calor.
+6. Busca una rutina activa i intenta moure't cada dia (caminar, pujar escales, etc.) per evitar el sedentarisme.
+7. No cal pesar totes les quantitats. Es pot fer al principi per a fer-te una idea, però no cal obsessionar-se. Si les peses, fes-ho sempre en cru.
+8. Les tècniques culinàries recomanades són: al vapor, bullit, a la planxa, al forn, al microones, al papillota o, fins i tot, utilitzant la fregidora d'aire.
+9. Intenta dormir al voltant de 7 hores cada nit. El descans és tan important com l'alimentació.`,
+  cas: `1. La primera norma es no pasar hambre excesiva. Si tienes mucha hambre entre horas o te resulta difícil seguir la planificación, ponte en contacto conmigo para ajustarla.
+2. La planificación semanal está basada en la dieta mediterránea y consta de 6 días completos y dos comidas del fin de semana "libres", respetando siempre las cantidades. Las comidas libres no son para excederse, sino para disfrutar con equilibrio y flexibilidad.
+3. Todas las verduras son intercambiables; es decir, si pone judía verde, puedes usar pimiento. Así también conseguiremos una alimentación variada y rica en vitaminas y minerales.
+4. Las frutas también son intercambiables. Prioriza frutas locales y de proximidad, más sabrosas, nutritivas y sostenibles.
+5. Bebe aproximadamente entre 1,5 y 2 L de agua al día, ajustándolo según la sed, la actividad física o el calor.
+6. Busca una rutina activa e intenta moverte cada día (caminar, subir escaleras, etc.) para evitar el sedentarismo.
+7. No es necesario pesar todas las cantidades. Se puede hacer al principio para hacerse una idea, pero no hay que obsesionarse. Si las pesas, hazlo siempre en crudo.
+8. Las técnicas culinarias recomendadas son: al vapor, hervido, a la plancha, al horno, al microondas, en papillote o incluso usando la freidora de aire.
+9. Intenta dormir alrededor de 7 horas cada noche. El descanso es tan importante como la alimentación.`
+};
+
+let consells_generals_actius = {...CONSELLS_GENERALS_DEFAULT};
+
+async function carregar_objectius_generals_drive() {
+  try {
+    const raw = await drive_read('objectius_generals.enc');
+    if (raw) consells_generals_actius = await decrypt_data(raw);
+  } catch(e) { console.warn('Usant objectius per defecte'); }
+}
+
+async function guardar_objectius_generals() {
+  consells_generals_actius.val = document.getElementById('obj-generals-val').value;
+  consells_generals_actius.cas = document.getElementById('obj-generals-cas').value;
+  try {
+    await drive_write('objectius_generals.enc', await encrypt_data(consells_generals_actius));
+    mostrar_drive_status('Objetivos guardados en Drive');
+    mostrar_toast('✅ Objetivos generales guardados.', 'ok');
+    document.getElementById('modal-objectius-generals').classList.remove('visible');
+  } catch(e) {
+    mostrar_toast('⚠️ Error al guardar objetivos.', 'error');
+  }
+}
+
+function obrir_modal_objectius_generals() {
+  document.getElementById('obj-generals-val').value = consells_generals_actius.val;
+  document.getElementById('obj-generals-cas').value = consells_generals_actius.cas;
+  canviar_tab_obj('val');
+  document.getElementById('modal-objectius-generals').classList.add('visible');
+}
+
+function canviar_tab_obj(idioma) {
+  document.getElementById('tab-obj-val-content').style.display = idioma === 'val' ? 'block' : 'none';
+  document.getElementById('tab-obj-cas-content').style.display = idioma === 'cas' ? 'block' : 'none';
+  document.getElementById('tab-obj-val').style.color = idioma === 'val' ? 'var(--verde)' : 'var(--text-suau)';
+  document.getElementById('tab-obj-val').style.borderBottom = idioma === 'val' ? '2px solid var(--verde)' : 'none';
+  document.getElementById('tab-obj-cas').style.color = idioma === 'cas' ? 'var(--verde)' : 'var(--text-suau)';
+  document.getElementById('tab-obj-cas').style.borderBottom = idioma === 'cas' ? '2px solid var(--verde)' : 'none';
+}
+
 // ── BACKUP: OBRIR MODAL I LLISTAR ──
 async function obrir_modal_backup() {
   document.getElementById('modal-backup').classList.add('visible');
