@@ -574,7 +574,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         <input type="file" id="input-importar-plats-global" accept=".json" multiple style="display:none" onchange="importar_multiples_json(this,'plats')">
         <button class="btn btn-secondary" onclick="document.getElementById('input-importar-composicio-global').click()">🔬 Importar composición</button>
         <input type="file" id="input-importar-composicio-global" accept=".json" multiple style="display:none" onchange="importar_multiples_json(this,'composicio')">
-        <button class="btn btn-secondary" onclick="guardar_cataleg_plats().then(()=>mostrar_toast('✅ Catálogo guardado en Drive.','ok'))" style="background:var(--verde);color:white;border-color:var(--verde);">☁️ Guardar en Drive</button>
+        <button class="btn btn-secondary" onclick="guardar_cataleg_plats().then(()=>mostrar_toast('✅ Catálogo guardado en Drive.','ok')).catch(e=>mostrar_toast('❌ Error al guardar: '+e.message,'error'))" style="background:var(--verde);color:white;border-color:var(--verde);">☁️ Guardar en Drive</button>
       </div>
       <div id="cataleg-grid-global"></div>
     </div>
@@ -1021,7 +1021,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <input type="file" id="input-importar-plats" accept=".json" multiple style="display:none" onchange="importar_multiples_json(this,'plats')">
           <button class="btn btn-secondary" onclick="document.getElementById('input-importar-composicio').click()">🔬 Importar composición</button>
           <input type="file" id="input-importar-composicio" accept=".json" multiple style="display:none" onchange="importar_multiples_json(this,'composicio')">
-          <button class="btn btn-secondary" onclick="guardar_cataleg_plats().then(()=>mostrar_toast('✅ Catálogo guardado en Drive.','ok'))" style="background:var(--verde);color:white;border-color:var(--verde);">☁️ Guardar en Drive</button>
+          <button class="btn btn-secondary" onclick="guardar_cataleg_plats().then(()=>mostrar_toast('✅ Catálogo guardado en Drive.','ok')).catch(e=>mostrar_toast('❌ Error al guardar: '+e.message,'error'))" style="background:var(--verde);color:white;border-color:var(--verde);">☁️ Guardar en Drive</button>
         </div>
       </div>
       <div style="margin-bottom:16px;">
@@ -3501,7 +3501,11 @@ async function guardar_cataleg_plats() {
   try {
     await drive_write('cataleg_plats.enc', await encrypt_data(cataleg_plats));
     mostrar_drive_status('Guardado en Drive');
-  } catch(e) { mostrar_drive_status('Error al guardar', 'error'); }
+  } catch(e) {
+    console.error('guardar_cataleg_plats error:', e.message || e);
+    mostrar_drive_status('Error al guardar: ' + (e.message || e), 'error');
+    throw e; // re-throw perquè el .then() del botó no s'executi
+  }
 }
 
 async function importar_cataleg_plats(input) {
