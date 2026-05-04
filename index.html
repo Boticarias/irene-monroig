@@ -1320,15 +1320,22 @@ async function drive_get_file_id(filename) {
     `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='${filename}'&fields=files(id)`,
     {headers:{Authorization:`Bearer ${drive_access_token}`}}
   );
+  if (!r.ok) { console.warn(`drive_get_file_id(${filename}): HTTP ${r.status}`); return null; }
   const d = await r.json();
-  return d.files && d.files.length > 0 ? d.files[0].id : null;
+  if (d.error) { console.warn(`drive_get_file_id(${filename}): API error`, d.error); return null; }
+  const id = d.files && d.files.length > 0 ? d.files[0].id : null;
+  console.log(`drive_get_file_id(${filename}):`, id || 'no trobat');
+  return id;
 }
 async function drive_read(filename) {
   const id = await drive_get_file_id(filename);
   if (!id) return null;
   const r = await fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`,
     {headers:{Authorization:`Bearer ${drive_access_token}`}});
-  return await r.text();
+  if (!r.ok) { console.warn(`drive_read(${filename}): HTTP ${r.status}`); return null; }
+  const text = await r.text();
+  console.log(`drive_read(${filename}): ${text.length} bytes llegits`);
+  return text;
 }
 async function drive_write(filename, content) {
   const id = await drive_get_file_id(filename);
@@ -1384,18 +1391,23 @@ async function carregar_pacients_drive() {
 }
 
 async function carregar_cataleg_plats_drive() {
-  if (!drive_access_token) return;
-  try {
-    const raw = await drive_read('cataleg_plats.enc');
-    if (raw) {
+  if (!drive_access_token) { console.warn('cataleg: no drive token'); return; }
+  for (let intent = 1; intent <= 3; intent++) {
+    try {
+      console.log(`cataleg: intent ${intent} de llegir Drive...`);
+      const raw = await drive_read('cataleg_plats.enc');
+      if (!raw) { console.warn('cataleg: fitxer no trobat a Drive'); return; }
       const dades = await decrypt_data(raw);
-      if (Array.isArray(dades)) cataleg_plats = dades;
-      else throw new Error('Formato inesperado');
+      if (!Array.isArray(dades)) throw new Error('Formato inesperado: ' + typeof dades);
+      cataleg_plats = dades;
+      console.log(`✅ cataleg: ${cataleg_plats.length} plats carregats`);
+      return;
+    } catch(e) {
+      console.warn(`cataleg: error intent ${intent}:`, e.message || e);
+      if (intent < 3) await new Promise(r => setTimeout(r, 1000 * intent));
     }
-  } catch(e) {
-    console.warn('No se pudo leer catàleg:', e);
-    mostrar_drive_status('No se pudo cargar el catálogo de platos', 'error');
   }
+  mostrar_drive_status('No se pudo cargar el catálogo de platos', 'error');
 }
 
 // ── PACIENTS INICIALS (fallback primera vegada) ──
