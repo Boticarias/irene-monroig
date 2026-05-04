@@ -1278,17 +1278,23 @@ let drive_access_token = null;
 let aes_key = null;
 
 // ── AES-GCM ──
+// La clave se deriva de la contraseña con PBKDF2 → siempre es la misma en cualquier
+// dispositivo/sesión, por lo que los datos cifrados en Drive son siempre legibles.
+const AES_PASSWORD = 'Paracetamol650.'; // misma que la contraseña de login
+const AES_SALT = new TextEncoder().encode('irene-monroig-salt-v1'); // sal fija y pública
+
 async function get_aes_key() {
   if (aes_key) return aes_key;
-  const stored = localStorage.getItem(AES_KEY_NAME);
-  if (stored) {
-    const raw = Uint8Array.from(atob(stored), c => c.charCodeAt(0));
-    aes_key = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt','decrypt']);
-    return aes_key;
-  }
-  aes_key = await crypto.subtle.generateKey({name:'AES-GCM',length:256}, true, ['encrypt','decrypt']);
-  const exported = await crypto.subtle.exportKey('raw', aes_key);
-  localStorage.setItem(AES_KEY_NAME, btoa(String.fromCharCode(...new Uint8Array(exported))));
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(AES_PASSWORD), 'PBKDF2', false, ['deriveKey']
+  );
+  aes_key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: AES_SALT, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
   return aes_key;
 }
 async function encrypt_data(obj) {
@@ -1381,8 +1387,15 @@ async function carregar_cataleg_plats_drive() {
   if (!drive_access_token) return;
   try {
     const raw = await drive_read('cataleg_plats.enc');
-    if (raw) cataleg_plats = await decrypt_data(raw);
-  } catch(e) { console.warn('No se pudo leer catàleg:', e); }
+    if (raw) {
+      const dades = await decrypt_data(raw);
+      if (Array.isArray(dades)) cataleg_plats = dades;
+      else throw new Error('Formato inesperado');
+    }
+  } catch(e) {
+    console.warn('No se pudo leer catàleg:', e);
+    mostrar_drive_status('No se pudo cargar el catálogo de platos', 'error');
+  }
 }
 
 // ── PACIENTS INICIALS (fallback primera vegada) ──
@@ -1454,8 +1467,71 @@ let filtre_lletra = 'tots';
 let setmana_offset = 0;
 let celda_activa = null;
 
+// ── MIGRACIÓ CLAU AES ──
+// Si hi ha dades xifrades amb la clau aleatòria antiga al Drive, les rellegim
+// amb aquella clau i les re-xifrem amb la nova clau derivada de contrasenya.
+async function migracio_clau_si_cal() {
+  const stored = localStorage.getItem(AES_KEY_NAME);
+  if (!stored) return; // no hi havia clau antiga, res a migrar
+  try {
+    // Reconstruïm la clau antiga temporalment
+    const raw = Uint8Array.from(atob(stored), c => c.charCodeAt(0));
+    const old_key = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
+
+    // Funció de decrypt amb clau específica
+    async function decrypt_with(key, b64) {
+      const combined = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+      const iv = combined.slice(0, 12), cipher = combined.slice(12);
+      const plain = await crypto.subtle.decrypt({name:'AES-GCM',iv}, key, cipher);
+      return JSON.parse(new TextDecoder().decode(plain));
+    }
+
+    let migrat = false;
+
+    // Migrarem pacients si cal
+    const raw_pac = await drive_read('pacients.enc');
+    if (raw_pac) {
+      try {
+        const dades = await decrypt_with(old_key, raw_pac);
+        if (Array.isArray(dades)) {
+          pacients = dades;
+          await guardar_pacients(); // re-xifra amb nova clau
+          migrat = true;
+          console.log('✅ Migrats pacients a nova clau');
+        }
+      } catch(e) { /* ja estava amb nova clau */ }
+    }
+
+    // Migrarem catàleg plats si cal
+    const raw_cat = await drive_read('cataleg_plats.enc');
+    if (raw_cat) {
+      try {
+        const dades = await decrypt_with(old_key, raw_cat);
+        if (Array.isArray(dades)) {
+          cataleg_plats = dades;
+          await guardar_cataleg_plats(); // re-xifra amb nova clau
+          migrat = true;
+          console.log('✅ Migrat catàleg plats a nova clau');
+        }
+      } catch(e) { /* ja estava amb nova clau */ }
+    }
+
+    if (migrat) {
+      localStorage.removeItem(AES_KEY_NAME); // eliminem la clau antiga
+      mostrar_drive_status('Datos migrados correctamente ✓');
+      console.log('✅ Migració completa. Clau antiga eliminada.');
+    } else {
+      localStorage.removeItem(AES_KEY_NAME); // netegem igualment
+    }
+  } catch(e) {
+    console.warn('Error durant migració de clau:', e);
+    localStorage.removeItem(AES_KEY_NAME); // netegem per evitar bucles
+  }
+}
+
 // ── INIT ──
 async function init() {
+  await migracio_clau_si_cal(); // migra dades de clau aleatòria antiga a clau derivada
   const carregat = await carregar_pacients_drive();
   if (!carregat) {
     pacients = PACIENTS_INICIALS.map((p,i) => ({
