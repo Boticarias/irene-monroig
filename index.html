@@ -1304,7 +1304,13 @@ async function encrypt_data(obj) {
   const cipher = await crypto.subtle.encrypt({name:'AES-GCM',iv}, key, enc.encode(JSON.stringify(obj)));
   const combined = new Uint8Array(12 + cipher.byteLength);
   combined.set(iv, 0); combined.set(new Uint8Array(cipher), 12);
-  return btoa(String.fromCharCode(...combined));
+  // Chunked btoa per evitar "Maximum call stack size exceeded" amb arrays grans
+  let binary = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < combined.length; i += chunkSize) {
+    binary += String.fromCharCode(...combined.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
 }
 async function decrypt_data(b64) {
   const key = await get_aes_key();
