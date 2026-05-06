@@ -139,6 +139,8 @@ body { font-family: "Jost", sans-serif; background: var(--crema); color: var(--t
 .pacients-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
 .pacient-card { background: white; border-radius: var(--radi); padding: 20px; border: 1.5px solid var(--vora); cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; animation: fadeIn 0.3s ease forwards; opacity: 0; }
 @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner-inici { display:inline-block; width:14px; height:14px; border:2px solid var(--verde-clar); border-top-color:var(--verde); border-radius:50%; animation:spin 0.8s linear infinite; }
 .pacient-card:hover { border-color: var(--verde-clar); box-shadow: var(--ombra-hover); transform: translateY(-2px); }
 .pacient-card::before { content: ""; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--verde-clar); transform: scaleY(0); transition: transform 0.2s; transform-origin: bottom; }
 .pacient-card:hover::before { transform: scaleY(1); }
@@ -1134,8 +1136,8 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
     </div>
     <div class="modal-footer" style="flex-wrap:wrap;gap:8px;">
       <button class="btn-cancel" onclick="tancar_modal_plat()">Cancelar</button>
-      <button class="btn-secondary" id="btn-copiar-setmana" onclick="guardar_plat(true)" style="display:none;background:#f0f7f2;color:var(--verde);border:1.5px solid var(--verde-clar);font-family:'Jost',sans-serif;font-size:0.82rem;padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;">📅 Copiar al resto de la semana</button>
-      <button class="btn-guardar" onclick="guardar_plat()">Añadir plato</button>
+      <button class="btn-secondary" id="btn-copiar-setmana" onclick="btn_copiar_setmana_click()" style="display:none;background:#f0f7f2;color:var(--verde);border:1.5px solid var(--verde-clar);font-family:'Jost',sans-serif;font-size:0.82rem;padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;">📅 Copiar al resto de la semana</button>
+      <button class="btn-guardar" id="btn-afegir-plat" onclick="btn_afegir_plat_click()">Añadir plato</button>
     </div>
   </div>
 </div>
@@ -1612,6 +1614,9 @@ async function init() {
   await carregar_cataleg_plats_drive();
   await carregar_objectius_generals_drive();
   actualitzar_stat_cataleg();
+  // Actualitzar stat de plats a la pantalla inici un cop carregat
+  const statPlats = document.getElementById('inici-stat-plats');
+  if (statPlats) statPlats.textContent = cataleg_plats.length + ' platos en catálogo';
   fer_backup_si_cal();
 }
 
@@ -2273,6 +2278,30 @@ function obrir_modal_plat(mi,di){
   setTimeout(()=>document.getElementById('cerca-plat-input').focus(),100);
 }
 function tancar_modal_plat(){ document.getElementById('modal-plat').classList.remove('visible'); celda_activa=null; }
+
+async function btn_copiar_setmana_click() {
+  const btn = document.getElementById('btn-copiar-setmana');
+  const btnAfegir = document.getElementById('btn-afegir-plat');
+  btn.disabled = true; btnAfegir.disabled = true;
+  btn.textContent = '⏳ Guardando...';
+  // Si el plat ja existeix al catàleg, desmarcar checkbox per no re-guardar els 45MB
+  const nom = document.getElementById('plat-nom-input').value.trim();
+  const jaExisteix = cataleg_plats.some(p => p.nombre?.toLowerCase().trim() === nom.toLowerCase().trim());
+  if (jaExisteix) document.getElementById('plat-guardar-cataleg').checked = false;
+  await guardar_plat(true);
+  btn.disabled = false; btnAfegir.disabled = false;
+  btn.textContent = '📅 Copiar al resto de la semana';
+}
+
+async function btn_afegir_plat_click() {
+  const btn = document.getElementById('btn-afegir-plat');
+  const btnCopiar = document.getElementById('btn-copiar-setmana');
+  btn.disabled = true; btnCopiar.disabled = true;
+  btn.textContent = '⏳ Guardando...';
+  await guardar_plat(false);
+  btn.disabled = false; btnCopiar.disabled = false;
+  btn.textContent = 'Añadir plato';
+}
 
 let cerca_timeout=null;
 function buscar_plat(){
@@ -4036,7 +4065,13 @@ function mostrar_pantalla_inici() {
   // Update stats
   const actius = pacients.filter(p => p.actiu !== false).length;
   document.getElementById('inici-stat-pacients').textContent = pacients.length + ' pacientes (' + actius + ' activos)';
-  document.getElementById('inici-stat-plats').textContent = cataleg_plats.length + ' platos en catálogo';
+  // Mostrar loading si el catàleg encara no s'ha carregat
+  const statPlats = document.getElementById('inici-stat-plats');
+  if (cataleg_plats.length === 0) {
+    statPlats.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;color:var(--text-suau)"><span class="spinner-inici"></span> Cargando platos...</span>';
+  } else {
+    statPlats.textContent = cataleg_plats.length + ' platos en catálogo';
+  }
 }
 
 function mostrar_pantalla_pacients() {
