@@ -2267,7 +2267,7 @@ function obrir_modal_plat(mi,di){
   document.getElementById('plat-etanol').value='';
   document.getElementById('plat-guardar-cataleg').checked=true;
   document.getElementById('plats-resultats').style.display='none';
-  const bc=document.getElementById('btn-copiar-setmana'); if(bc) bc.style.display='none';
+  const bc=document.getElementById('btn-copiar-setmana'); if(bc) bc.style.display='inline-flex';
   const ts=document.getElementById('grup-talla-selector'); if(ts) ts.style.display='none';
   document.getElementById('modal-plat').classList.add('visible');
   setTimeout(()=>document.getElementById('cerca-plat-input').focus(),100);
