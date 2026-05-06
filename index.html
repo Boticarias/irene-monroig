@@ -2370,6 +2370,17 @@ function seleccionar_plat_off(nom,kcal,prot,hc,gras){
 
   // Comprovar si el plat té tallas al catàleg
   const info = obtenir_info_plat(nom);
+
+  // Importar ingredientes, receta i observaciones del catàleg si existeixen
+  if (info) {
+    document.getElementById('plat-ingredientes').value = info.ingredientes || '';
+    document.getElementById('plat-receta').value = info.receta || '';
+    document.getElementById('plat-observaciones').value = info.observaciones || '';
+    document.getElementById('plat-sodio').value = info.sodio_M || info.sodio || '';
+    document.getElementById('plat-colesterol').value = info.colesterol_M || info.colesterol || '';
+    document.getElementById('plat-ags').value = info.ags_M || info.ags || '';
+    document.getElementById('plat-etanol').value = info.etanol_M || info.etanol || '';
+  }
   const talla_sel = document.getElementById('grup-talla-selector');
   if (info && (info.kcal_S || info.kcal_M || info.kcal_L || info.kcal_XL)) {
     // Mostrar selector de talla
