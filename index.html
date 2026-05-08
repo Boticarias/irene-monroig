@@ -527,7 +527,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           </button>
           <!-- Aliments -->
           <div style="font-size:0.67rem;font-weight:700;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.8px;margin-top:10px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--vora);">🥦 Alimentos</div>
-          <button onclick="document.getElementById('import-aliments-config').click();toggle_config_panel()" style="width:100%;text-align:left;padding:9px 12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:0.83rem;color:var(--text);border-radius:8px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='var(--verde-suau)'" onmouseout="this.style.background='none'">
+          <button onclick="document.getElementById('import-aliments-config').click()" style="width:100%;text-align:left;padding:9px 12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:0.83rem;color:var(--text);border-radius:8px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='var(--verde-suau)'" onmouseout="this.style.background='none'">
             📥 Importar alimentos (JSON v6)
           </button>
           <input type="file" id="import-aliments-config" accept=".json" style="display:none" onchange="importar_cataleg_aliments(this)">
@@ -3609,8 +3609,7 @@ async function importar_cataleg_aliments(input) {
     data.alimentos.forEach(a => {
       a.medidas_caseras = (a.medidas_caseras||[]).filter(m => {
         const s = m.trim();
-        return s.length > 2 && s.length < 60 && !s.includes('
-') &&
+        return s.length > 2 && s.length < 60 && !s.includes('\n') &&
                !MENU_NOISE.some(n => s.toLowerCase().includes(n.toLowerCase()));
       });
       if ((a.alergenos||[]).length >= 12) a.alergenos = [];
