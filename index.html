@@ -1437,10 +1437,14 @@ async function drive_write(filename, content) {
 function mostrar_drive_status(msg, tipus='ok') {
   const el = document.getElementById('drive-status');
   if (!el) return;
-  el.textContent = (tipus==='ok' ? '☁️ ' : '⚠️ ') + msg;
+  const icon = tipus==='ok' ? '☁️' : tipus==='pending' ? '⏳' : '⚠️';
+  el.textContent = icon + ' ' + msg;
   el.className = 'visible ' + tipus;
   clearTimeout(el._t);
-  el._t = setTimeout(() => { el.className = ''; }, 3000);
+  // Els estats 'pending' no desapareixen sols, esperen el guardado real
+  if (tipus !== 'pending') {
+    el._t = setTimeout(() => { el.className = ''; }, 3000);
+  }
 }
 
 // ── BACKUP AUTOMÁTICO DIARIO ──
@@ -1459,12 +1463,28 @@ async function fer_backup_si_cal() {
 }
 
 // ── GUARDAR / CARGAR ──
+// Guardat amb debounce: acumula canvis durant 2s i fa un sol upload
+let _guardar_pacients_timer = null;
+let _guardar_pacients_pending = false;
+
 async function guardar_pacients() {
   if (!drive_access_token) return;
-  try {
-    await drive_write('pacients.enc', await encrypt_data(pacients));
-    mostrar_drive_status('Guardado en Drive');
-  } catch(e) { mostrar_drive_status('Error al guardar', 'error'); }
+  // Marcar com a pendent i mostrar indicador lleuger
+  _guardar_pacients_pending = true;
+  mostrar_drive_status('Guardando...', 'pending');
+  // Cancel·lar el timer anterior i programar un nou
+  if (_guardar_pacients_timer) clearTimeout(_guardar_pacients_timer);
+  _guardar_pacients_timer = setTimeout(async () => {
+    if (!_guardar_pacients_pending) return;
+    _guardar_pacients_pending = false;
+    try {
+      await drive_write('pacients.enc', await encrypt_data(pacients));
+      mostrar_drive_status('Guardado en Drive');
+    } catch(e) {
+      console.error('guardar_pacients error:', e.message||e);
+      mostrar_drive_status('Error al guardar', 'error');
+    }
+  }, 2000); // espera 2 segons des de l'última acció
 }
 async function carregar_pacients_drive() {
   try {
