@@ -525,6 +525,15 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <button onclick="confirmar_borrar_tots_plats();toggle_config_panel()" style="width:100%;text-align:left;padding:9px 12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:0.83rem;color:var(--rosa);border-radius:8px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#fdecea'" onmouseout="this.style.background='none'">
             🗑️ Borrar todos los platos
           </button>
+          <!-- Aliments -->
+          <div style="font-size:0.67rem;font-weight:700;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.8px;margin-top:10px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--vora);">🥦 Alimentos</div>
+          <button onclick="document.getElementById('import-aliments-config').click();toggle_config_panel()" style="width:100%;text-align:left;padding:9px 12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:0.83rem;color:var(--text);border-radius:8px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='var(--verde-suau)'" onmouseout="this.style.background='none'">
+            📥 Importar alimentos (JSON v6)
+          </button>
+          <input type="file" id="import-aliments-config" accept=".json" style="display:none" onchange="importar_cataleg_aliments(this)">
+          <button onclick="confirmar_borrar_tots_aliments();toggle_config_panel()" style="width:100%;text-align:left;padding:9px 12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:0.83rem;color:var(--rosa);border-radius:8px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#fdecea'" onmouseout="this.style.background='none'">
+            🗑️ Borrar todos los alimentos
+          </button>
           <!-- Backup -->
           <div style="font-size:0.67rem;font-weight:700;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.8px;margin-top:10px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--vora);">☁️ Copias de seguridad</div>
           <button onclick="toggle_config_panel();obrir_modal_backup()" style="width:100%;text-align:left;padding:9px 12px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:0.83rem;color:var(--text);border-radius:8px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='var(--verde-suau)'" onmouseout="this.style.background='none'">
@@ -1549,6 +1558,7 @@ const PACIENTS_INICIALS = [
 
 let pacients = [];
 let cataleg_plats = [];
+let cataleg_aliments = [];
 let pacient_actiu = null;
 let filtre_lletra = 'tots';
 let setmana_offset = 0;
@@ -1632,6 +1642,8 @@ async function init() {
   const msgCarga = document.getElementById('carrega-missatge');
   if (msgCarga) msgCarga.textContent = 'Cargando catálogo de platos...';
   await carregar_cataleg_plats_drive();
+  if (msgCarga) msgCarga.textContent = 'Cargando alimentos...';
+  await carregar_aliments_drive();
   if (msgCarga) msgCarga.textContent = 'Casi listo...';
   await carregar_objectius_generals_drive();
   actualitzar_stat_cataleg();
@@ -3577,6 +3589,72 @@ async function guardar_cataleg_plats() {
     mostrar_drive_status('Error al guardar: ' + (e.message || e), 'error');
     throw e; // re-throw perquè el .then() del botó no s'executi
   }
+}
+
+async function importar_cataleg_aliments(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (data.tipo !== 'catalogo_alimentos' || !Array.isArray(data.alimentos)) {
+      mostrar_toast('❌ Archivo no válido. Usa la extensión v6 para alimentos.', 'error');
+      return;
+    }
+    // Netejar medides caseres i al·lèrgens bruts
+    const MENU_NOISE = ['Platos','Alimentos','Patologías','Estados fisiológicos','Estilos de alimentación',
+      'Tipos de deporte','Objetivos tratamiento','Pacientes','Antropometría','Análisis clínicos',
+      'Diagnósticos médicos','Seguimiento fotográfico','Volver al listado','Agregar nuevo'];
+    data.alimentos.forEach(a => {
+      a.medidas_caseras = (a.medidas_caseras||[]).filter(m => {
+        const s = m.trim();
+        return s.length > 2 && s.length < 60 && !s.includes('
+') &&
+               !MENU_NOISE.some(n => s.toLowerCase().includes(n.toLowerCase()));
+      });
+      if ((a.alergenos||[]).length >= 12) a.alergenos = [];
+    });
+    cataleg_aliments = data.alimentos;
+    await guardar_aliments_drive();
+    mostrar_toast(`✅ ${cataleg_aliments.length} alimentos importados correctamente.`, 'ok');
+  } catch(e) {
+    mostrar_toast('❌ Error al importar: ' + (e.message||e), 'error');
+  }
+}
+
+async function guardar_aliments_drive() {
+  if (!drive_access_token) return;
+  try {
+    await drive_write('cataleg_aliments.enc', await encrypt_data(cataleg_aliments));
+    mostrar_drive_status('Alimentos guardados en Drive');
+  } catch(e) {
+    console.error('guardar_aliments_drive error:', e.message||e);
+    mostrar_drive_status('Error al guardar alimentos', 'error');
+  }
+}
+
+async function carregar_aliments_drive() {
+  if (!drive_access_token) return;
+  for (let intent = 1; intent <= 3; intent++) {
+    try {
+      const raw = await drive_read('cataleg_aliments.enc');
+      if (!raw) return;
+      const dades = await decrypt_data(raw);
+      if (Array.isArray(dades)) { cataleg_aliments = dades; console.log(`✅ ${cataleg_aliments.length} aliments carregats`); return; }
+      throw new Error('Format inesperat');
+    } catch(e) {
+      console.warn(`carregar_aliments intent ${intent}:`, e.message||e);
+      if (intent < 3) await new Promise(r => setTimeout(r, 1000 * intent));
+    }
+  }
+}
+
+function confirmar_borrar_tots_aliments() {
+  if (!confirm(`¿Borrar todos los ${cataleg_aliments.length} alimentos del catálogo?`)) return;
+  cataleg_aliments = [];
+  guardar_aliments_drive();
+  mostrar_toast('🗑️ Catálogo de alimentos borrado.', 'ok');
 }
 
 async function importar_cataleg_plats(input) {
