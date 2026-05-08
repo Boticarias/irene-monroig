@@ -1156,7 +1156,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       </div>
       <div class="form-grup" style="margin-top:8px;">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.85rem;color:var(--text);">
-          <input type="checkbox" id="plat-guardar-cataleg" style="accent-color:var(--verde);width:16px;height:16px;" checked>
+          <input type="checkbox" id="plat-guardar-cataleg" style="accent-color:var(--verde);width:16px;height:16px;">
           Guardar en el catálogo como <strong style="color:var(--verde);margin-left:4px">Plato propio</strong>
         </label>
       </div>
@@ -2327,7 +2327,7 @@ function obrir_modal_plat(mi,di){
   document.getElementById('plat-colesterol').value='';
   document.getElementById('plat-ags').value='';
   document.getElementById('plat-etanol').value='';
-  document.getElementById('plat-guardar-cataleg').checked=true;
+  document.getElementById('plat-guardar-cataleg').checked=false;
   document.getElementById('plats-resultats').style.display='none';
   const bc=document.getElementById('btn-copiar-setmana'); if(bc) bc.style.display='inline-flex';
   const ts=document.getElementById('grup-talla-selector'); if(ts) ts.style.display='none';
