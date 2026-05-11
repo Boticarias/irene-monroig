@@ -339,7 +339,11 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 .form-grup { margin-bottom: 16px; }
 .form-label { display: block; font-size: 0.72rem; font-weight: 600; color: var(--text-suau); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
 .form-input, .form-select { width: 100%; padding: 10px 14px; border: 2px solid #7CB9A0; border-radius: 10px; font-family: "Jost", sans-serif; font-size: 1rem; color: var(--text); background: #D8EEE4; outline: none; transition: border-color 0.2s,background 0.2s; }
-textarea.form-input { font-size: 0.82rem !important; padding: 7px 10px !important; }
+#modal-plat .form-input, #modal-plat .form-select { padding: 6px 10px !important; font-size: 0.85rem !important; }
+#modal-plat textarea.form-input { min-height: 38px !important; font-size: 0.82rem !important; }
+#modal-plat .form-label { font-size: 0.68rem !important; margin-bottom: 2px !important; }
+#modal-plat .form-fila-4 { gap: 6px !important; }
+#modal-plat .form-grup { margin-bottom: 6px !important; }
 .form-input:focus, .form-select:focus { border-color: var(--verde); background: #C4E4D4; }
 .form-fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-fila-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
@@ -5620,13 +5624,20 @@ function drag_drop(event, mi_dest, di_dest) {
     '</div></div>';
   document.body.appendChild(modal);
 
-  const cleanup = () => { if (modal.parentNode) document.body.removeChild(modal); };
-  document.getElementById('drag-btn-cancel').onclick = cleanup;
-  modal.onclick = (e) => { if (e.target === modal) cleanup(); };
-
   const miOrig = _drag_mi_orig, diOrig = _drag_di_orig, clau = _drag_clau;
-  document.getElementById('drag-btn-moure').onclick = () => { cleanup(); executar_drag(clau, miOrig, diOrig, mi_dest, di_dest, false); };
-  document.getElementById('drag-btn-copiar').onclick = () => { cleanup(); executar_drag(clau, miOrig, diOrig, mi_dest, di_dest, true); };
+
+  const cleanup = () => { if (modal.parentNode) document.body.removeChild(modal); };
+
+  modal.querySelector('#drag-btn-cancel').addEventListener('click', cleanup);
+  modal.addEventListener('click', (e) => { if (e.target === modal) cleanup(); });
+  modal.querySelector('#drag-btn-moure').addEventListener('click', () => {
+    cleanup();
+    executar_drag(clau, miOrig, diOrig, mi_dest, di_dest, false);
+  });
+  modal.querySelector('#drag-btn-copiar').addEventListener('click', () => {
+    cleanup();
+    executar_drag(clau, miOrig, diOrig, mi_dest, di_dest, true);
+  });
 }
 
 function executar_drag(clau, mi_orig, di_orig, mi_dest, di_dest, copiar) {
