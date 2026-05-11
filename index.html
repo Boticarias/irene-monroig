@@ -141,6 +141,8 @@ body { font-family: "Jost", sans-serif; background: var(--crema); color: var(--t
 @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fruita-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.plat-card.dragging { opacity: 0.4; transform: scale(0.97); }
+.celda-inner.drag-over { background: var(--verde-suau); border-radius: 8px; border: 2px dashed var(--verde); }
 .spinner-inici { display:inline-block; width:14px; height:14px; border:2px solid var(--verde-clar); border-top-color:var(--verde); border-radius:50%; animation:spin 0.8s linear infinite; }
 .pacient-card:hover { border-color: var(--verde-clar); box-shadow: var(--ombra-hover); transform: translateY(-2px); }
 .pacient-card::before { content: ""; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--verde-clar); transform: scaleY(0); transition: transform 0.2s; transform-origin: bottom; }
@@ -1064,7 +1066,10 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
 <!-- MODAL AÑADIR PLATO -->
 <div class="modal-overlay" id="modal-plat">
-  <div class="modal">
+  <div class="modal" style="max-width:960px;width:95vw;padding:0;display:flex;flex-direction:column;max-height:90vh;">
+    <div style="display:flex;flex:1;min-height:0;">
+    <!-- Columna esquerra: cerca i formulari -->
+    <div id="modal-plat-left" style="flex:1;min-width:0;overflow-y:auto;display:flex;flex-direction:column;">
     <div class="modal-header">
       <div>
         <h3 id="modal-plat-titol">Añadir plato</h3>
@@ -1072,7 +1077,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       </div>
       <button class="modal-close" onclick="tancar_modal_plat()">✕</button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body" style="padding-bottom:0;">
       <div class="form-grup">
         <label class="form-label">Buscar plato</label>
         <div class="cerca-plats-wrap">
@@ -1086,6 +1091,32 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         </div>
         <div class="plats-resultats" id="plats-resultats" style="display:none;"></div>
       </div>
+      </div><!-- fi form-grup cerca -->
+      </div><!-- fi modal-body -->
+      </div><!-- fi modal-plat-left -->
+      <!-- Panel preview hover (dreta) -->
+      <div id="plat-preview-panel" style="display:none;width:300px;min-width:280px;border-left:1px solid var(--vora);padding:16px;background:#fafaf7;overflow-y:auto;flex-shrink:0;">
+        <div id="plat-preview-img-wrap" style="width:100%;height:140px;border-radius:10px;overflow:hidden;background:#eee;margin-bottom:10px;display:none;">
+          <img id="plat-preview-img" src="" style="width:100%;height:100%;object-fit:cover;">
+        </div>
+        <div id="plat-preview-nom" style="font-size:0.9rem;font-weight:700;color:var(--text);margin-bottom:6px;line-height:1.3;"></div>
+        <div id="plat-preview-tallas" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;"></div>
+        <div id="plat-preview-macros" style="font-size:0.75rem;color:var(--text-suau);margin-bottom:10px;"></div>
+        <div id="plat-preview-alerg" style="font-size:0.72rem;color:#E07070;margin-bottom:10px;"></div>
+        <div id="plat-preview-ing-wrap" style="display:none;">
+          <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-suau);margin-bottom:3px;">Ingredientes</div>
+          <div id="plat-preview-ing" style="font-size:0.78rem;color:var(--text);line-height:1.5;margin-bottom:10px;"></div>
+        </div>
+        <div id="plat-preview-rec-wrap" style="display:none;">
+          <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-suau);margin-bottom:3px;">Receta</div>
+          <div id="plat-preview-rec" style="font-size:0.78rem;color:var(--text);line-height:1.6;"></div>
+        </div>
+        <div id="plat-preview-empty" style="color:var(--text-suau);font-size:0.82rem;text-align:center;margin-top:40px;">
+          👆 Pasa el ratón sobre un plato para ver sus detalles
+        </div>
+    </div><!-- fi flex-row -->
+    <!-- Formulari manual i footer van fora del flex, dins el modal -->
+    <div id="modal-plat-form" style="padding:0 26px;overflow-y:auto;">
       <div class="separador-modal">
         <div class="separador-text"><span>o introduce manualmente</span></div>
       </div>
@@ -1160,7 +1191,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           Guardar en el catálogo como <strong style="color:var(--verde);margin-left:4px">Plato propio</strong>
         </label>
       </div>
-    </div>
+    </div><!-- fi modal-plat-form -->
     <div class="modal-footer" style="flex-wrap:wrap;gap:8px;">
       <button class="btn-cancel" onclick="tancar_modal_plat()">Cancelar</button>
       <button class="btn-secondary" id="btn-copiar-setmana" onclick="btn_copiar_setmana_click()" style="display:none;background:#f0f7f2;color:var(--verde);border:1.5px solid var(--verde-clar);font-family:'Jost',sans-serif;font-size:0.82rem;padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;">📅 Copiar al resto de la semana</button>
@@ -2051,7 +2082,11 @@ function renderitzar_setmana(){
         const cap=di>=5;
         return `<td><div class="celda ${cap?'cap':''}">
           ${plats_cel.map((plat,pi)=>`
-            <div class="plat-card ${cap?'cap-de-setmana':''}" onclick="obrir_modal_editar_plat(${mi},${di},'${plat._clau}')">
+            <div class="plat-card ${cap?'cap-de-setmana':''}"
+              draggable="true"
+              ondragstart="drag_start(event,'${plat._clau}',${mi},${di})"
+              ondragend="drag_end(event)"
+              onclick="obrir_modal_editar_plat(${mi},${di},'${plat._clau}')">
               <button class="plat-delete" onclick="event.stopPropagation();eliminar_plat_clau('${plat._clau}')">✕</button>
               <div class="plat-nom">${plat.nom}</div>
               <div class="plat-macros">
@@ -2061,7 +2096,10 @@ function renderitzar_setmana(){
                 ${plat.gras?`<span class="macro-badge macro-gras">G:${plat.gras}g</span>`:''}
               </div>
             </div>`).join('')}
-          <div class="celda-inner" style="margin-top:${plats_cel.length?'4px':'0'}">
+          <div class="celda-inner" style="margin-top:${plats_cel.length?'4px':'0'}"
+            ondragover="drag_over(event)"
+            ondragleave="drag_leave(event)"
+            ondrop="drag_drop(event,${mi},${di})">
             <button class="btn-add" onclick="obrir_modal_plat(${mi},${di})">+</button>
           </div>
         </div></td>`;
@@ -2334,7 +2372,7 @@ function obrir_modal_plat(mi,di){
   document.getElementById('modal-plat').classList.add('visible');
   setTimeout(()=>document.getElementById('cerca-plat-input').focus(),100);
 }
-function tancar_modal_plat(){ document.getElementById('modal-plat').classList.remove('visible'); celda_activa=null; }
+function tancar_modal_plat(){ document.getElementById('modal-plat').classList.remove('visible'); celda_activa=null; document.getElementById('plat-preview-panel').style.display='none'; }
 
 async function btn_copiar_setmana_click() {
   const btn = document.getElementById('btn-copiar-setmana');
@@ -2367,7 +2405,7 @@ function buscar_plat(){
   if(q.length<2){
     // Si hi ha filtre actiu (propi/dietopro), mostrar tots els plats filtrats
     if(filtre_plat_actiu !== 'tots') {
-      const filtrats = aplicar_filtre_plats(cataleg_plats, filtre_plat_actiu).slice(0,12);
+      const filtrats = aplicar_filtre_plats(cataleg_plats, filtre_plat_actiu);
       const res = document.getElementById('plats-resultats');
       if(filtrats.length) {
         res.style.display='block';
@@ -2406,7 +2444,7 @@ async function _fer_cerca(q){
       const macros = [p.kcal?p.kcal+'kcal':'',p.prot?'P:'+p.prot+'g':'',p.hc?'HC:'+p.hc+'g':'',p.gras?'G:'+p.gras+'g':''].filter(Boolean).join(' · ');
       const alerg = p.alergenos&&p.alergenos.length?'<span style="color:#E07070;font-size:0.7rem"> ⚠️ '+p.alergenos.slice(0,3).join(', ')+(p.alergenos.length>3?'...':'')+'</span>':'';
       const propiTag = p.propio?'<span style="background:var(--verde-suau);color:var(--verde);font-size:0.68rem;padding:1px 6px;border-radius:8px;margin-left:4px;">⭐</span>':'';
-      return `<div class="plat-resultat-item" onclick="seleccionar_plat_off(${JSON.stringify(p.nombre).replace(/"/g,'&quot;')},${p.kcal||0},${p.prot||0},${p.hc||0},${p.gras||0})" style="border-left:3px solid var(--verde-clar)">
+      return `<div class="plat-resultat-item" onclick="seleccionar_plat_off(${JSON.stringify(p.nombre).replace(/"/g,'&quot;')},${p.kcal||0},${p.prot||0},${p.hc||0},${p.gras||0})" onmouseenter="mostrar_preview_plat(${JSON.stringify(p.nombre).replace(/"/g,'&quot;')})" style="border-left:3px solid var(--verde-clar)">
         <div class="plat-resultat-nom">${p.nombre}${propiTag}${alerg}</div>
         ${macros?`<div class="plat-resultat-macros">${macros}${p.dificultad?' · '+p.dificultad:''}</div>`:''}
       </div>`;
@@ -2416,6 +2454,7 @@ async function _fer_cerca(q){
   // Mostrar resultats locals de seguida
   if(html){
     res.innerHTML=html;
+    document.getElementById('plat-preview-panel').style.display='block';
   } else {
     res.innerHTML='<div class="plat-resultat-item"><div class="plat-resultat-nom" style="color:var(--text-suau)">🔍 Buscando...</div></div>';
   }
@@ -3729,12 +3768,78 @@ function actualitzar_stat_cataleg() {
 }
 
 // Search in local catalog (used from meal modal)
+// ── PREVIEW PANEL ──
+function mostrar_preview_plat(nom) {
+  const panel = document.getElementById('plat-preview-panel');
+  const empty = document.getElementById('plat-preview-empty');
+  if (!nom) { panel.style.display='none'; return; }
+
+  const p = cataleg_plats.find(x => x.nombre === nom);
+  panel.style.display = 'block';
+  empty.style.display = p ? 'none' : 'block';
+  if (!p) return;
+
+  // Nom
+  document.getElementById('plat-preview-nom').textContent = p.nombre;
+
+  // Tallas
+  const tDiv = document.getElementById('plat-preview-tallas');
+  const TALLAS = ['S','M','L','XL'];
+  const tKeys = ['kcal_S','kcal_M','kcal_L','kcal_XL'];
+  let tHtml = '';
+  const hasTallas = TALLAS.some(t => p['kcal_'+t] > 0);
+  if (hasTallas) {
+    tHtml = TALLAS.map(t => {
+      const k = p['kcal_'+t];
+      if (!k) return '';
+      return `<span style="background:var(--verde-suau);color:var(--verde);border-radius:6px;padding:3px 8px;font-size:0.72rem;font-weight:600;">${t}: ${k} kcal</span>`;
+    }).join('');
+  } else if (p.kcal) {
+    tHtml = `<span style="background:var(--verde-suau);color:var(--verde);border-radius:6px;padding:3px 8px;font-size:0.72rem;font-weight:600;">${p.kcal} kcal · P:${p.prot||0}g · HC:${p.hc||0}g · G:${p.gras||0}g</span>`;
+  }
+  tDiv.innerHTML = tHtml;
+
+  // Macros M per defecte
+  const mk = p.kcal_M || p.kcal || 0;
+  const mp = p.prot_M || p.prot || 0;
+  const mh = p.hc_M || p.hc || 0;
+  const mg = p.gras_M || p.gras || 0;
+  document.getElementById('plat-preview-macros').textContent =
+    mk ? `${mk} kcal · Prot: ${mp}g · HC: ${mh}g · Grasas: ${mg}g` : '';
+
+  // Alérgenos
+  const alEl = document.getElementById('plat-preview-alerg');
+  alEl.textContent = p.alergenos && p.alergenos.length ? '⚠️ ' + p.alergenos.join(', ') : '';
+
+  // Ingredients
+  const ingWrap = document.getElementById('plat-preview-ing-wrap');
+  const ingEl = document.getElementById('plat-preview-ing');
+  if (p.ingredientes) {
+    ingWrap.style.display = 'block';
+    ingEl.textContent = p.ingredientes;
+  } else { ingWrap.style.display = 'none'; }
+
+  // Receta
+  const recWrap = document.getElementById('plat-preview-rec-wrap');
+  const recEl = document.getElementById('plat-preview-rec');
+  if (p.receta) {
+    recWrap.style.display = 'block';
+    recEl.textContent = p.receta;
+  } else { recWrap.style.display = 'none'; }
+}
+
 function buscar_en_cataleg(q) {
   if (!q || q.length < 2) return [];
   const qLow = q.toLowerCase();
-  return aplicar_filtre_plats(cataleg_plats, filtre_plat_actiu)
-    .filter(p => p.nombre && p.nombre.toLowerCase().includes(qLow))
-    .slice(0, 8);
+  // Ordenar: primer els que comencen pel terme, després els que el contenen
+  const tots = aplicar_filtre_plats(cataleg_plats, filtre_plat_actiu)
+    .filter(p => p.nombre && p.nombre.toLowerCase().includes(qLow));
+  tots.sort((a, b) => {
+    const aStart = a.nombre.toLowerCase().startsWith(qLow) ? 0 : 1;
+    const bStart = b.nombre.toLowerCase().startsWith(qLow) ? 0 : 1;
+    return aStart - bStart || a.nombre.localeCompare(b.nombre);
+  });
+  return tots; // sense límit
 }
 
 function mostrar_toast(msg, tipus) {
@@ -5476,6 +5581,96 @@ async function confirmar_borrar_tots_pacients() {
   renderitzar_pacients();
   mostrar_toast('🗑️ Todos los pacientes eliminados.', 'ok');
 }
+
+// ── DRAG & DROP PLANIFICACIÓ ──
+let _drag_clau = null;
+let _drag_mi_orig = null;
+let _drag_di_orig = null;
+
+function drag_start(event, clau, mi, di) {
+  _drag_clau = clau;
+  _drag_mi_orig = mi;
+  _drag_di_orig = di;
+  event.target.closest('.plat-card').classList.add('dragging');
+  event.dataTransfer.effectAllowed = 'copyMove';
+}
+
+function drag_end(event) {
+  document.querySelectorAll('.plat-card.dragging').forEach(el => el.classList.remove('dragging'));
+  document.querySelectorAll('.celda-inner.drag-over').forEach(el => el.classList.remove('drag-over'));
+}
+
+function drag_over(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  event.currentTarget.classList.add('drag-over');
+}
+
+function drag_leave(event) {
+  event.currentTarget.classList.remove('drag-over');
+}
+
+function drag_drop(event, mi_dest, di_dest) {
+  event.preventDefault();
+  event.currentTarget.classList.remove('drag-over');
+  if (_drag_clau === null) return;
+  if (_drag_mi_orig === mi_dest && _drag_di_orig === di_dest) return;
+
+  // Trobar nom del plat per mostrar al diàleg
+  let nomPlat = 'el plato';
+  const planif = pacient_actiu && pacient_actiu.planificacio;
+  if (planif && planif[_drag_mi_orig] && planif[_drag_mi_orig][_drag_di_orig]) {
+    const p = planif[_drag_mi_orig][_drag_di_orig].find(p => p._clau === _drag_clau);
+    if (p) nomPlat = p.nom;
+  }
+
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9998;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = '<div style="background:white;border-radius:16px;padding:28px;max-width:360px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">' +
+    '<div style="font-size:2rem;margin-bottom:12px;">↕️</div>' +
+    '<div style="font-size:1rem;font-weight:600;color:var(--text);margin-bottom:6px;">' + nomPlat + '</div>' +
+    '<div style="font-size:0.85rem;color:var(--text-suau);margin-bottom:20px;">¿Qué quieres hacer con este plato?</div>' +
+    '<div style="display:flex;gap:10px;justify-content:center;">' +
+    '<button id="drag-btn-moure" style="flex:1;padding:10px;background:var(--verde);color:white;border:none;border-radius:10px;font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;">↗️ Mover</button>' +
+    '<button id="drag-btn-copiar" style="flex:1;padding:10px;background:#f0f7f2;color:var(--verde);border:1.5px solid var(--verde-clar);border-radius:10px;font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;">📋 Copiar</button>' +
+    '<button id="drag-btn-cancel" style="padding:10px 14px;background:#f5f5f5;color:var(--text-suau);border:none;border-radius:10px;font-family:inherit;font-size:0.88rem;cursor:pointer;">✕</button>' +
+    '</div></div>';
+  document.body.appendChild(modal);
+
+  const cleanup = () => { if (modal.parentNode) document.body.removeChild(modal); };
+  document.getElementById('drag-btn-cancel').onclick = cleanup;
+  modal.onclick = (e) => { if (e.target === modal) cleanup(); };
+
+  const miOrig = _drag_mi_orig, diOrig = _drag_di_orig, clau = _drag_clau;
+  document.getElementById('drag-btn-moure').onclick = () => { cleanup(); executar_drag(clau, miOrig, diOrig, mi_dest, di_dest, false); };
+  document.getElementById('drag-btn-copiar').onclick = () => { cleanup(); executar_drag(clau, miOrig, diOrig, mi_dest, di_dest, true); };
+}
+
+function executar_drag(clau, mi_orig, di_orig, mi_dest, di_dest, copiar) {
+  const planif = pacient_actiu && pacient_actiu.planificacio;
+  if (!planif) return;
+  if (!planif[mi_orig] || !planif[mi_orig][di_orig]) return;
+
+  const plat_orig = planif[mi_orig][di_orig].find(p => p._clau === clau);
+  if (!plat_orig) return;
+
+  if (!planif[mi_dest]) planif[mi_dest] = {};
+  if (!planif[mi_dest][di_dest]) planif[mi_dest][di_dest] = [];
+
+  if (copiar) {
+    const copia = Object.assign({}, plat_orig, { _clau: Date.now() + '_' + Math.random().toString(36).slice(2,7) });
+    planif[mi_dest][di_dest].push(copia);
+  } else {
+    planif[mi_orig][di_orig] = planif[mi_orig][di_orig].filter(p => p._clau !== clau);
+    const moure = Object.assign({}, plat_orig, { _clau: Date.now() + '_' + Math.random().toString(36).slice(2,7) });
+    planif[mi_dest][di_dest].push(moure);
+  }
+
+  renderitzar_taula_planificacio();
+  guardar_pacients();
+  mostrar_toast(copiar ? '📋 Plato copiado' : '↗️ Plato movido', 'ok');
+}
+
 
 </script>
 
