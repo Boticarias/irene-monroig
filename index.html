@@ -1066,10 +1066,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
 <!-- MODAL AÑADIR PLATO -->
 <div class="modal-overlay" id="modal-plat">
-  <div class="modal" style="max-width:960px;width:95vw;padding:0;display:flex;flex-direction:column;max-height:90vh;">
-    <div style="display:flex;flex:1;min-height:0;">
-    <!-- Columna esquerra: cerca i formulari -->
-    <div id="modal-plat-left" style="flex:1;min-width:0;overflow-y:auto;display:flex;flex-direction:column;">
+  <div class="modal">
     <div class="modal-header">
       <div>
         <h3 id="modal-plat-titol">Añadir plato</h3>
@@ -1077,7 +1074,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       </div>
       <button class="modal-close" onclick="tancar_modal_plat()">✕</button>
     </div>
-    <div class="modal-body" style="padding-bottom:0;">
+    <div class="modal-body">
       <div class="form-grup">
         <label class="form-label">Buscar plato</label>
         <div class="cerca-plats-wrap">
@@ -1091,32 +1088,6 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         </div>
         <div class="plats-resultats" id="plats-resultats" style="display:none;"></div>
       </div>
-      </div><!-- fi form-grup cerca -->
-      </div><!-- fi modal-body -->
-      </div><!-- fi modal-plat-left -->
-      <!-- Panel preview hover (dreta) -->
-      <div id="plat-preview-panel" style="display:none;width:300px;min-width:280px;border-left:1px solid var(--vora);padding:16px;background:#fafaf7;overflow-y:auto;flex-shrink:0;">
-        <div id="plat-preview-img-wrap" style="width:100%;height:140px;border-radius:10px;overflow:hidden;background:#eee;margin-bottom:10px;display:none;">
-          <img id="plat-preview-img" src="" style="width:100%;height:100%;object-fit:cover;">
-        </div>
-        <div id="plat-preview-nom" style="font-size:0.9rem;font-weight:700;color:var(--text);margin-bottom:6px;line-height:1.3;"></div>
-        <div id="plat-preview-tallas" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;"></div>
-        <div id="plat-preview-macros" style="font-size:0.75rem;color:var(--text-suau);margin-bottom:10px;"></div>
-        <div id="plat-preview-alerg" style="font-size:0.72rem;color:#E07070;margin-bottom:10px;"></div>
-        <div id="plat-preview-ing-wrap" style="display:none;">
-          <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-suau);margin-bottom:3px;">Ingredientes</div>
-          <div id="plat-preview-ing" style="font-size:0.78rem;color:var(--text);line-height:1.5;margin-bottom:10px;"></div>
-        </div>
-        <div id="plat-preview-rec-wrap" style="display:none;">
-          <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-suau);margin-bottom:3px;">Receta</div>
-          <div id="plat-preview-rec" style="font-size:0.78rem;color:var(--text);line-height:1.6;"></div>
-        </div>
-        <div id="plat-preview-empty" style="color:var(--text-suau);font-size:0.82rem;text-align:center;margin-top:40px;">
-          👆 Pasa el ratón sobre un plato para ver sus detalles
-        </div>
-    </div><!-- fi flex-row -->
-    <!-- Formulari manual i footer van fora del flex, dins el modal -->
-    <div id="modal-plat-form" style="padding:0 26px;overflow-y:auto;">
       <div class="separador-modal">
         <div class="separador-text"><span>o introduce manualmente</span></div>
       </div>
@@ -1191,7 +1162,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           Guardar en el catálogo como <strong style="color:var(--verde);margin-left:4px">Plato propio</strong>
         </label>
       </div>
-    </div><!-- fi modal-plat-form -->
+    </div>
     <div class="modal-footer" style="flex-wrap:wrap;gap:8px;">
       <button class="btn-cancel" onclick="tancar_modal_plat()">Cancelar</button>
       <button class="btn-secondary" id="btn-copiar-setmana" onclick="btn_copiar_setmana_click()" style="display:none;background:#f0f7f2;color:var(--verde);border:1.5px solid var(--verde-clar);font-family:'Jost',sans-serif;font-size:0.82rem;padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;">📅 Copiar al resto de la semana</button>
@@ -2454,7 +2425,6 @@ async function _fer_cerca(q){
   // Mostrar resultats locals de seguida
   if(html){
     res.innerHTML=html;
-    document.getElementById('plat-preview-panel').style.display='block';
   } else {
     res.innerHTML='<div class="plat-resultat-item"><div class="plat-resultat-nom" style="color:var(--text-suau)">🔍 Buscando...</div></div>';
   }
@@ -3768,16 +3738,13 @@ function actualitzar_stat_cataleg() {
 }
 
 // Search in local catalog (used from meal modal)
-// ── PREVIEW PANEL ──
+// ── PREVIEW PANEL FLOTANT ──
 function mostrar_preview_plat(nom) {
   const panel = document.getElementById('plat-preview-panel');
-  const empty = document.getElementById('plat-preview-empty');
-  if (!nom) { panel.style.display='none'; return; }
+  if (!nom) { panel.style.display = 'none'; return; }
 
   const p = cataleg_plats.find(x => x.nombre === nom);
-  panel.style.display = 'block';
-  empty.style.display = p ? 'none' : 'block';
-  if (!p) return;
+  if (!p) { panel.style.display = 'none'; return; }
 
   // Nom
   document.getElementById('plat-preview-nom').textContent = p.nombre;
@@ -3785,48 +3752,53 @@ function mostrar_preview_plat(nom) {
   // Tallas
   const tDiv = document.getElementById('plat-preview-tallas');
   const TALLAS = ['S','M','L','XL'];
-  const tKeys = ['kcal_S','kcal_M','kcal_L','kcal_XL'];
-  let tHtml = '';
   const hasTallas = TALLAS.some(t => p['kcal_'+t] > 0);
   if (hasTallas) {
-    tHtml = TALLAS.map(t => {
-      const k = p['kcal_'+t];
-      if (!k) return '';
-      return `<span style="background:var(--verde-suau);color:var(--verde);border-radius:6px;padding:3px 8px;font-size:0.72rem;font-weight:600;">${t}: ${k} kcal</span>`;
-    }).join('');
-  } else if (p.kcal) {
-    tHtml = `<span style="background:var(--verde-suau);color:var(--verde);border-radius:6px;padding:3px 8px;font-size:0.72rem;font-weight:600;">${p.kcal} kcal · P:${p.prot||0}g · HC:${p.hc||0}g · G:${p.gras||0}g</span>`;
+    tDiv.innerHTML = TALLAS.filter(t => p['kcal_'+t] > 0).map(t =>
+      '<span style="background:var(--verde-suau);color:var(--verde);border-radius:6px;padding:3px 8px;font-size:0.72rem;font-weight:600;">' + t + ': ' + p['kcal_'+t] + ' kcal</span>'
+    ).join('');
+  } else {
+    tDiv.innerHTML = p.kcal ? '<span style="background:var(--verde-suau);color:var(--verde);border-radius:6px;padding:3px 8px;font-size:0.72rem;font-weight:600;">' + p.kcal + ' kcal</span>' : '';
   }
-  tDiv.innerHTML = tHtml;
 
-  // Macros M per defecte
+  // Macros
   const mk = p.kcal_M || p.kcal || 0;
   const mp = p.prot_M || p.prot || 0;
   const mh = p.hc_M || p.hc || 0;
   const mg = p.gras_M || p.gras || 0;
   document.getElementById('plat-preview-macros').textContent =
-    mk ? `${mk} kcal · Prot: ${mp}g · HC: ${mh}g · Grasas: ${mg}g` : '';
+    mk ? mk + ' kcal · Prot: ' + mp + 'g · HC: ' + mh + 'g · Grasas: ' + mg + 'g' : '';
 
   // Alérgenos
   const alEl = document.getElementById('plat-preview-alerg');
-  alEl.textContent = p.alergenos && p.alergenos.length ? '⚠️ ' + p.alergenos.join(', ') : '';
+  if (p.alergenos && p.alergenos.length) {
+    alEl.textContent = '⚠️ ' + p.alergenos.join(', ');
+    alEl.style.display = 'block';
+  } else {
+    alEl.style.display = 'none';
+  }
 
   // Ingredients
   const ingWrap = document.getElementById('plat-preview-ing-wrap');
-  const ingEl = document.getElementById('plat-preview-ing');
   if (p.ingredientes) {
     ingWrap.style.display = 'block';
-    ingEl.textContent = p.ingredientes;
-  } else { ingWrap.style.display = 'none'; }
+    document.getElementById('plat-preview-ing').textContent = p.ingredientes;
+  } else {
+    ingWrap.style.display = 'none';
+  }
 
   // Receta
   const recWrap = document.getElementById('plat-preview-rec-wrap');
-  const recEl = document.getElementById('plat-preview-rec');
   if (p.receta) {
     recWrap.style.display = 'block';
-    recEl.textContent = p.receta;
-  } else { recWrap.style.display = 'none'; }
+    document.getElementById('plat-preview-rec').textContent = p.receta;
+  } else {
+    recWrap.style.display = 'none';
+  }
+
+  panel.style.display = 'block';
 }
+
 
 function buscar_en_cataleg(q) {
   if (!q || q.length < 2) return [];
@@ -6005,6 +5977,39 @@ function executar_drag(clau, mi_orig, di_orig, mi_dest, di_dest, copiar) {
       <button class="btn-cancel" onclick="tancar_editar_cataleg()">Cancelar</button>
       <button class="btn-guardar" onclick="guardar_editar_cataleg()">💾 Guardar cambios</button>
     </div>
+  </div>
+</div>
+
+<!-- PANEL PREVIEW PLAT FLOTANT -->
+<div id="plat-preview-panel" style="
+  display:none;
+  position:fixed;
+  top:50%;
+  right:24px;
+  transform:translateY(-50%);
+  width:320px;
+  max-height:80vh;
+  background:white;
+  border-radius:16px;
+  box-shadow:0 8px 40px rgba(0,0,0,0.18);
+  border:1px solid var(--vora);
+  overflow-y:auto;
+  z-index:10000;
+  padding:20px;
+  animation: fadeIn 0.15s ease;
+">
+  <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-suau);margin-bottom:12px;">Vista previa</div>
+  <div id="plat-preview-nom" style="font-size:0.95rem;font-weight:700;color:var(--text);margin-bottom:10px;line-height:1.3;"></div>
+  <div id="plat-preview-tallas" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;"></div>
+  <div id="plat-preview-macros" style="font-size:0.78rem;color:var(--text-suau);margin-bottom:10px;padding:8px 10px;background:#f5f9f6;border-radius:8px;"></div>
+  <div id="plat-preview-alerg" style="font-size:0.73rem;color:#c0392b;background:#fef0f0;padding:6px 10px;border-radius:8px;margin-bottom:10px;display:none;"></div>
+  <div id="plat-preview-ing-wrap" style="display:none;margin-bottom:10px;">
+    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--verde);margin-bottom:4px;">Ingredientes</div>
+    <div id="plat-preview-ing" style="font-size:0.8rem;color:var(--text);line-height:1.5;"></div>
+  </div>
+  <div id="plat-preview-rec-wrap" style="display:none;">
+    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--verde);margin-bottom:4px;">Receta</div>
+    <div id="plat-preview-rec" style="font-size:0.8rem;color:var(--text);line-height:1.6;"></div>
   </div>
 </div>
 
