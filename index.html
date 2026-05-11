@@ -1122,16 +1122,16 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
           <input class="form-input" type="number" id="plat-gras" placeholder="0">
         </div>
       </div>
-      <div class="form-grup" id="grup-receta-manual" style="margin-top:10px;">
+      <div class="form-grup" id="grup-receta-manual" style="margin-top:6px;">
         <label class="form-label">Ingredientes <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(opcional — saldrá en el PDF)</span></label>
-        <textarea class="form-input" id="plat-ingredientes" placeholder="Ej: Pechuga de pollo: 150g, Champiñones: 100g, Aceite de oliva: 5g" style="min-height:60px;resize:vertical;font-family:inherit;font-size:0.85rem;"></textarea>
+        <textarea class="form-input" id="plat-ingredientes" placeholder="Ej: Pechuga de pollo: 150g, Champiñones: 100g, Aceite de oliva: 5g" style="min-height:42px;resize:vertical;font-family:inherit;font-size:0.82rem;"></textarea>
       </div>
-      <div class="form-grup" style="margin-top:8px;">
+      <div class="form-grup" style="margin-top:6px;">
         <label class="form-label">Receta <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(opcional — saldrá en el PDF)</span></label>
-        <textarea class="form-input" id="plat-receta" placeholder="Ej: 1. Asar la pechuga a la plancha. 2. Saltear los champiñones..." style="min-height:80px;resize:vertical;font-family:inherit;font-size:0.85rem;"></textarea>
+        <textarea class="form-input" id="plat-receta" placeholder="Ej: 1. Asar la pechuga a la plancha. 2. Saltear los champiñones..." style="min-height:52px;resize:vertical;font-family:inherit;font-size:0.82rem;"></textarea>
       </div>
       <!-- Nutrients crítics -->
-      <div style="margin-top:10px;padding:10px 12px;background:var(--verde-suau);border-radius:10px;border:1px solid var(--verde-clar);">
+      <div style="margin-top:6px;padding:8px 12px;background:var(--verde-suau);border-radius:10px;border:1px solid var(--verde-clar);">
         <div style="font-size:0.68rem;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">🔬 Nutrientes críticos (ración M)</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
           <div class="form-grup" style="margin:0">
@@ -1154,7 +1154,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
       </div>
       <div class="form-grup" style="margin-top:8px;">
         <label class="form-label">Observaciones <span style="font-size:0.72rem;color:var(--text-suau);font-weight:400">(notas internas)</span></label>
-        <textarea class="form-input" id="plat-observaciones" placeholder="Pesos de referencia, equivalencias..." style="min-height:50px;resize:vertical;font-family:inherit;font-size:0.85rem;"></textarea>
+        <textarea class="form-input" id="plat-observaciones" placeholder="Pesos de referencia, equivalencias..." style="min-height:36px;resize:vertical;font-family:inherit;font-size:0.82rem;"></textarea>
       </div>
       <div class="form-grup" style="margin-top:8px;">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.85rem;color:var(--text);">
@@ -2051,11 +2051,15 @@ function renderitzar_setmana(){
         // Recollir TOTS els plats d'aquest moment+dia (claus: mi_di, mi_di_v1, mi_di_v2...)
         const plats_cel = obtenir_plats_cel(planif, mi, di);
         const cap=di>=5;
-        return `<td><div class="celda ${cap?'cap':''}">
+        return `<td><div class="celda ${cap?'cap':''}"
+            ondragover="drag_over(event)"
+            ondragleave="drag_leave(event)"
+            ondrop="drag_drop(event,${mi},${di})">
           ${plats_cel.map((plat,pi)=>`
             <div class="plat-card ${cap?'cap-de-setmana':''}"
               draggable="true"
-              ondragstart="drag_start(event,'${plat._clau}',${mi},${di})"
+              data-clau="${plat._clau}"
+              ondragstart="drag_start(event,this,${mi},${di})"
               ondragend="drag_end(event)"
               onclick="obrir_modal_editar_plat(${mi},${di},'${plat._clau}')">
               <button class="plat-delete" onclick="event.stopPropagation();eliminar_plat_clau('${plat._clau}')">✕</button>
@@ -2067,10 +2071,7 @@ function renderitzar_setmana(){
                 ${plat.gras?`<span class="macro-badge macro-gras">G:${plat.gras}g</span>`:''}
               </div>
             </div>`).join('')}
-          <div class="celda-inner" style="margin-top:${plats_cel.length?'4px':'0'}"
-            ondragover="drag_over(event)"
-            ondragleave="drag_leave(event)"
-            ondrop="drag_drop(event,${mi},${di})">
+          <div class="celda-inner" style="margin-top:${plats_cel.length?'4px':'0'}">
             <button class="btn-add" onclick="obrir_modal_plat(${mi},${di})">+</button>
           </div>
         </div></td>`;
@@ -5559,12 +5560,14 @@ let _drag_clau = null;
 let _drag_mi_orig = null;
 let _drag_di_orig = null;
 
-function drag_start(event, clau, mi, di) {
-  _drag_clau = clau;
+function drag_start(event, el, mi, di) {
+  const card = el.closest ? el.closest('.plat-card') : el;
+  _drag_clau = card ? card.dataset.clau : null;
   _drag_mi_orig = mi;
   _drag_di_orig = di;
-  event.target.closest('.plat-card').classList.add('dragging');
+  if (card) card.classList.add('dragging');
   event.dataTransfer.effectAllowed = 'copyMove';
+  event.dataTransfer.setData('text/plain', _drag_clau || '');
 }
 
 function drag_end(event) {
@@ -5574,18 +5577,25 @@ function drag_end(event) {
 
 function drag_over(event) {
   event.preventDefault();
+  event.stopPropagation();
   event.dataTransfer.dropEffect = 'move';
-  event.currentTarget.classList.add('drag-over');
+  const celda = event.currentTarget.closest('.celda') || event.currentTarget;
+  celda.classList.add('drag-over');
 }
 
 function drag_leave(event) {
-  event.currentTarget.classList.remove('drag-over');
+  // Only remove if leaving the celda entirely
+  const celda = event.currentTarget.closest('.celda') || event.currentTarget;
+  if (!celda.contains(event.relatedTarget)) {
+    celda.classList.remove('drag-over');
+  }
 }
 
 function drag_drop(event, mi_dest, di_dest) {
   event.preventDefault();
-  event.currentTarget.classList.remove('drag-over');
-  if (_drag_clau === null) return;
+  event.stopPropagation();
+  document.querySelectorAll('.celda.drag-over').forEach(el => el.classList.remove('drag-over'));
+  if (!_drag_clau) return;
   if (_drag_mi_orig === mi_dest && _drag_di_orig === di_dest) return;
 
   // Trobar nom del plat per mostrar al diàleg
@@ -5985,17 +5995,17 @@ function executar_drag(clau, mi_orig, di_orig, mi_dest, di_dest, copiar) {
   display:none;
   position:fixed;
   top:50%;
-  right:24px;
+  left:calc(50% + 340px);
   transform:translateY(-50%);
-  width:320px;
-  max-height:80vh;
+  width:300px;
+  max-height:75vh;
   background:white;
-  border-radius:16px;
-  box-shadow:0 8px 40px rgba(0,0,0,0.18);
+  border-radius:14px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.15);
   border:1px solid var(--vora);
   overflow-y:auto;
   z-index:10000;
-  padding:20px;
+  padding:16px;
   animation: fadeIn 0.15s ease;
 ">
   <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-suau);margin-bottom:12px;">Vista previa</div>
