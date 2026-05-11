@@ -339,6 +339,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 .form-grup { margin-bottom: 16px; }
 .form-label { display: block; font-size: 0.72rem; font-weight: 600; color: var(--text-suau); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
 .form-input, .form-select { width: 100%; padding: 10px 14px; border: 2px solid #7CB9A0; border-radius: 10px; font-family: "Jost", sans-serif; font-size: 1rem; color: var(--text); background: #D8EEE4; outline: none; transition: border-color 0.2s,background 0.2s; }
+textarea.form-input { font-size: 0.82rem !important; padding: 7px 10px !important; }
 .form-input:focus, .form-select:focus { border-color: var(--verde); background: #C4E4D4; }
 .form-fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-fila-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
@@ -5631,21 +5632,36 @@ function drag_drop(event, mi_dest, di_dest) {
 function executar_drag(clau, mi_orig, di_orig, mi_dest, di_dest, copiar) {
   const planif = pacient_actiu && pacient_actiu.planificacio;
   if (!planif) return;
-  if (!planif[mi_orig] || !planif[mi_orig][di_orig]) return;
 
-  const plat_orig = planif[mi_orig][di_orig].find(p => p._clau === clau);
-  if (!plat_orig) return;
+  // Normalitzar índexs — buscar la cel·la sigui string o number
+  const trobar_cela = (mi, di) => {
+    if (planif[mi] && planif[mi][di]) return planif[mi][di];
+    if (planif[+mi] && planif[+mi][+di]) return planif[+mi][+di];
+    if (planif[String(mi)] && planif[String(mi)][String(di)]) return planif[String(mi)][String(di)];
+    return null;
+  };
 
-  if (!planif[mi_dest]) planif[mi_dest] = {};
-  if (!planif[mi_dest][di_dest]) planif[mi_dest][di_dest] = [];
+  const cela_orig = trobar_cela(mi_orig, di_orig);
+  if (!cela_orig) { console.warn('executar_drag: cel·la origen no trobada', mi_orig, di_orig); return; }
+
+  const plat_orig = cela_orig.find(p => p._clau === clau);
+  if (!plat_orig) { console.warn('executar_drag: plat no trobat', clau); return; }
+
+  // Assegurar cel·la destí
+  const mi_k = Object.keys(planif).length > 0 && planif[mi_dest] !== undefined ? mi_dest : (planif[+mi_dest] !== undefined ? +mi_dest : mi_dest);
+  if (!planif[mi_k]) planif[mi_k] = {};
+  const di_k = planif[mi_k][di_dest] !== undefined ? di_dest : (+di_dest !== undefined ? +di_dest : di_dest);
+  if (!planif[mi_k][di_k]) planif[mi_k][di_k] = [];
+
+  const nova_clau = Date.now() + '_' + Math.random().toString(36).slice(2,7);
 
   if (copiar) {
-    const copia = Object.assign({}, plat_orig, { _clau: Date.now() + '_' + Math.random().toString(36).slice(2,7) });
-    planif[mi_dest][di_dest].push(copia);
+    planif[mi_k][di_k].push(Object.assign({}, plat_orig, { _clau: nova_clau }));
   } else {
-    planif[mi_orig][di_orig] = planif[mi_orig][di_orig].filter(p => p._clau !== clau);
-    const moure = Object.assign({}, plat_orig, { _clau: Date.now() + '_' + Math.random().toString(36).slice(2,7) });
-    planif[mi_dest][di_dest].push(moure);
+    // Eliminar de l'origen
+    const idx_orig = cela_orig.findIndex(p => p._clau === clau);
+    if (idx_orig !== -1) cela_orig.splice(idx_orig, 1);
+    planif[mi_k][di_k].push(Object.assign({}, plat_orig, { _clau: nova_clau }));
   }
 
   renderitzar_taula_planificacio();
