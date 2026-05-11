@@ -1136,24 +1136,24 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
         <textarea class="form-input" id="plat-receta" placeholder="Ej: 1. Asar la pechuga a la plancha. 2. Saltear los champiñones..." style="min-height:52px;resize:vertical;font-family:inherit;font-size:0.82rem;"></textarea>
       </div>
       <!-- Nutrients crítics -->
-      <div style="margin-top:6px;padding:8px 12px;background:var(--verde-suau);border-radius:10px;border:1px solid var(--verde-clar);">
-        <div style="font-size:0.68rem;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">🔬 Nutrientes críticos (ración M)</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div class="form-grup" style="margin:0">
-            <label class="form-label">🧂 Sodio (mg)</label>
-            <input class="form-input" type="number" id="plat-sodio" placeholder="0" style="margin:0">
+      <div style="margin-top:6px;padding:6px 10px;background:var(--verde-suau);border-radius:8px;border:1px solid var(--verde-clar);">
+        <div style="font-size:0.65rem;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;">🔬 Nutrientes críticos (ración M)</div>
+        <div style="display:flex;gap:8px;align-items:flex-end;">
+          <div style="flex:1;">
+            <label style="font-size:0.62rem;color:var(--text-suau);display:block;margin-bottom:2px;">🧂 Sodio (mg)</label>
+            <input class="form-input" type="number" id="plat-sodio" placeholder="0">
           </div>
-          <div class="form-grup" style="margin:0">
-            <label class="form-label">🧈 Colesterol (mg)</label>
-            <input class="form-input" type="number" id="plat-colesterol" placeholder="0" style="margin:0">
+          <div style="flex:1;">
+            <label style="font-size:0.62rem;color:var(--text-suau);display:block;margin-bottom:2px;">🧈 Colesterol (mg)</label>
+            <input class="form-input" type="number" id="plat-colesterol" placeholder="0">
           </div>
-          <div class="form-grup" style="margin:0">
-            <label class="form-label">🫒 AGS (g)</label>
-            <input class="form-input" type="number" id="plat-ags" placeholder="0" style="margin:0">
+          <div style="flex:1;">
+            <label style="font-size:0.62rem;color:var(--text-suau);display:block;margin-bottom:2px;">🫒 AGS (g)</label>
+            <input class="form-input" type="number" id="plat-ags" placeholder="0">
           </div>
-          <div class="form-grup" style="margin:0">
-            <label class="form-label">🍷 Etanol (g)</label>
-            <input class="form-input" type="number" id="plat-etanol" placeholder="0" style="margin:0">
+          <div style="flex:1;">
+            <label style="font-size:0.62rem;color:var(--text-suau);display:block;margin-bottom:2px;">🍷 Etanol (g)</label>
+            <input class="form-input" type="number" id="plat-etanol" placeholder="0">
           </div>
         </div>
       </div>
@@ -5641,39 +5641,36 @@ function drag_drop(event, mi_dest, di_dest) {
 }
 
 function executar_drag(clau, mi_orig, di_orig, mi_dest, di_dest, copiar) {
-  const planif = pacient_actiu && pacient_actiu.planificacio;
-  if (!planif) return;
+  if (!pacient_actiu) return;
+  if (!pacient_actiu.planificacio) pacient_actiu.planificacio = {};
+  const planif = pacient_actiu.planificacio;
 
-  // Normalitzar índexs — buscar la cel·la sigui string o number
-  const trobar_cela = (mi, di) => {
-    if (planif[mi] && planif[mi][di]) return planif[mi][di];
-    if (planif[+mi] && planif[+mi][+di]) return planif[+mi][+di];
-    if (planif[String(mi)] && planif[String(mi)][String(di)]) return planif[String(mi)][String(di)];
-    return null;
-  };
+  // Convertir sempre a number per consistència
+  mi_orig = +mi_orig; di_orig = +di_orig;
+  mi_dest = +mi_dest; di_dest = +di_dest;
 
-  const cela_orig = trobar_cela(mi_orig, di_orig);
-  if (!cela_orig) { console.warn('executar_drag: cel·la origen no trobada', mi_orig, di_orig); return; }
+  console.log('executar_drag', {clau, mi_orig, di_orig, mi_dest, di_dest, copiar});
 
-  const plat_orig = cela_orig.find(p => p._clau === clau);
-  if (!plat_orig) { console.warn('executar_drag: plat no trobat', clau); return; }
+  // Assegurar estructures
+  if (!planif[mi_orig]) planif[mi_orig] = {};
+  if (!planif[mi_orig][di_orig]) planif[mi_orig][di_orig] = [];
+  if (!planif[mi_dest]) planif[mi_dest] = {};
+  if (!planif[mi_dest][di_dest]) planif[mi_dest][di_dest] = [];
 
-  // Assegurar cel·la destí
-  const mi_k = Object.keys(planif).length > 0 && planif[mi_dest] !== undefined ? mi_dest : (planif[+mi_dest] !== undefined ? +mi_dest : mi_dest);
-  if (!planif[mi_k]) planif[mi_k] = {};
-  const di_k = planif[mi_k][di_dest] !== undefined ? di_dest : (+di_dest !== undefined ? +di_dest : di_dest);
-  if (!planif[mi_k][di_k]) planif[mi_k][di_k] = [];
-
+  // Trobar plat origen
+  const idx = planif[mi_orig][di_orig].findIndex(p => p._clau === clau);
+  if (idx === -1) {
+    console.warn('executar_drag: plat no trobat', clau, 'a', mi_orig, di_orig);
+    mostrar_toast('No se encontró el plato de origen', 'error');
+    return;
+  }
+  const plat = planif[mi_orig][di_orig][idx];
   const nova_clau = Date.now() + '_' + Math.random().toString(36).slice(2,7);
 
-  if (copiar) {
-    planif[mi_k][di_k].push(Object.assign({}, plat_orig, { _clau: nova_clau }));
-  } else {
-    // Eliminar de l'origen
-    const idx_orig = cela_orig.findIndex(p => p._clau === clau);
-    if (idx_orig !== -1) cela_orig.splice(idx_orig, 1);
-    planif[mi_k][di_k].push(Object.assign({}, plat_orig, { _clau: nova_clau }));
+  if (!copiar) {
+    planif[mi_orig][di_orig].splice(idx, 1);
   }
+  planif[mi_dest][di_dest].push(Object.assign({}, plat, { _clau: nova_clau }));
 
   renderitzar_taula_planificacio();
   guardar_pacients();
